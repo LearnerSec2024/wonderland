@@ -1,4 +1,4 @@
-function DashboardPage() {
+﻿function DashboardPage() {
   return (
     <main className="mx-auto min-h-[70vh] max-w-7xl px-6 py-14 lg:px-10" data-testid="dashboard-page">
       <p className="font-bold uppercase tracking-[0.25em] text-yellow-300">Protected area</p>
@@ -26,3 +26,4 @@ function DashboardPage() {
 }
 
 export default DashboardPage;
+

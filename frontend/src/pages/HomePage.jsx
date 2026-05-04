@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+ï»¿import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
@@ -37,7 +37,7 @@ function HomePage() {
         <div className="relative mx-auto flex max-w-7xl flex-col gap-12 px-6 py-16 lg:min-h-[680px] lg:flex-row lg:items-center lg:px-10">
           <div className="max-w-2xl">
             <p className="mb-4 inline-flex rounded-full bg-white/15 px-4 py-2 text-sm font-semibold text-cyan-100 backdrop-blur">
-              Stay • Play • Ride • Earn WonderPoints
+              Stay â€¢ Play â€¢ Ride â€¢ Earn WonderPoints
             </p>
 
             <h1 className="text-5xl font-black tracking-tight sm:text-6xl lg:text-7xl">
@@ -229,3 +229,4 @@ function AccommodationCard({ stay }) {
 }
 
 export default HomePage;
+

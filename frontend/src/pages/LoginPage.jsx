@@ -1,4 +1,4 @@
-function LoginPage() {
+﻿function LoginPage() {
   return (
     <main className="mx-auto grid min-h-[70vh] max-w-7xl place-items-center px-6 py-14 lg:px-10" data-testid="login-page">
       <section className="w-full max-w-md rounded-[2rem] bg-white p-8 text-slate-950 shadow-2xl">
@@ -45,3 +45,4 @@ function LoginPage() {
 }
 
 export default LoginPage;
+

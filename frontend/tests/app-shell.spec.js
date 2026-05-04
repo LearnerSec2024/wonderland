@@ -1,4 +1,4 @@
-import { test, expect } from "@playwright/test";
+﻿import { test, expect } from "@playwright/test";
 
 test.describe("Wonderland app shell smoke tests", () => {
   test("homepage loads and shows live Wonderland data", async ({ page }) => {
@@ -75,3 +75,4 @@ test.describe("Wonderland app shell smoke tests", () => {
     await expect(page.getByTestId("register-submit-button")).toBeVisible();
   });
 });
+
