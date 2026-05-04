@@ -1,4 +1,5 @@
-﻿import { NavLink, Link } from "react-router-dom";
+﻿import { NavLink, Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 const navItems = [
   { to: "/", label: "Home", testId: "nav-home" },
@@ -8,6 +9,9 @@ const navItems = [
 ];
 
 function Navbar() {
+  const navigate = useNavigate();
+  const { user, isAuthenticated, logout } = useAuth();
+
   const linkClass = ({ isActive }) =>
     [
       "rounded-full px-4 py-2 text-sm font-bold transition",
@@ -15,6 +19,11 @@ function Navbar() {
         ? "bg-yellow-300 text-slate-950 shadow-lg shadow-yellow-400/20"
         : "text-white/80 hover:bg-white/15 hover:text-white",
     ].join(" ");
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
 
   return (
     <header className="sticky top-0 z-50 border-b border-white/10 bg-slate-950/85 backdrop-blur-xl">
@@ -24,7 +33,7 @@ function Navbar() {
       >
         <Link to="/" className="flex items-center gap-3" data-testid="brand-link">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-cyan-400 text-2xl shadow-lg">
-            ??
+            🎡
           </span>
           <div>
             <p className="text-xl font-black leading-none text-white">Wonderland</p>
@@ -48,20 +57,41 @@ function Navbar() {
         </div>
 
         <div className="flex items-center gap-3">
-          <NavLink
-            to="/login"
-            className="hidden rounded-full px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/15 hover:text-white sm:inline-flex"
-            data-testid="nav-login"
-          >
-            Login
-          </NavLink>
-          <NavLink
-            to="/register"
-            className="rounded-full bg-cyan-300 px-5 py-2 text-sm font-black text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
-            data-testid="nav-register"
-          >
-            Register
-          </NavLink>
+          {isAuthenticated ? (
+            <>
+              <span
+                className="hidden rounded-full bg-white/10 px-4 py-2 text-sm font-bold text-cyan-100 sm:inline-flex"
+                data-testid="nav-user-greeting"
+              >
+                Hi, {user?.firstName}
+              </span>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="rounded-full bg-pink-400 px-5 py-2 text-sm font-black text-slate-950 shadow-lg shadow-pink-400/20 transition hover:-translate-y-0.5 hover:bg-pink-300"
+                data-testid="nav-logout"
+              >
+                Logout
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink
+                to="/login"
+                className="hidden rounded-full px-4 py-2 text-sm font-bold text-white/80 transition hover:bg-white/15 hover:text-white sm:inline-flex"
+                data-testid="nav-login"
+              >
+                Login
+              </NavLink>
+              <NavLink
+                to="/register"
+                className="rounded-full bg-cyan-300 px-5 py-2 text-sm font-black text-slate-950 shadow-lg shadow-cyan-400/20 transition hover:-translate-y-0.5 hover:bg-cyan-200"
+                data-testid="nav-register"
+              >
+                Register
+              </NavLink>
+            </>
+          )}
         </div>
       </nav>
     </header>
@@ -69,4 +99,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

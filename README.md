@@ -947,3 +947,58 @@ At the start of each future session:
 6. Run tests.
 7. Update this README.
 8. Commit and push.
+
+---
+
+## Iteration 2 Completed: Frontend Authentication Flow
+
+The React frontend is now connected to the backend authentication APIs.
+
+### Completed
+
+- Register form connected to `POST /api/auth/register`
+- Login form connected to `POST /api/auth/login`
+- Current user session loaded from `GET /api/auth/me`
+- JWT token stored in browser `localStorage`
+- `/dashboard` route protected with `ProtectedRoute`
+- Unauthenticated dashboard access redirects to `/login`
+- Navbar changes based on authentication state
+- Logout clears the local session and redirects to login
+- Dashboard shows logged-in user email, role and WonderPoints
+
+### Playwright Tests Updated
+
+The Playwright test suite now covers:
+
+- Existing app shell routes
+- Homepage data loading
+- Public navigation
+- Unauthenticated dashboard redirect
+- Register flow
+- Logout flow
+- Login flow
+- Dashboard user display
+- Invalid login error handling
+
+### Iteration 2 Test Command
+
+```powershell
+npm run test:e2e
+
+Current result:
+
+7 passed
+Next Iteration
+
+Iteration 3 — Clean Rides and Accommodation Pages
+
+Expected outcomes:
+
+Full rides listing page
+Full accommodation listing page
+Search bars
+Filters
+Loading, error and empty states
+Test-friendly data-testid attributes
+Playwright tests for listing, search and filters
+

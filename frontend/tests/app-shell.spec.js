@@ -13,7 +13,7 @@ test.describe("Wonderland app shell smoke tests", () => {
     await expect(page.getByText("Castle View Hotel")).toBeVisible();
   });
 
-  test("navbar links navigate to the main pages", async ({ page }) => {
+  test("navbar public links navigate to the main public pages", async ({ page }) => {
     await page.goto("/");
 
     await page.getByTestId("nav-rides").click();
@@ -25,11 +25,6 @@ test.describe("Wonderland app shell smoke tests", () => {
     await expect(page).toHaveURL(/\/accommodations$/);
     await expect(page.getByTestId("accommodations-page")).toBeVisible();
     await expect(page.getByRole("heading", { name: "Accommodation" })).toBeVisible();
-
-    await page.getByTestId("nav-dashboard").click();
-    await expect(page).toHaveURL(/\/dashboard$/);
-    await expect(page.getByTestId("dashboard-page")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Dashboard" })).toBeVisible();
 
     await page.getByTestId("nav-login").click();
     await expect(page).toHaveURL(/\/login$/);
@@ -44,6 +39,15 @@ test.describe("Wonderland app shell smoke tests", () => {
     await page.getByTestId("brand-link").click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByTestId("home-page")).toBeVisible();
+  });
+
+  test("dashboard redirects unauthenticated users to login", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByTestId("nav-dashboard").click();
+
+    await expect(page).toHaveURL(/\/login$/);
+    await expect(page.getByTestId("login-page")).toBeVisible();
   });
 
   test("unknown routes show the custom not found page", async ({ page }) => {
@@ -75,4 +79,3 @@ test.describe("Wonderland app shell smoke tests", () => {
     await expect(page.getByTestId("register-submit-button")).toBeVisible();
   });
 });
-
