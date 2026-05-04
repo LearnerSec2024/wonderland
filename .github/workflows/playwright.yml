@@ -1,0 +1,100 @@
+name: Playwright Smoke Tests
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+jobs:
+  e2e:
+    name: Run Playwright smoke tests
+    runs-on: ubuntu-latest
+
+    services:
+      sqlserver:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: "Y"
+          MSSQL_SA_PASSWORD: "WonderlandCI@12345"
+          MSSQL_PID: "Developer"
+        ports:
+          - 1433:1433
+        options: >-
+          --health-cmd "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'WonderlandCI@12345' -C -Q 'SELECT 1' || /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 'WonderlandCI@12345' -Q 'SELECT 1'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 20
+
+    env:
+      NODE_ENV: development
+      PORT: 5010
+      DB_SERVER: localhost
+      DB_DATABASE: WonderlandDB
+      DB_USER: sa
+      DB_PASSWORD: WonderlandCI@12345
+      DB_ENCRYPT: "false"
+      DB_TRUST_SERVER_CERTIFICATE: "true"
+      JWT_SECRET: github_actions_wonderland_test_secret
+      FRONTEND_URL: http://localhost:5173
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install root dependencies
+        run: npm ci
+
+      - name: Install backend dependencies
+        run: npm ci --prefix backend
+
+      - name: Install frontend dependencies
+        run: npm ci --prefix frontend
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
+
+      - name: Prepare SQL Server database
+        shell: bash
+        run: |
+          SQL_CONTAINER="${{ job.services.sqlserver.id }}"
+          SQLCMD="/opt/mssql-tools18/bin/sqlcmd"
+
+          if ! docker exec "$SQL_CONTAINER" test -x "$SQLCMD"; then
+            SQLCMD="/opt/mssql-tools/bin/sqlcmd"
+          fi
+
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -Q "IF DB_ID('WonderlandDB') IS NULL CREATE DATABASE WonderlandDB;"
+
+          docker cp backend/sql/schema.sql "$SQL_CONTAINER":/tmp/schema.sql
+          docker cp backend/sql/seed.sql "$SQL_CONTAINER":/tmp/seed.sql
+
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
+
+      - name: Run Playwright tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v6
+        with:
+          name: playwright-report
+          path: frontend/playwright-report/
+          retention-days: 7
