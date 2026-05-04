@@ -1,33 +1,72 @@
-﻿# Wonderland Full Stack App
+# Wonderland Full Stack App
 
-Wonderland is a learning-focused full stack web application for a modern theme park experience.
+Wonderland is a learning-focused full-stack web application for a modern theme park experience.
 
-The goal is to build an app where users can:
+The app is being built for two purposes:
 
-- View a colourful Wonderland homepage
-- Register and log in
-- Browse rides
-- Browse accommodation
-- Book rides
-- Book accommodation
-- Earn reward points
-- Use the data later for a SQL Server data warehouse and Power BI reporting
+1. **Theme park booking platform** — users can browse rides, browse accommodation, register, log in, book experiences, and earn reward points.
+2. **Playwright JavaScript training app** — the app will include clean, testable pages as well as a dedicated Automation Lab with intentionally tricky locator scenarios.
 
 This project is being built locally on a personal Windows 11 laptop for learning purposes.
 
 ---
 
+## Current Status Snapshot
+
+| Area | Status |
+|---|---|
+| SQL Server local database | Complete |
+| Backend Express API | Complete foundation |
+| Backend SQL Server connection | Working |
+| Backend authentication APIs | Working |
+| React frontend | Created |
+| Frontend routing/app shell | Complete |
+| Playwright smoke tests | Passing |
+| GitHub repository | Published |
+| GitHub Actions workflow | Added |
+| Next iteration | **Iteration 2 — Frontend Authentication Flow** |
+
+Current local URLs:
+
+```text
+Frontend: http://localhost:5173
+Backend:  http://localhost:5010
+Database: WonderlandDB
+```
+
+---
+
+## Development Rhythm
+
+Every feature iteration should follow this process:
+
+1. Implement the iteration changes.
+2. Add or extend Playwright tests for the existing plus new functionality.
+3. Run all tests.
+4. Fix issues until tests are green.
+5. Commit and push.
+6. Move to the next iteration.
+
+Current test command from the project root:
+
+```powershell
+npm run test:e2e
+```
+
+---
+
 ## Project Purpose
 
-The main learning goals of this project are:
+The main learning goals are:
 
-- Build a full stack app using React, Node.js and SQL Server
-- Learn how a frontend connects to a backend API
-- Learn how a backend connects to Microsoft SQL Server
-- Build login and authentication functionality
-- Design a database suitable for future reporting
-- Create a future data warehouse for Power BI dashboards
-- Build a realistic Playwright JavaScript automation training app
+- Build a full-stack app using React, Node.js, Express, and Microsoft SQL Server.
+- Learn how a frontend connects to a backend API.
+- Learn how a backend connects to Microsoft SQL Server.
+- Build login and authentication functionality using JWT Bearer tokens.
+- Design an operational database suitable for future reporting.
+- Later create a data warehouse for Power BI dashboards.
+- Build realistic Playwright JavaScript automation tests.
+- Create a dedicated Automation Lab for difficult real-world locator scenarios.
 
 ---
 
@@ -40,13 +79,14 @@ Installed tools:
 - Node.js
 - npm
 - Git
-- VS Code
 - GitHub Desktop
+- VS Code
 - SQL Server Developer Edition
 - SQL Server Management Studio
 - sqlcmd
 - Postman
 - Power BI Desktop
+- Playwright
 
 ---
 
@@ -55,11 +95,16 @@ Installed tools:
 Local project folder:
 
 ```text
-D:\Projects\Wonderland
+D:\Projects\wonderland
+```
 
 Current project structure:
 
-Wonderland
+```text
+wonderland
+├── .github
+│   └── workflows
+│       └── playwright.yml
 ├── backend
 │   ├── config
 │   ├── controllers
@@ -67,205 +112,366 @@ Wonderland
 │   ├── routes
 │   ├── scripts
 │   ├── sql
-│   ├── .env
 │   ├── .env.example
 │   ├── package.json
 │   └── server.js
 ├── frontend
+│   ├── src
+│   │   ├── components
+│   │   ├── pages
+│   │   └── services
+│   ├── tests
+│   ├── .env.example
+│   ├── package.json
+│   └── playwright.config.js
 ├── docs
 │   ├── local-db-setup.md
 │   └── playwright-training-requirements.md
 ├── postman
 │   ├── wonderland-api.postman_collection.json
 │   └── wonderland-local.postman_environment.json
+├── .gitignore
 ├── package.json
+├── package-lock.json
 └── README.md
-Technology Stack
-Frontend
+```
 
-Planned frontend stack:
+Local secret files such as `backend/.env`, `frontend/.env`, and `backend/sql/create-app-login.local.sql` are intentionally ignored by Git.
 
-React
-Vite
-Tailwind CSS
+---
 
-Expected local frontend URL:
+## Technology Stack
 
+### Frontend
+
+- React
+- Vite
+- Tailwind CSS
+- React Router
+- Playwright for UI testing
+
+Frontend URL:
+
+```text
 http://localhost:5173
-Backend
+```
 
-Backend stack:
+### Backend
 
-Node.js
-Express.js
-mssql
-dotenv
-cors
-helmet
-morgan
-bcryptjs
-jsonwebtoken
-express-rate-limit
-nodemon
+- Node.js
+- Express.js
+- mssql
+- dotenv
+- cors
+- helmet
+- morgan
+- bcryptjs
+- jsonwebtoken
+- express-rate-limit
+- nodemon
 
-Wonderland backend currently runs on:
+Backend URL:
 
+```text
 http://localhost:5010
+```
 
-Port 5010 is used because port 5000 is already used by another local app.
+Port `5010` is used because port `5000` is already used by another local app.
 
-Database
+### Database
 
-Database platform:
+- Microsoft SQL Server Developer Edition
+- SQL Server Management Studio
+- sqlcmd
 
-Microsoft SQL Server Developer Edition
+Operational database:
 
-Main operational database:
-
+```text
 WonderlandDB
+```
 
 Future reporting/data warehouse database:
 
+```text
 WonderlandDW
-Database Setup Completed
+```
 
-A SQL Server database called WonderlandDB has been created.
+---
 
-The following tables have been created:
+## Root Project Commands
 
-Table    Purpose
-Users    Stores registered app users
-Rides    Stores theme park rides
-Accommodations    Stores hotels, lodges, cabins and resorts
-RideBookings    Stores user ride bookings
-AccommodationBookings    Stores accommodation bookings
-PointsLedger    Tracks reward points earned or used
-Seed Data Completed
+Run these from the project root:
+
+```powershell
+cd D:\Projects\wonderland
+```
+
+Start frontend and backend together:
+
+```powershell
+npm start
+```
+
+Install backend and frontend dependencies:
+
+```powershell
+npm run install:all
+```
+
+Generate the Postman collection:
+
+```powershell
+npm run postman:generate
+```
+
+Run Playwright tests:
+
+```powershell
+npm run test:e2e
+```
+
+Run Playwright tests in headed mode:
+
+```powershell
+npm run test:e2e:headed
+```
+
+Open Playwright UI mode:
+
+```powershell
+npm run test:e2e:ui
+```
+
+Open the Playwright report:
+
+```powershell
+npm run test:e2e:report
+```
+
+---
+
+## Backend Commands
+
+Go to the backend folder:
+
+```powershell
+cd D:\Projects\wonderland\backend
+```
+
+Start backend only:
+
+```powershell
+npm run dev
+```
+
+Backend API base URL:
+
+```text
+http://localhost:5010
+```
+
+Generate Postman collection from backend routes:
+
+```powershell
+npm run postman:generate
+```
+
+---
+
+## Frontend Commands
+
+Go to the frontend folder:
+
+```powershell
+cd D:\Projects\wonderland\frontend
+```
+
+Start frontend only:
+
+```powershell
+npm run dev
+```
+
+Frontend URL:
+
+```text
+http://localhost:5173
+```
+
+Run frontend Playwright tests directly:
+
+```powershell
+npm run test:e2e
+```
+
+---
+
+## Database Setup Completed
+
+A SQL Server database called `WonderlandDB` has been created.
+
+Tables created:
+
+| Table | Purpose |
+|---|---|
+| Users | Stores registered app users |
+| Rides | Stores theme park rides |
+| Accommodations | Stores hotels, lodges, cabins, and resorts |
+| RideBookings | Stores user ride bookings |
+| AccommodationBookings | Stores accommodation bookings |
+| PointsLedger | Tracks reward points earned or used |
+
+Detailed setup notes are stored in:
+
+```text
+docs/local-db-setup.md
+```
+
+---
+
+## Seed Data Completed
 
 Sample ride and accommodation data has been inserted into SQL Server.
 
-Rides
-
 Current sample rides:
 
-Dragon Rush Coaster
-Pirate Splash Falls
-Galaxy Spinner
-Enchanted Carousel
-Accommodations
+- Dragon Rush Coaster
+- Pirate Splash Falls
+- Galaxy Spinner
+- Enchanted Carousel
 
 Current sample accommodation:
 
-Castle View Hotel
-Jungle Lodge
-Pirate Cove Cabins
-Galaxy Resort Suites
+- Castle View Hotel
+- Jungle Lodge
+- Pirate Cove Cabins
+- Galaxy Resort Suites
 
-This seed data allows the backend API and future frontend screens to show real-looking theme park content.
+This seed data allows the backend API and frontend screens to show real-looking theme park content.
 
-SQL Server App Login
+---
+
+## SQL Server App Login
 
 A dedicated SQL Server login was created for the backend app:
 
+```text
 wonderland_app_user
+```
 
-This was created so the Node.js backend does not connect using a personal Windows admin account or the powerful sa account.
+This was created so the Node.js backend does not connect using a personal Windows admin account or the powerful `sa` account.
 
-The app user has access to WonderlandDB and has been added to:
+The app user has access to `WonderlandDB` and has been added to:
 
+```text
 db_datareader
 db_datawriter
+```
 
 This means the backend can read and write app data without being a full SQL Server administrator.
 
-SQL Server TCP/IP Fix Completed
+The local real password script is ignored by Git:
 
-The backend initially started successfully, and /api/health worked.
+```text
+backend/sql/create-app-login.local.sql
+```
 
-However, /api/test-db failed because Node.js tried to connect to:
+A safe example script is included:
 
+```text
+backend/sql/create-app-login.example.sql
+```
+
+---
+
+## SQL Server TCP/IP Fix Completed
+
+The backend initially started successfully and `/api/health` worked.
+
+However, `/api/test-db` failed because Node.js tried to connect to:
+
+```text
 localhost:1433
+```
 
-SQL Server was not listening on TCP port 1433.
+SQL Server was not listening on TCP port `1433`.
 
 The fix was completed in SQL Server Configuration Manager:
 
+```text
 SQL Server Network Configuration
 └── Protocols for MSSQLSERVER
     └── TCP/IP enabled
+```
 
 Then under TCP/IP Properties:
 
+```text
 IPAll
 TCP Dynamic Ports = blank
 TCP Port = 1433
+```
 
 SQL Server was restarted.
 
 The fix was verified with:
 
+```powershell
 netstat -ano | findstr :1433
+```
 
 and:
 
+```powershell
 Test-NetConnection localhost -Port 1433
+```
 
 The result confirmed:
 
+```text
 TcpTestSucceeded : True
-Backend Setup Completed
+```
 
-The backend project has been initialised using npm.
+---
 
-Installed backend dependencies:
+## Current Backend API Endpoints
 
-express
-cors
-dotenv
-mssql
-bcryptjs
-jsonwebtoken
-helmet
-morgan
-express-rate-limit
+### Health Check
 
-Installed development dependency:
-
-nodemon
-
-Current backend scripts include:
-
-{
-  "start": "node server.js",
-  "dev": "nodemon server.js",
-  "postman:generate": "node scripts/generate-postman-collection.js"
-}
-Current Backend API Endpoints
-
-The following backend endpoints are currently working.
-
-Health Check
+```text
 GET /api/health
+```
 
-Browser URL:
+URL:
 
+```text
 http://localhost:5010/api/health
+```
 
 Expected response:
 
+```json
 {
   "status": "ok",
   "message": "Wonderland backend API is running"
 }
-Database Test
+```
+
+### Database Test
+
+```text
 GET /api/test-db
+```
 
-Browser URL:
+URL:
 
+```text
 http://localhost:5010/api/test-db
+```
 
 Expected response:
 
+```json
 {
   "message": "Database connection is working",
   "data": {
@@ -273,222 +479,139 @@ Expected response:
     "RideCount": 4
   }
 }
-Rides
+```
+
+### Rides
+
+```text
 GET /api/rides
+```
 
-Browser URL:
+URL:
 
+```text
 http://localhost:5010/api/rides
+```
 
 Returns the current ride records from SQL Server.
 
-Accommodations
+### Accommodations
+
+```text
 GET /api/accommodations
+```
 
-Browser URL:
+URL:
 
+```text
 http://localhost:5010/api/accommodations
+```
 
 Returns the current accommodation records from SQL Server.
 
-Postman API Collection
+### Register
+
+```text
+POST /api/auth/register
+```
+
+Example body:
+
+```json
+{
+  "firstName": "Alex",
+  "lastName": "Wonder",
+  "email": "alex@wonderland.local",
+  "password": "Password123!"
+}
+```
+
+### Login
+
+```text
+POST /api/auth/login
+```
+
+Example body:
+
+```json
+{
+  "email": "alex@wonderland.local",
+  "password": "Password123!"
+}
+```
+
+### Current User
+
+```text
+GET /api/auth/me
+```
+
+This is a protected route.
+
+Use a JWT Bearer token:
+
+```text
+Authorization: Bearer YOUR_TOKEN_HERE
+```
+
+---
+
+## Current Authentication Approach
+
+The app currently uses **JWT Bearer token authentication**.
+
+Current flow:
+
+1. Register or login returns a JWT token in the JSON response.
+2. Client sends the token in the `Authorization` header.
+3. Protected routes validate the token.
+
+Current protected route:
+
+```text
+GET /api/auth/me
+```
+
+HTTP-only cookie authentication has not been implemented yet. That can be considered later before real web publishing.
+
+---
+
+## Postman API Collection
 
 The project includes a helper script to generate a Postman collection from backend Express routes.
 
 Generated files:
 
+```text
 postman/wonderland-api.postman_collection.json
 postman/wonderland-local.postman_environment.json
-
-The collection file contains the generated API requests.
+```
 
 The environment file contains reusable local variables such as:
 
+```text
 baseUrl = http://localhost:5010
-token = local JWT token
-productId = sample product ID
-bookingId = sample booking ID
-orderId = sample order ID
-Playwright Training Requirement
+token = empty secret placeholder
+id = 1
+userId = 1
+productId = 1
+bookingId = 1
+orderId = 1
+attractionId = 1
+```
 
-Wonderland will also be used as a Playwright JavaScript training application.
+Generate the collection:
 
-In addition to normal theme park booking features, the app will include a dedicated Automation Lab section with intentionally tricky locator scenarios such as:
-
-Dynamic IDs and classes
-Deeply nested DOM structures
-Shadow DOM components
-Iframes
-Elements without IDs or names
-Hover-only menus
-Hidden and overlapping elements
-Legacy-style DOM manipulation
-Slow rendering
-Repeated identical buttons
-XPath-required markup
-Drag and drop
-
-Detailed requirements are saved in:
-
-docs/playwright-training-requirements.md
-Current Status
-
-Completed so far:
-
-Local project folder created
-SQL Server installed and running
-SSMS installed and connected
-WonderlandDB created
-Database schema created
-Seed data inserted
-App-specific SQL login created
-Backend npm project initialised
-Backend dependencies installed
-Backend .env configured
-Backend moved from port 5000 to 5010
-Backend API running successfully
-SQL Server TCP/IP issue fixed
-Backend can read data from SQL Server
-Postman collection generator added
-Playwright training requirements documented
-Next Planned Steps
-
-Next development steps:
-
-Create proper backend route/controller structure
-Build authentication APIs:
-Register
-Login
-Password hashing
-JWT token generation
-Add protected routes
-Create the React frontend using Vite
-Build a colourful Wonderland homepage
-Build login and register screens
-Connect frontend to backend
-Add user dashboard
-Add ride and accommodation booking functionality
-Add reward points logic
-Add Playwright Automation Lab pages
-Later create WonderlandDW for Power BI reporting
-Important Security Notes
-
-The .env file contains local secrets and should not be committed to GitHub.
-
-The .env.example file should be committed instead because it shows required settings without exposing real passwords.
-
-For this local learning project, the database password is simple and local-only. It should not be reused for any real system.
-
-Useful Commands
-Root Project Commands
-
-Run these from the project root:
-
-cd D:\Projects\Wonderland
-
-Start frontend and backend together:
-
-npm start
-
-Install backend and frontend dependencies:
-
-npm run install:all
-
-Generate Postman collection:
-
+```powershell
 npm run postman:generate
-Backend Commands
-
-Go to the backend folder:
-
-cd D:\Projects\Wonderland\backend
-
-Start backend only:
-
-npm run dev
-
-Backend API base URL:
-
-http://localhost:5010
-
-Backend health check:
-
-http://localhost:5010/api/health
-
-Backend database check:
-
-http://localhost:5010/api/test-db
-
-Rides API:
-
-http://localhost:5010/api/rides
-
-Accommodations API:
-
-http://localhost:5010/api/accommodations
-
-Generate Postman collection from backend:
-
-npm run postman:generate
-Frontend Commands
-
-Go to the frontend folder:
-
-cd D:\Projects\Wonderland\frontend
-
-Start frontend only:
-
-npm run dev
-
-Frontend URL:
-
-http://localhost:5173
-SQL Server Checks
-
-Check whether SQL Server is listening on port 1433:
-
-netstat -ano | findstr :1433
-
-Test SQL Server TCP connection:
-
-Test-NetConnection localhost -Port 1433
-Port Checking Commands
-
-Check backend port:
-
-netstat -ano | findstr :5010
-
-Check frontend port:
-
-netstat -ano | findstr :5173
-
-Check old backend port:
-
-netstat -ano | findstr :5000
-Stop Running App
-
-In the terminal where the app is running:
-
-Ctrl + C
-Recommended Daily Startup
-
-From the root folder:
-
-cd D:\Projects\Wonderland
-npm start
-
-Then open:
-
-http://localhost:5173
-
+```
 
 ---
 
-## Iteration 1 Completed: Frontend App Shell and Routing
+## Frontend Routes
 
-The React frontend has been converted from a single-page demo into a routed multi-page application.
-
-### Completed frontend routes
+Completed in Iteration 1:
 
 ```text
 /                 Home page
@@ -498,7 +621,11 @@ The React frontend has been converted from a single-page demo into a routed mult
 /register         Register page
 /dashboard        Dashboard placeholder
 *                 Custom 404 page
-Completed components
+```
+
+Completed frontend components:
+
+```text
 Layout.jsx
 Navbar.jsx
 HomePage.jsx
@@ -508,16 +635,315 @@ LoginPage.jsx
 RegisterPage.jsx
 DashboardPage.jsx
 NotFoundPage.jsx
-Outcome
+```
 
-The app now has:
+The homepage loads ride and accommodation data from the backend API and SQL Server.
 
-A shared layout
-A sticky navigation bar
-Working page navigation
-Browser back/forward support
-A custom page-not-found screen
-Stable route-level data-testid attributes for future Playwright tests
+---
 
-The homepage still loads ride and accommodation data from the backend API and SQL Server.
+## Playwright Testing
 
+Playwright has been added to the frontend.
+
+Current smoke test file:
+
+```text
+frontend/tests/app-shell.spec.js
+```
+
+Current smoke tests verify:
+
+- Homepage loads.
+- Homepage shows live ride/accommodation data.
+- Navbar links navigate correctly.
+- Rides page opens.
+- Accommodation page opens.
+- Login page opens.
+- Register page opens.
+- Dashboard placeholder opens.
+- Unknown routes show the custom 404 page.
+- Login and register form fields are visible.
+
+Run all tests from the root:
+
+```powershell
+npm run test:e2e
+```
+
+Current expected result:
+
+```text
+4 passed
+```
+
+---
+
+## GitHub Actions
+
+A GitHub Actions workflow has been added:
+
+```text
+.github/workflows/playwright.yml
+```
+
+The workflow is intended to:
+
+- Run on push and pull request.
+- Start a SQL Server container.
+- Prepare the `WonderlandDB` schema and seed data.
+- Install backend and frontend dependencies.
+- Install Playwright browsers.
+- Run Playwright smoke tests.
+- Upload the Playwright report as an artifact.
+
+---
+
+## Playwright Training Requirement
+
+Wonderland will also be used as a Playwright JavaScript training application.
+
+In addition to normal theme park booking features, the app will include a dedicated Automation Lab section with intentionally tricky locator scenarios such as:
+
+- Dynamic IDs and classes
+- Deeply nested DOM structures
+- Shadow DOM components
+- Iframes
+- Elements without IDs or names
+- Hover-only menus
+- Hidden and overlapping elements
+- Legacy-style DOM manipulation
+- Slow rendering
+- Repeated identical buttons
+- XPath-required markup
+- Drag and drop
+
+Detailed requirements are saved in:
+
+```text
+docs/playwright-training-requirements.md
+```
+
+---
+
+## Completed Milestones
+
+### Foundation Completed
+
+- Local project folder created.
+- SQL Server installed and running.
+- SSMS installed and connected.
+- `WonderlandDB` created.
+- Database schema created.
+- Seed data inserted.
+- App-specific SQL login created.
+- SQL Server TCP/IP issue fixed.
+- Backend npm project initialised.
+- Backend dependencies installed.
+- Backend `.env` configured.
+- Backend moved from port `5000` to `5010`.
+- Backend can read data from SQL Server.
+- Backend auth APIs created and tested.
+- Postman collection generator added.
+- React/Vite frontend created.
+- Tailwind configured.
+- Homepage created and connected to backend data.
+- Playwright training requirements documented.
+- GitHub repository published.
+- GitHub Actions workflow added.
+
+### Iteration 1 Completed: Frontend App Shell and Routing
+
+The React frontend has been converted from a single-page demo into a routed multi-page application.
+
+Completed:
+
+- Shared layout
+- Sticky navigation bar
+- Home route
+- Rides route
+- Accommodation route
+- Login route
+- Register route
+- Dashboard placeholder route
+- Custom 404 route
+- Stable route-level `data-testid` attributes
+
+### Iteration 1.5 Completed: Playwright Smoke Test Safety Net
+
+Completed:
+
+- Playwright installed.
+- Root test scripts added.
+- Smoke test suite added.
+- Tests passed locally.
+- GitHub Actions workflow added for automated smoke tests.
+
+---
+
+## Current Roadmap
+
+| Iteration | Name | Status | Expected Outcome |
+|---|---|---|---|
+| Foundation | Local setup, DB, backend, frontend foundation | Complete | SQL Server, backend, frontend, seed data, API health checks |
+| Iteration 1 | Frontend app shell and routing | Complete | Multi-page React app with navbar and 404 |
+| Iteration 1.5 | Playwright smoke test safety net | Complete | Existing app shell protected by E2E smoke tests |
+| Iteration 2 | Frontend authentication flow | **Next** | Register/login from frontend, token storage, protected dashboard, logout |
+| Iteration 3 | Clean rides and accommodation pages | Planned | Search, filters, loading states, error states |
+| Iteration 4 | Ride and accommodation details pages | Planned | Detail pages and backend single-item APIs |
+| Iteration 5 | Booking basket | Planned | Add ride/accommodation to basket, update/remove items |
+| Iteration 6 | Checkout and booking confirmation | Planned | Multi-step checkout, save bookings, points earned |
+| Iteration 7 | User dashboard | Planned | User bookings, points, recent activity |
+| Iteration 8 | Admin role and dashboard | Planned | Admin CRUD, tables, sorting, pagination |
+| Iteration 9 | API cleanup and error handling polish | Planned | Cleaner controllers/routes and predictable API errors |
+| Iteration 10 | Testability polish | Planned | Stable selectors, accessible names, mockable APIs |
+| Iteration 11 | Beginner Automation Lab | Planned | Forms, tables, modals, search, buttons |
+| Iteration 12 | Tricky Automation Lab | Planned | Dynamic locators, Shadow DOM, iframes, XPath, drag/drop |
+
+---
+
+## Next Task: Iteration 2 — Frontend Authentication Flow
+
+This is the next task to pick up.
+
+### Goal
+
+Connect the frontend login and registration screens to the backend authentication APIs.
+
+### Expected Outcomes
+
+By the end of Iteration 2:
+
+- User can register from the frontend.
+- User can log in from the frontend.
+- JWT token is saved on the client.
+- Frontend can call `GET /api/auth/me`.
+- Dashboard becomes protected.
+- Logged-in user details display on the dashboard.
+- Logout works.
+- Unauthenticated users are redirected to `/login` when trying to open `/dashboard`.
+- Navbar changes based on login state.
+- Playwright tests cover the new authentication flow.
+- Existing Playwright smoke tests still pass.
+
+### Implementation Tasks
+
+1. Extend `frontend/src/services/api.js` with auth methods:
+   - `register`
+   - `login`
+   - `getCurrentUser`
+
+2. Create `frontend/src/context/AuthContext.jsx`:
+   - stores user
+   - stores token
+   - loads token from local storage
+   - calls `/api/auth/me`
+   - exposes `login`, `register`, and `logout`
+
+3. Create `frontend/src/components/ProtectedRoute.jsx`.
+
+4. Update `frontend/src/App.jsx`:
+   - wrap routes with `AuthProvider`
+   - protect `/dashboard`
+
+5. Update `LoginPage.jsx`:
+   - controlled form state
+   - submit to backend
+   - show loading state
+   - show error message
+   - redirect to dashboard on success
+
+6. Update `RegisterPage.jsx`:
+   - controlled form state
+   - submit to backend
+   - show loading state
+   - show error message
+   - redirect to dashboard on success
+
+7. Update `DashboardPage.jsx`:
+   - show logged-in user
+   - show user points
+   - add logout button or navbar logout option
+
+8. Update `Navbar.jsx`:
+   - show Login/Register when logged out
+   - show Dashboard/Logout when logged in
+
+9. Extend Playwright tests:
+   - register a new user from frontend
+   - log in from frontend
+   - verify dashboard is protected
+   - verify logout works
+   - rerun existing app shell tests
+
+10. Run:
+
+```powershell
+npm run test:e2e
+```
+
+### Done When
+
+- All Iteration 2 functionality works in browser.
+- Auth flow works against backend and SQL Server.
+- All Playwright tests pass.
+- README is updated with Iteration 2 completion notes.
+- Changes are committed and pushed.
+
+---
+
+## Security Notes
+
+The `.env` files contain local secrets and must not be committed to GitHub.
+
+The `.env.example` files should be committed because they show required settings without exposing real passwords.
+
+Ignored local files include:
+
+```text
+backend/.env
+frontend/.env
+backend/sql/create-app-login.local.sql
+node_modules
+frontend/playwright-report
+frontend/test-results
+```
+
+For this local learning project, the database password is simple and local-only. It should not be reused for any real system.
+
+---
+
+## Daily Startup
+
+From the root folder:
+
+```powershell
+cd D:\Projects\wonderland
+npm start
+```
+
+Then open:
+
+```text
+http://localhost:5173
+```
+
+Run the smoke tests:
+
+```powershell
+npm run test:e2e
+```
+
+---
+
+## Current Source of Truth for Next Work
+
+At the start of each future session:
+
+1. Read this README.
+2. Check the `Current Roadmap`.
+3. Pick the first item with status **Next**.
+4. Implement that iteration.
+5. Add or update Playwright tests.
+6. Run tests.
+7. Update this README.
+8. Commit and push.
