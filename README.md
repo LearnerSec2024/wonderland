@@ -1082,3 +1082,433 @@ Expected outcomes:
 - Clean 404 handling for invalid IDs
 - Playwright tests for detail page navigation and not-found states
 
+
+---
+
+## Roadmap Update: Iteration 3.5 Added
+
+After completing Iteration 3, the next step has been refined before moving to Iteration 4.
+
+### New Next Iteration
+
+Iteration 3.5 — Role-Based Registration, DOB and Age Eligibility
+
+This iteration strengthens the authentication and business rules foundation before adding ride/accommodation detail pages and booking workflows.
+
+---
+
+## Iteration 3.5 — Role-Based Registration, DOB and Age Eligibility
+
+### Purpose
+
+Wonderland registration will support different account types and introduce age-related business rules for future ride and accommodation eligibility.
+
+This is important because Wonderland is a theme park application where:
+
+- Guests may be restricted from certain rides based on age
+- Accommodation bookings may require a minimum lead guest age
+- Admin and Manager accounts should only be created by authorised employees
+- Future booking workflows need reliable DOB and role data
+
+---
+
+### Registration Workflows
+
+The registration process will support three account types:
+
+1. Guest
+2. Admin
+3. Manager
+
+---
+
+### Guest Registration
+
+Anyone can register as a Guest using their own email address.
+
+Guest registration rules:
+
+- Email can be any valid unused email
+- Date of birth is required
+- User role is saved as `User`
+- EmployeeId is NULL
+- Guest can later browse, book and earn WonderPoints
+
+---
+
+### Admin Registration
+
+Admin users can only register if their email already exists in the employee records.
+
+Admin registration rules:
+
+- Email must exist in `Employees`
+- Employee must be active
+- Employee must have the `Admin` role
+- Date of birth must match the employee record
+- User role is saved as `Admin`
+- User is linked to the matching EmployeeId
+
+---
+
+### Manager Registration
+
+Manager users can only register if their email already exists in the employee records.
+
+Manager registration rules:
+
+- Email must exist in `Employees`
+- Employee must be active
+- Employee must have the `Manager` role
+- Date of birth must match the employee record
+- User role is saved as `Manager`
+- User is linked to the matching EmployeeId
+
+---
+
+## Database Changes Planned for Iteration 3.5
+
+### Users Table Updates
+
+Add:
+
+- DateOfBirth
+- EmployeeId
+
+Purpose:
+
+- Store DOB for all registered users
+- Link Admin and Manager user accounts to employee records
+- Keep Guest/User accounts independent from employee records
+
+---
+
+### New Roles Table
+
+Create a `Roles` table.
+
+Initial roles:
+
+- User
+- Admin
+- Manager
+
+Purpose:
+
+- Provide a clean role model for authentication and future role-based access
+- Support future Admin and Manager dashboards
+
+---
+
+### New Employees Table
+
+Create an `Employees` table.
+
+Purpose:
+
+- Store authorised employee identities
+- Allow Admin and Manager registration only for pre-approved employee emails
+- Store employee DOB as the trusted source for employee account validation
+
+Expected fields:
+
+- EmployeeId
+- FirstName
+- LastName
+- Email
+- DateOfBirth
+- IsActive
+- CreatedAt
+- UpdatedAt
+
+---
+
+### New EmployeeRoles Table
+
+Create an `EmployeeRoles` table.
+
+Purpose:
+
+- Map employees to roles
+- Allow future flexibility where one employee may have multiple roles
+
+Expected fields:
+
+- EmployeeRoleId
+- EmployeeId
+- RoleId
+- AssignedAt
+
+---
+
+### New EmployeeSalaries Table
+
+Create an `EmployeeSalaries` table.
+
+Purpose:
+
+- Provide realistic enterprise-style data modelling
+- Support future Admin/Manager reporting scenarios
+- Prepare for later data warehouse and Power BI learning
+
+Important:
+
+- Salary data is mock/demo data only
+- Salary data should not be exposed through normal frontend user APIs
+- Salary visibility should be restricted in future Admin/Manager features
+
+Expected fields:
+
+- EmployeeSalaryId
+- EmployeeId
+- AnnualSalary
+- Currency
+- EffectiveFrom
+- EffectiveTo
+- CreatedAt
+
+---
+
+### Rides Table Updates
+
+Add:
+
+- MinimumAgeYears
+- RequiresAdultSupervision
+
+Purpose:
+
+- Display ride age eligibility rules
+- Prepare for later booking validation
+
+Example rules:
+
+- Dragon Rush Coaster: 13+
+- Pirate Splash Falls: 6+
+- Galaxy Spinner: 8+
+- Enchanted Carousel: all ages
+
+Note:
+
+Ride booking enforcement will be implemented later when checkout and rider details exist.
+
+---
+
+### Accommodations Table Updates
+
+Add:
+
+- MinimumLeadGuestAgeYears
+- IsFamilyFriendly
+
+Purpose:
+
+- Display accommodation eligibility rules
+- Prepare for later booking validation
+
+Example rules:
+
+- Castle View Hotel: lead guest 18+
+- Jungle Lodge: lead guest 18+
+- Pirate Cove Cabins: lead guest 18+, family friendly
+- Galaxy Resort Suites: lead guest 21+
+
+Note:
+
+Accommodation booking enforcement will be implemented later during checkout.
+
+---
+
+## Frontend Changes Planned for Iteration 3.5
+
+The registration page will be updated to support:
+
+- Account type selection
+- Guest option
+- Admin option
+- Manager option
+- Date of birth field
+- Conditional guidance text based on account type
+- Backend validation error messages
+
+Expected registration form behaviour:
+
+- Guest selected: anyone can register with an unused email
+- Admin selected: email must belong to an active Admin employee
+- Manager selected: email must belong to an active Manager employee
+
+---
+
+## Backend Changes Planned for Iteration 3.5
+
+The backend registration API will be updated to accept:
+
+- accountType
+- firstName
+- lastName
+- email
+- dateOfBirth
+- password
+
+Backend registration rules:
+
+- Guest accounts register as User
+- Admin accounts require matching active employee with Admin role
+- Manager accounts require matching active employee with Manager role
+- Admin/Manager DOB must match employee DOB
+- Duplicate emails are rejected
+- Missing DOB is rejected
+- Invalid account type is rejected
+
+---
+
+## Playwright Tests Planned for Iteration 3.5
+
+The Playwright test suite should be extended to cover:
+
+- Guest can register successfully with DOB
+- Guest registration fails without DOB
+- Admin can register with seeded employee email and matching DOB
+- Manager can register with seeded employee email and matching DOB
+- Admin registration fails with random email
+- Manager registration fails with random email
+- Admin registration fails with wrong DOB
+- Dashboard shows correct role
+- Rides page displays minimum age rules
+- Accommodation page displays lead guest age rules
+- Existing app shell tests still pass
+- Existing authentication tests still pass
+- Existing listing/search/filter tests still pass
+
+---
+
+## Deferred Functionality After Iteration 3.5
+
+The following items are intentionally not part of Iteration 3.5 and will be handled later.
+
+### Iteration 4 — Ride and Accommodation Details Pages
+
+Planned features:
+
+- Ride details page
+- Accommodation details page
+- Backend endpoints for single item lookup
+- Links from listing cards to detail pages
+- Clean not-found handling for invalid IDs
+- Playwright tests for detail page navigation and not-found states
+
+---
+
+### Iteration 5 — Booking Basket
+
+Planned features:
+
+- Add ride to basket
+- Add accommodation to basket
+- Basket count in navbar
+- Update guest count
+- Remove basket item
+- Basket page
+- Local storage or frontend state basket initially
+
+---
+
+### Iteration 6 — Checkout, Booking Guests and Eligibility Enforcement
+
+Planned features:
+
+- Checkout page
+- Multi-step booking flow
+- BookingGuests data model
+- Guest DOB per rider/guest
+- Guest height per rider where needed
+- Enforce ride minimum age
+- Enforce ride minimum height
+- Enforce adult supervision rules
+- Enforce accommodation lead guest age
+- Save bookings to SQL Server
+- Create PointsLedger records
+- Update user WonderPoints
+- Booking confirmation page
+
+Important:
+
+Account holder DOB alone is not enough for ride eligibility because a parent may book for children. A future `BookingGuests` table will be required.
+
+---
+
+### Iteration 7 — User Dashboard Enhancements
+
+Planned features:
+
+- Upcoming ride bookings
+- Upcoming accommodation bookings
+- Recent points activity
+- User profile summary
+- Eligibility hints
+- Quick action buttons
+
+---
+
+### Iteration 8 — Admin and Manager Dashboards
+
+Planned features:
+
+- Role-based Admin access
+- Role-based Manager access
+- Admin dashboard
+- Manager dashboard
+- Manage rides
+- Manage accommodation
+- View users
+- View employees
+- View bookings
+- Salary data visibility rules
+- Tables with sorting and pagination
+
+---
+
+### Later Iterations — Reporting and Automation Lab
+
+Planned features:
+
+- Data warehouse tables
+- Power BI reporting
+- Beginner Playwright Automation Lab pages
+- Tricky locator Playwright Automation Lab pages
+- Shadow DOM scenarios
+- Iframe scenarios
+- Dynamic locator scenarios
+- Drag and drop scenarios
+- Legacy DOM scenarios
+
+---
+
+## Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+
+Current test status:
+
+- Playwright tests passing locally
+- GitHub Actions passing after latest push
+
+Next implementation task:
+
+- Iteration 3.5 — Role-Based Registration, DOB and Age Eligibility
+
+Development rhythm remains:
+
+1. Implement iteration changes
+2. Add or update Playwright tests for existing and new functionality
+3. Run local tests
+4. Push to GitHub
+5. Confirm GitHub Actions passes
+6. Move to the next iteration
+
