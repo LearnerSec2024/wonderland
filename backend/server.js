@@ -1,4 +1,4 @@
-require("dotenv").config();
+﻿require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -7,6 +7,7 @@ const morgan = require("morgan");
 
 const { getPool } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const testSupportRoutes = require("./routes/testSupportRoutes");
 
 const app = express();
 
@@ -24,6 +25,10 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+
+if (process.env.ENABLE_TEST_SUPPORT === "true") {
+  app.use("/api/test-support", testSupportRoutes);
+}
 
 app.get("/api/health", (req, res) => {
   res.json({
@@ -64,6 +69,8 @@ app.get("/api/rides", async (req, res, next) => {
         Category,
         ThrillLevel,
         MinimumHeightCm,
+        MinimumAgeYears,
+        RequiresAdultSupervision,
         Price,
         PointsEarned,
         ImageUrl
@@ -90,6 +97,8 @@ app.get("/api/accommodations", async (req, res, next) => {
         Type,
         PricePerNight,
         MaxGuests,
+        MinimumLeadGuestAgeYears,
+        IsFamilyFriendly,
         ImageUrl
       FROM dbo.Accommodations
       WHERE IsActive = 1

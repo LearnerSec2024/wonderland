@@ -1,7 +1,7 @@
 ﻿import { test, expect } from "@playwright/test";
 
 test.describe("Wonderland frontend authentication flow", () => {
-  test("user can register, logout, login, and view dashboard", async ({ page }) => {
+  test("guest user can register, logout, login, and view dashboard", async ({ page }) => {
     const uniqueId = Date.now();
     const firstName = "Playwright";
     const lastName = "Tester";
@@ -10,9 +10,11 @@ test.describe("Wonderland frontend authentication flow", () => {
 
     await page.goto("/register");
 
+    await page.getByTestId("register-account-type-guest").check();
     await page.getByTestId("register-first-name-input").fill(firstName);
     await page.getByTestId("register-last-name-input").fill(lastName);
     await page.getByTestId("register-email-input").fill(email);
+    await page.getByTestId("register-date-of-birth-input").fill("1995-05-15");
     await page.getByTestId("register-password-input").fill(password);
     await page.getByTestId("register-submit-button").click();
 
@@ -20,6 +22,7 @@ test.describe("Wonderland frontend authentication flow", () => {
     await expect(page.getByTestId("dashboard-page")).toBeVisible();
     await expect(page.getByTestId("dashboard-user-email")).toContainText(email);
     await expect(page.getByTestId("dashboard-user-name")).toContainText(firstName);
+    await expect(page.getByTestId("dashboard-user-role")).toContainText("User");
     await expect(page.getByTestId("nav-user-greeting")).toContainText(firstName);
 
     await page.getByTestId("nav-logout").click();

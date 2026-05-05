@@ -1,6 +1,22 @@
 ﻿import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+function calculateAge(dateOfBirth) {
+  if (!dateOfBirth) return "Not set";
+
+  const birthDate = new Date(`${dateOfBirth}T00:00:00`);
+  const today = new Date();
+
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const hasBirthdayPassed =
+    today.getMonth() > birthDate.getMonth() ||
+    (today.getMonth() === birthDate.getMonth() && today.getDate() >= birthDate.getDate());
+
+  if (!hasBirthdayPassed) age -= 1;
+
+  return age;
+}
+
 function DashboardPage() {
   const navigate = useNavigate();
   const { user, logout } = useAuth();
@@ -18,10 +34,10 @@ function DashboardPage() {
         Welcome back, <span data-testid="dashboard-user-name">{user?.firstName}</span>. This page is protected by JWT authentication.
       </p>
 
-      <div className="mt-8 grid gap-5 md:grid-cols-3">
+      <div className="mt-8 grid gap-5 md:grid-cols-4">
         <div className="rounded-[2rem] bg-white/10 p-6">
           <p className="text-sm font-bold text-white/60">Logged-in user</p>
-          <p className="mt-2 text-2xl font-black" data-testid="dashboard-user-email">
+          <p className="mt-2 break-all text-base font-black leading-snug sm:text-lg" data-testid="dashboard-user-email">
             {user?.email}
           </p>
         </div>
@@ -37,6 +53,13 @@ function DashboardPage() {
           <p className="text-sm font-bold text-white/60">Role</p>
           <p className="mt-2 text-4xl font-black" data-testid="dashboard-user-role">
             {user?.role}
+          </p>
+        </div>
+
+        <div className="rounded-[2rem] bg-white/10 p-6">
+          <p className="text-sm font-bold text-white/60">Age</p>
+          <p className="mt-2 text-4xl font-black" data-testid="dashboard-user-age">
+            {calculateAge(user?.dateOfBirth)}
           </p>
         </div>
       </div>

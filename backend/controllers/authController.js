@@ -1,7 +1,9 @@
-const bcrypt = require('bcryptjs');
+﻿const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
 const { sql, getPool } = require('../config/db');
+
+const VALID_ACCOUNT_TYPES = ['Guest', 'Admin', 'Manager'];
 
 const createToken = (user) => {
   return jwt.sign(
@@ -9,12 +11,18 @@ const createToken = (user) => {
       userId: user.UserId,
       email: user.Email,
       role: user.Role,
+      employeeId: user.EmployeeId || null,
     },
     process.env.JWT_SECRET,
     {
       expiresIn: '1d',
     },
   );
+};
+
+const toDateOnly = (value) => {
+  if (!value) return null;
+  return new Date(value).toISOString().slice(0, 10);
 };
 
 const cleanUser = (user) => {
@@ -25,19 +33,60 @@ const cleanUser = (user) => {
     email: user.Email,
     role: user.Role,
     totalPoints: user.TotalPoints,
+    dateOfBirth: toDateOnly(user.DateOfBirth),
+    employeeId: user.EmployeeId || null,
     createdAt: user.CreatedAt,
   };
 };
 
+const isValidDateOnly = (value) => {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+  const date = new Date(`${value}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime());
+};
+
+const getEmployeeForRole = async (pool, email, roleName) => {
+  const result = await pool
+    .request()
+    .input('Email', sql.NVarChar(255), email)
+    .input('RoleName', sql.NVarChar(50), roleName).query(`
+      SELECT
+        e.EmployeeId,
+        e.FirstName,
+        e.LastName,
+        e.Email,
+        e.DateOfBirth,
+        e.IsActive,
+        r.RoleName
+      FROM dbo.Employees e
+      INNER JOIN dbo.EmployeeRoles er ON er.EmployeeId = e.EmployeeId
+      INNER JOIN dbo.Roles r ON r.RoleId = er.RoleId
+      WHERE LOWER(e.Email) = @Email
+        AND r.RoleName = @RoleName;
+    `);
+
+  return result.recordset[0];
+};
+
 const registerUser = async (req, res, next) => {
   try {
-    // console.log('REGISTER BODY:', req.body);
+    const { accountType = 'Guest', firstName, lastName, email, dateOfBirth, password } = req.body;
 
-    const { firstName, lastName, email, password } = req.body;
-
-    if (!firstName || !lastName || !email || !password) {
+    if (!VALID_ACCOUNT_TYPES.includes(accountType)) {
       return res.status(400).json({
-        message: 'First name, last name, email and password are required',
+        message: 'Account type must be Guest, Admin or Manager',
+      });
+    }
+
+    if (!firstName || !lastName || !email || !password || !dateOfBirth) {
+      return res.status(400).json({
+        message: 'First name, last name, email, date of birth and password are required',
+      });
+    }
+
+    if (!isValidDateOnly(dateOfBirth)) {
+      return res.status(400).json({
+        message: 'Date of birth must be a valid date',
       });
     }
 
@@ -48,7 +97,6 @@ const registerUser = async (req, res, next) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-
     const pool = await getPool();
 
     const existingUser = await pool.request().input('Email', sql.NVarChar(255), normalizedEmail).query(`
@@ -63,16 +111,55 @@ const registerUser = async (req, res, next) => {
       });
     }
 
+    let role = 'User';
+    let employeeId = null;
+    let finalFirstName = firstName.trim();
+    let finalLastName = lastName.trim();
+    let finalDateOfBirth = dateOfBirth;
+
+    if (accountType === 'Admin' || accountType === 'Manager') {
+      const employee = await getEmployeeForRole(pool, normalizedEmail, accountType);
+
+      if (!employee) {
+        return res.status(403).json({
+          message: `${accountType} registration requires a pre-approved active employee email`,
+        });
+      }
+
+      if (!employee.IsActive) {
+        return res.status(403).json({
+          message: 'This employee account is inactive',
+        });
+      }
+
+      const employeeDateOfBirth = toDateOnly(employee.DateOfBirth);
+
+      if (employeeDateOfBirth !== dateOfBirth) {
+        return res.status(403).json({
+          message: 'Date of birth does not match employee records',
+        });
+      }
+
+      role = accountType;
+      employeeId = employee.EmployeeId;
+      finalFirstName = employee.FirstName;
+      finalLastName = employee.LastName;
+      finalDateOfBirth = employeeDateOfBirth;
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
 
     const result = await pool
       .request()
-      .input('FirstName', sql.NVarChar(100), firstName.trim())
-      .input('LastName', sql.NVarChar(100), lastName.trim())
+      .input('FirstName', sql.NVarChar(100), finalFirstName)
+      .input('LastName', sql.NVarChar(100), finalLastName)
       .input('Email', sql.NVarChar(255), normalizedEmail)
-      .input('PasswordHash', sql.NVarChar(255), passwordHash).query(`
+      .input('DateOfBirth', sql.Date, finalDateOfBirth)
+      .input('PasswordHash', sql.NVarChar(255), passwordHash)
+      .input('Role', sql.NVarChar(50), role)
+      .input('EmployeeId', sql.Int, employeeId).query(`
         INSERT INTO dbo.Users
-          (FirstName, LastName, Email, PasswordHash)
+          (FirstName, LastName, Email, DateOfBirth, PasswordHash, Role, EmployeeId)
         OUTPUT
           INSERTED.UserId,
           INSERTED.FirstName,
@@ -80,9 +167,11 @@ const registerUser = async (req, res, next) => {
           INSERTED.Email,
           INSERTED.Role,
           INSERTED.TotalPoints,
+          INSERTED.DateOfBirth,
+          INSERTED.EmployeeId,
           INSERTED.CreatedAt
         VALUES
-          (@FirstName, @LastName, @Email, @PasswordHash);
+          (@FirstName, @LastName, @Email, @DateOfBirth, @PasswordHash, @Role, @EmployeeId);
       `);
 
     const user = result.recordset[0];
@@ -109,7 +198,6 @@ const loginUser = async (req, res, next) => {
     }
 
     const normalizedEmail = email.trim().toLowerCase();
-
     const pool = await getPool();
 
     const result = await pool.request().input('Email', sql.NVarChar(255), normalizedEmail).query(`
@@ -121,6 +209,8 @@ const loginUser = async (req, res, next) => {
           PasswordHash,
           Role,
           TotalPoints,
+          DateOfBirth,
+          EmployeeId,
           CreatedAt
         FROM dbo.Users
         WHERE LOWER(Email) = @Email;
@@ -133,7 +223,6 @@ const loginUser = async (req, res, next) => {
     }
 
     const user = result.recordset[0];
-
     const passwordMatches = await bcrypt.compare(password, user.PasswordHash);
 
     if (!passwordMatches) {
@@ -166,6 +255,8 @@ const getCurrentUser = async (req, res, next) => {
           Email,
           Role,
           TotalPoints,
+          DateOfBirth,
+          EmployeeId,
           CreatedAt
         FROM dbo.Users
         WHERE UserId = @UserId;
