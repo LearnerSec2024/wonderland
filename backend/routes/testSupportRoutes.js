@@ -19,7 +19,7 @@ router.delete("/users/by-email", async (req, res, next) => {
       .request()
       .input("Email", sql.NVarChar(255), email)
       .query(`
-        SELECT UserId
+        SELECT UserId, EmployeeId
         FROM dbo.Users
         WHERE LOWER(Email) = @Email;
       `);
@@ -29,6 +29,16 @@ router.delete("/users/by-email", async (req, res, next) => {
         .request()
         .input("UserId", sql.Int, user.UserId)
         .query(`
+          UPDATE e
+          SET
+            e.IsRegistered = 0,
+            e.RegisteredUserId = NULL,
+            e.RegisteredAt = NULL,
+            e.UpdatedAt = SYSDATETIME()
+          FROM dbo.Employees e
+          INNER JOIN dbo.Users u ON u.EmployeeId = e.EmployeeId
+          WHERE u.UserId = @UserId;
+
           DELETE FROM dbo.PointsLedger WHERE UserId = @UserId;
           DELETE FROM dbo.RideBookings WHERE UserId = @UserId;
           DELETE FROM dbo.AccommodationBookings WHERE UserId = @UserId;

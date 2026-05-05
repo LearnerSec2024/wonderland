@@ -86,10 +86,12 @@ jobs:
           docker cp backend/sql/schema.sql "$SQL_CONTAINER":/tmp/schema.sql
           docker cp backend/sql/seed.sql "$SQL_CONTAINER":/tmp/seed.sql
           docker cp backend/sql/iteration-3-5-role-dob-eligibility.sql "$SQL_CONTAINER":/tmp/iteration-3-5-role-dob-eligibility.sql
+          docker cp backend/sql/iteration-3-5-1-employee-registration-status.sql "$SQL_CONTAINER":/tmp/iteration-3-5-1-employee-registration-status.sql
 
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-5-role-dob-eligibility.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-5-1-employee-registration-status.sql
 
       - name: Run Playwright tests
         run: npm run test:e2e
@@ -101,3 +103,4 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 7
+

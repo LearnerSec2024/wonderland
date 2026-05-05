@@ -7,6 +7,8 @@ async function deleteUserByEmail(request, email) {
 }
 
 test.describe("Wonderland role-based registration", () => {
+  test.describe.configure({ mode: "serial" });
+
   test("admin can register only with pre-approved employee email and matching DOB", async ({ page, request }) => {
     const email = "ava.admin@wonderland.local";
     const password = "Password123!";
@@ -30,6 +32,41 @@ test.describe("Wonderland role-based registration", () => {
     await expect(page.getByTestId("dashboard-user-role")).toContainText("Admin");
   });
 
+  test("admin employee cannot register a second time", async ({ page, request }) => {
+    const email = "ava.admin@wonderland.local";
+    const password = "Password123!";
+
+    await deleteUserByEmail(request, email);
+
+    await page.goto("/register");
+
+    await page.getByTestId("register-account-type-admin").check();
+    await page.getByTestId("register-first-name-input").fill("Ava");
+    await page.getByTestId("register-last-name-input").fill("Admin");
+    await page.getByTestId("register-email-input").fill(email);
+    await page.getByTestId("register-date-of-birth-input").fill("1988-04-12");
+    await page.getByTestId("register-password-input").fill(password);
+    await page.getByTestId("register-submit-button").click();
+
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.getByTestId("nav-logout").click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    await page.goto("/register");
+
+    await page.getByTestId("register-account-type-admin").check();
+    await page.getByTestId("register-first-name-input").fill("Ava");
+    await page.getByTestId("register-last-name-input").fill("Admin");
+    await page.getByTestId("register-email-input").fill(email);
+    await page.getByTestId("register-date-of-birth-input").fill("1988-04-12");
+    await page.getByTestId("register-password-input").fill(password);
+    await page.getByTestId("register-submit-button").click();
+
+    await expect(page.getByTestId("register-error")).toBeVisible();
+    await expect(page.getByTestId("register-error")).toContainText("This employee has already registered");
+  });
+
   test("manager can register only with pre-approved employee email and matching DOB", async ({ page, request }) => {
     const email = "mila.manager@wonderland.local";
     const password = "Password123!";
@@ -51,6 +88,41 @@ test.describe("Wonderland role-based registration", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByTestId("dashboard-user-email")).toContainText(email);
     await expect(page.getByTestId("dashboard-user-role")).toContainText("Manager");
+  });
+
+  test("manager employee cannot register a second time", async ({ page, request }) => {
+    const email = "mila.manager@wonderland.local";
+    const password = "Password123!";
+
+    await deleteUserByEmail(request, email);
+
+    await page.goto("/register");
+
+    await page.getByTestId("register-account-type-manager").check();
+    await page.getByTestId("register-first-name-input").fill("Mila");
+    await page.getByTestId("register-last-name-input").fill("Manager");
+    await page.getByTestId("register-email-input").fill(email);
+    await page.getByTestId("register-date-of-birth-input").fill("1990-09-20");
+    await page.getByTestId("register-password-input").fill(password);
+    await page.getByTestId("register-submit-button").click();
+
+    await expect(page).toHaveURL(/\/dashboard$/);
+
+    await page.getByTestId("nav-logout").click();
+    await expect(page).toHaveURL(/\/login$/);
+
+    await page.goto("/register");
+
+    await page.getByTestId("register-account-type-manager").check();
+    await page.getByTestId("register-first-name-input").fill("Mila");
+    await page.getByTestId("register-last-name-input").fill("Manager");
+    await page.getByTestId("register-email-input").fill(email);
+    await page.getByTestId("register-date-of-birth-input").fill("1990-09-20");
+    await page.getByTestId("register-password-input").fill(password);
+    await page.getByTestId("register-submit-button").click();
+
+    await expect(page.getByTestId("register-error")).toBeVisible();
+    await expect(page.getByTestId("register-error")).toContainText("This employee has already registered");
   });
 
   test("admin registration fails for random non-employee email", async ({ page }) => {

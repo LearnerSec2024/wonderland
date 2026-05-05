@@ -1,9 +1,9 @@
-﻿const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
+﻿const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
 
-const { sql, getPool } = require('../config/db');
+const { sql, getPool } = require("../config/db");
 
-const VALID_ACCOUNT_TYPES = ['Guest', 'Admin', 'Manager'];
+const VALID_ACCOUNT_TYPES = ["Guest", "Admin", "Manager"];
 
 const createToken = (user) => {
   return jwt.sign(
@@ -15,8 +15,8 @@ const createToken = (user) => {
     },
     process.env.JWT_SECRET,
     {
-      expiresIn: '1d',
-    },
+      expiresIn: "1d",
+    }
   );
 };
 
@@ -40,16 +40,21 @@ const cleanUser = (user) => {
 };
 
 const isValidDateOnly = (value) => {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return false;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return false;
+
   const date = new Date(`${value}T00:00:00.000Z`);
-  return !Number.isNaN(date.getTime());
+
+  if (Number.isNaN(date.getTime())) return false;
+
+  return date.toISOString().slice(0, 10) === value;
 };
 
 const getEmployeeForRole = async (pool, email, roleName) => {
   const result = await pool
     .request()
-    .input('Email', sql.NVarChar(255), email)
-    .input('RoleName', sql.NVarChar(50), roleName).query(`
+    .input("Email", sql.NVarChar(255), email)
+    .input("RoleName", sql.NVarChar(50), roleName)
+    .query(`
       SELECT
         e.EmployeeId,
         e.FirstName,
@@ -57,6 +62,9 @@ const getEmployeeForRole = async (pool, email, roleName) => {
         e.Email,
         e.DateOfBirth,
         e.IsActive,
+        e.IsRegistered,
+        e.RegisteredUserId,
+        e.RegisteredAt,
         r.RoleName
       FROM dbo.Employees e
       INNER JOIN dbo.EmployeeRoles er ON er.EmployeeId = e.EmployeeId
@@ -70,54 +78,49 @@ const getEmployeeForRole = async (pool, email, roleName) => {
 
 const registerUser = async (req, res, next) => {
   try {
-    const { accountType = 'Guest', firstName, lastName, email, dateOfBirth, password } = req.body;
+    const {
+      accountType = "Guest",
+      firstName,
+      lastName,
+      email,
+      dateOfBirth,
+      password,
+    } = req.body;
 
     if (!VALID_ACCOUNT_TYPES.includes(accountType)) {
       return res.status(400).json({
-        message: 'Account type must be Guest, Admin or Manager',
+        message: "Account type must be Guest, Admin or Manager",
       });
     }
 
     if (!firstName || !lastName || !email || !password || !dateOfBirth) {
       return res.status(400).json({
-        message: 'First name, last name, email, date of birth and password are required',
+        message: "First name, last name, email, date of birth and password are required",
       });
     }
 
     if (!isValidDateOnly(dateOfBirth)) {
       return res.status(400).json({
-        message: 'Date of birth must be a valid date',
+        message: "Date of birth must be a valid date",
       });
     }
 
     if (password.length < 8) {
       return res.status(400).json({
-        message: 'Password must be at least 8 characters long',
+        message: "Password must be at least 8 characters long",
       });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const pool = await getPool();
 
-    const existingUser = await pool.request().input('Email', sql.NVarChar(255), normalizedEmail).query(`
-        SELECT UserId
-        FROM dbo.Users
-        WHERE LOWER(Email) = @Email;
-      `);
-
-    if (existingUser.recordset.length > 0) {
-      return res.status(409).json({
-        message: 'A user with this email already exists',
-      });
-    }
-
-    let role = 'User';
+    let role = "User";
     let employeeId = null;
     let finalFirstName = firstName.trim();
     let finalLastName = lastName.trim();
     let finalDateOfBirth = dateOfBirth;
 
-    if (accountType === 'Admin' || accountType === 'Manager') {
+    if (accountType === "Admin" || accountType === "Manager") {
       const employee = await getEmployeeForRole(pool, normalizedEmail, accountType);
 
       if (!employee) {
@@ -128,7 +131,13 @@ const registerUser = async (req, res, next) => {
 
       if (!employee.IsActive) {
         return res.status(403).json({
-          message: 'This employee account is inactive',
+          message: "This employee account is inactive",
+        });
+      }
+
+      if (employee.IsRegistered) {
+        return res.status(409).json({
+          message: "This employee has already registered",
         });
       }
 
@@ -136,7 +145,7 @@ const registerUser = async (req, res, next) => {
 
       if (employeeDateOfBirth !== dateOfBirth) {
         return res.status(403).json({
-          message: 'Date of birth does not match employee records',
+          message: "Date of birth does not match employee records",
         });
       }
 
@@ -147,17 +156,33 @@ const registerUser = async (req, res, next) => {
       finalDateOfBirth = employeeDateOfBirth;
     }
 
+    const existingUser = await pool
+      .request()
+      .input("Email", sql.NVarChar(255), normalizedEmail)
+      .query(`
+        SELECT UserId
+        FROM dbo.Users
+        WHERE LOWER(Email) = @Email;
+      `);
+
+    if (existingUser.recordset.length > 0) {
+      return res.status(409).json({
+        message: "A user with this email already exists",
+      });
+    }
+
     const passwordHash = await bcrypt.hash(password, 12);
 
     const result = await pool
       .request()
-      .input('FirstName', sql.NVarChar(100), finalFirstName)
-      .input('LastName', sql.NVarChar(100), finalLastName)
-      .input('Email', sql.NVarChar(255), normalizedEmail)
-      .input('DateOfBirth', sql.Date, finalDateOfBirth)
-      .input('PasswordHash', sql.NVarChar(255), passwordHash)
-      .input('Role', sql.NVarChar(50), role)
-      .input('EmployeeId', sql.Int, employeeId).query(`
+      .input("FirstName", sql.NVarChar(100), finalFirstName)
+      .input("LastName", sql.NVarChar(100), finalLastName)
+      .input("Email", sql.NVarChar(255), normalizedEmail)
+      .input("DateOfBirth", sql.Date, finalDateOfBirth)
+      .input("PasswordHash", sql.NVarChar(255), passwordHash)
+      .input("Role", sql.NVarChar(50), role)
+      .input("EmployeeId", sql.Int, employeeId)
+      .query(`
         INSERT INTO dbo.Users
           (FirstName, LastName, Email, DateOfBirth, PasswordHash, Role, EmployeeId)
         OUTPUT
@@ -175,10 +200,27 @@ const registerUser = async (req, res, next) => {
       `);
 
     const user = result.recordset[0];
+
+    if (employeeId) {
+      await pool
+        .request()
+        .input("EmployeeId", sql.Int, employeeId)
+        .input("RegisteredUserId", sql.Int, user.UserId)
+        .query(`
+          UPDATE dbo.Employees
+          SET
+            IsRegistered = 1,
+            RegisteredUserId = @RegisteredUserId,
+            RegisteredAt = SYSDATETIME(),
+            UpdatedAt = SYSDATETIME()
+          WHERE EmployeeId = @EmployeeId;
+        `);
+    }
+
     const token = createToken(user);
 
     res.status(201).json({
-      message: 'Registration successful',
+      message: "Registration successful",
       user: cleanUser(user),
       token,
     });
@@ -193,14 +235,17 @@ const loginUser = async (req, res, next) => {
 
     if (!email || !password) {
       return res.status(400).json({
-        message: 'Email and password are required',
+        message: "Email and password are required",
       });
     }
 
     const normalizedEmail = email.trim().toLowerCase();
     const pool = await getPool();
 
-    const result = await pool.request().input('Email', sql.NVarChar(255), normalizedEmail).query(`
+    const result = await pool
+      .request()
+      .input("Email", sql.NVarChar(255), normalizedEmail)
+      .query(`
         SELECT
           UserId,
           FirstName,
@@ -218,7 +263,7 @@ const loginUser = async (req, res, next) => {
 
     if (result.recordset.length === 0) {
       return res.status(401).json({
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
 
@@ -227,14 +272,14 @@ const loginUser = async (req, res, next) => {
 
     if (!passwordMatches) {
       return res.status(401).json({
-        message: 'Invalid email or password',
+        message: "Invalid email or password",
       });
     }
 
     const token = createToken(user);
 
     res.json({
-      message: 'Login successful',
+      message: "Login successful",
       user: cleanUser(user),
       token,
     });
@@ -247,7 +292,10 @@ const getCurrentUser = async (req, res, next) => {
   try {
     const pool = await getPool();
 
-    const result = await pool.request().input('UserId', sql.Int, req.user.userId).query(`
+    const result = await pool
+      .request()
+      .input("UserId", sql.Int, req.user.userId)
+      .query(`
         SELECT
           UserId,
           FirstName,
@@ -264,7 +312,7 @@ const getCurrentUser = async (req, res, next) => {
 
     if (result.recordset.length === 0) {
       return res.status(404).json({
-        message: 'User not found',
+        message: "User not found",
       });
     }
 
