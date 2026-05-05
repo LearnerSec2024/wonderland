@@ -1002,3 +1002,83 @@ Loading, error and empty states
 Test-friendly data-testid attributes
 Playwright tests for listing, search and filters
 
+
+---
+
+## Iteration 3 Completed: Clean Rides and Accommodation Pages
+
+The Rides and Accommodation placeholder pages have been replaced with full listing pages connected to the backend APIs.
+
+### Completed
+
+- `/rides` now loads live ride data from `GET /api/rides`
+- `/accommodations` now loads live accommodation data from `GET /api/accommodations`
+- Rides page includes:
+  - Search
+  - Category filter
+  - Thrill-level filter
+  - Sort dropdown
+  - Loading state
+  - Error state
+  - Empty state
+  - Test-friendly `data-testid` attributes
+- Accommodation page includes:
+  - Search
+  - Stay type filter
+  - Minimum guest filter
+  - Sort dropdown
+  - Loading state
+  - Error state
+  - Empty state
+  - Test-friendly `data-testid` attributes
+
+### Playwright Tests Updated
+
+The Playwright test suite now covers:
+
+- Existing app shell routes
+- Frontend authentication flow
+- Rides listing page
+- Rides search
+- Rides category filter
+- Rides thrill filter
+- Rides sort behaviour
+- Rides empty state
+- Accommodation listing page
+- Accommodation search
+- Accommodation type filter
+- Accommodation guest filter
+- Accommodation sort behaviour
+- Accommodation empty state
+
+### Iteration 3 Test Command
+
+    npm run test:e2e
+
+Expected result:
+
+    11 passed
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+
+### Next Iteration
+
+Iteration 4 — Ride and Accommodation Details Pages
+
+Expected outcomes:
+
+- Ride details page
+- Accommodation details page
+- Backend endpoints for single item lookup
+- Link from listing cards to details pages
+- Clean 404 handling for invalid IDs
+- Playwright tests for detail page navigation and not-found states
+
