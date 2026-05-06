@@ -54,6 +54,16 @@ function Navbar() {
               {item.label}
             </NavLink>
           ))}
+
+          {isAuthenticated && (
+            <NavLink
+              to="/profile"
+              className={linkClass}
+              data-testid="nav-profile"
+            >
+              Profile
+            </NavLink>
+          )}
         </div>
 
         <div className="flex items-center gap-3">

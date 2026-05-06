@@ -51,4 +51,11 @@ export const api = {
       token,
     });
   },
+
+  async getProfile(token) {
+    return request("/profile/me", {
+      method: "GET",
+      token,
+    });
+  },
 };

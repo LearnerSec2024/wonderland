@@ -7,6 +7,7 @@ const morgan = require("morgan");
 
 const { getPool } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 const testSupportRoutes = require("./routes/testSupportRoutes");
 
 const app = express();
@@ -25,6 +26,7 @@ app.use(express.json());
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
 
 if (process.env.ENABLE_TEST_SUPPORT === "true") {
   app.use("/api/test-support", testSupportRoutes);

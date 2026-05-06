@@ -1,4 +1,4 @@
-const express = require("express");
+﻿const express = require("express");
 const rateLimit = require("express-rate-limit");
 
 const {
@@ -6,7 +6,6 @@ const {
   loginUser,
   getCurrentUser,
 } = require("../controllers/authController");
-
 const { requireAuth } = require("../middleware/authMiddleware");
 
 const router = express.Router();
@@ -14,6 +13,7 @@ const router = express.Router();
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   limit: 20,
+  skip: () => process.env.ENABLE_TEST_SUPPORT === "true",
   message: {
     message: "Too many auth attempts. Please try again later.",
   },
