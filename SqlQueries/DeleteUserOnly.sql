@@ -18,7 +18,7 @@ GO
     It will not delete Admin or Manager accounts.
 */
 
-DECLARE @UserEmail NVARCHAR(255) = 'playwright.1777957993599@wonderland.local';
+DECLARE @UserEmail NVARCHAR(255) = 'ava.admin@wonderland.local';
 
 -- First run: keep this as 0.
 -- Permanent delete: change this to 1.

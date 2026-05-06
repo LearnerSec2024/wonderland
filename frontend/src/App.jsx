@@ -2,6 +2,7 @@
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
+import RoleProtectedRoute from "./components/RoleProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 
 import HomePage from "./pages/HomePage";
@@ -11,6 +12,8 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
+import AdminContentPage from "./pages/AdminContentPage";
+import ManagerApprovalsPage from "./pages/ManagerApprovalsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
@@ -24,6 +27,7 @@ function App() {
             <Route path="/accommodations" element={<AccommodationsPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
             <Route
               path="/dashboard"
               element={
@@ -32,6 +36,7 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
             <Route
               path="/profile"
               element={
@@ -40,6 +45,29 @@ function App() {
                 </ProtectedRoute>
               }
             />
+
+            <Route
+              path="/admin/content"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminContentPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/manager/approvals"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Manager"]}>
+                    <ManagerApprovalsPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
             <Route path="*" element={<NotFoundPage />} />
           </Route>
         </Routes>

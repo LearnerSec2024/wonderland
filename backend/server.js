@@ -8,6 +8,8 @@ const morgan = require("morgan");
 const { getPool } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
+const adminContentRoutes = require("./routes/adminContentRoutes");
+const managerApprovalRoutes = require("./routes/managerApprovalRoutes");
 const testSupportRoutes = require("./routes/testSupportRoutes");
 
 const app = express();
@@ -27,6 +29,8 @@ app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
+app.use("/api/admin", adminContentRoutes);
+app.use("/api/manager", managerApprovalRoutes);
 
 if (process.env.ENABLE_TEST_SUPPORT === "true") {
   app.use("/api/test-support", testSupportRoutes);
@@ -78,6 +82,7 @@ app.get("/api/rides", async (req, res, next) => {
         ImageUrl
       FROM dbo.Rides
       WHERE IsActive = 1
+        AND ApprovalStatus = 'Approved'
       ORDER BY RideId;
     `);
 
@@ -104,6 +109,7 @@ app.get("/api/accommodations", async (req, res, next) => {
         ImageUrl
       FROM dbo.Accommodations
       WHERE IsActive = 1
+        AND ApprovalStatus = 'Approved'
       ORDER BY AccommodationId;
     `);
 

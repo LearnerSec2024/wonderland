@@ -2039,3 +2039,220 @@ Expected outcomes:
 - Manager task badge/indicator appears when approvals are pending
 - Playwright tests cover Admin submission and Manager approval workflow
 
+
+---
+
+## Iteration 3.7 Completed: Admin Content Submission and Manager Approval Workflow
+
+Wonderland now includes an Admin content submission workflow and a Manager approval workflow.
+
+### Completed
+
+- Admin users can submit new rides
+- Admin users can submit new accommodation
+- Submitted content starts as:
+  - ApprovalStatus = PendingApproval
+  - IsActive = 0
+- Pending content is not publicly visible on public listing pages
+- Manager users can view pending approval tasks
+- Manager users can approve pending content
+- Manager users can reject pending content
+- Approved content becomes publicly visible
+- Rejected content remains inactive and hidden from public pages
+- Manager navbar shows a pending task badge when approvals exist
+- Normal User accounts cannot access Admin content pages
+- Normal User accounts cannot access Manager approval pages
+- Public rides/accommodation APIs now return only:
+  - IsActive = 1
+  - ApprovalStatus = Approved
+
+### Admin Workflow
+
+New Admin route:
+
+    /admin/content
+
+Admin users can submit:
+
+- Ride
+- Accommodation
+
+Admin users can now also view a list of their submitted content with status:
+
+- PendingApproval
+- Approved
+- Rejected
+
+This gives Admin users visibility of what they submitted and where it is in the approval workflow.
+
+### Manager Workflow
+
+New Manager route:
+
+    /manager/approvals
+
+Manager users can now view:
+
+- Pending approval tasks
+- Reviewed approval history
+
+The reviewed history shows content the Manager has already approved or rejected.
+
+### Workflow Behaviour
+
+Expected content lifecycle:
+
+    Admin submits content
+    Content saved as PendingApproval
+    Content hidden from public pages
+    Manager sees pending task
+    Manager approves or rejects
+    Approved content becomes public
+    Rejected content remains hidden
+    Admin can see latest status in My Submissions
+    Manager can see completed review in Reviewed History
+
+### Login Redirect Fix
+
+A role-aware login redirect fix was added.
+
+Before the fix, if an Admin logged out from `/admin/content` and a Manager logged in afterwards, the app could redirect the Manager back to `/admin/content`, causing an Access Denied page.
+
+The login flow now checks the newly logged-in user role before redirecting.
+
+Expected behaviour:
+
+- Admin logging into an Admin route can continue to that route
+- Manager logging into a Manager route can continue to that route
+- Manager logging in after Admin logout is safely redirected to `/dashboard`
+- Admin logging in after Manager logout is safely redirected to `/dashboard`
+- Normal Users are not redirected into restricted Admin or Manager routes
+
+### Database Changes
+
+Rides and Accommodations now support:
+
+- ApprovalStatus
+- SubmittedByUserId
+- SubmittedAt
+- ReviewedByUserId
+- ReviewedAt
+- RejectionReason
+
+Existing seeded content is treated as:
+
+    ApprovalStatus = Approved
+    IsActive = 1
+
+### New Backend APIs
+
+Admin APIs:
+
+    GET  /api/admin/submissions
+    POST /api/admin/rides
+    POST /api/admin/accommodations
+
+Manager APIs:
+
+    GET  /api/manager/approvals
+    GET  /api/manager/approvals/count
+    GET  /api/manager/approvals/history
+    POST /api/manager/approvals/:type/:id/approve
+    POST /api/manager/approvals/:type/:id/reject
+
+### New Frontend Routes
+
+Admin route:
+
+    /admin/content
+
+Manager route:
+
+    /manager/approvals
+
+### Test-Support Enhancements
+
+The local/CI test-support API now also supports cleaning test-created content by name.
+
+This is used only for repeatable local and CI tests.
+
+Test-support endpoint added:
+
+    DELETE /api/test-support/content/by-name
+
+Reminder:
+
+Test-support APIs are enabled only when:
+
+    ENABLE_TEST_SUPPORT=true
+
+These routes are for local development and CI testing only, not production use.
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- Admin can submit a new ride
+- Admin can see submitted ride in My Submissions
+- Submitted ride starts as PendingApproval
+- Pending ride is not visible publicly before approval
+- Manager sees pending approval task indicator
+- Manager can approve submitted ride
+- Manager can see approved content in Reviewed History
+- Approved ride becomes visible publicly
+- Normal User cannot access Admin content page
+- Normal User cannot access Manager approvals page
+- Listing page tests now support dynamic public content counts
+- Login redirect safely handles role-restricted return paths
+
+### Manual Testing Completed
+
+Manual testing confirmed:
+
+- Admin Content link appears only for Admin users
+- Manager Tasks link appears only for Manager users
+- Normal Users do not see Admin/Manager navigation
+- Normal Users are blocked when directly visiting restricted URLs
+- Admin-submitted content is hidden before approval
+- Manager approval makes content publicly visible
+- Manager task badge appears when pending approvals exist
+- Admin can view submitted content statuses
+- Manager can view reviewed approval history
+- Role-aware login redirect works correctly after logout/login between Admin and Manager accounts
+
+### Test Status
+
+Current test status:
+
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+
+### Next Iteration
+
+Iteration 4 — Ride and Accommodation Details Pages
+
+Expected outcomes:
+
+- Ride details page
+- Accommodation details page
+- Backend endpoints for single item lookup
+- Links from listing cards to detail pages
+- Detail pages should only show approved active content
+- Clean 404 handling for invalid IDs
+- Playwright tests for detail page navigation and not-found states
+

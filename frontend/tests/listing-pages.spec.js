@@ -9,13 +9,13 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
 
     await expect(page.getByTestId("ride-card-1")).toContainText("Dragon Rush Coaster");
     await expect(page.getByTestId("ride-card-2")).toContainText("Pirate Splash Falls");
-    await expect(page.getByTestId("rides-result-count")).toContainText("Showing 4 of 4 rides");
+    await expect(page.getByTestId("rides-result-count")).toContainText(/Showing \d+ of \d+ rides/);
 
     await page.getByTestId("rides-search-input").fill("Dragon");
 
     await expect(page.getByTestId("ride-card-1")).toBeVisible();
     await expect(page.getByText("Pirate Splash Falls")).not.toBeVisible();
-    await expect(page.getByTestId("rides-result-count")).toContainText("Showing 1 of 4 rides");
+    await expect(page.getByTestId("rides-result-count")).toContainText(/Showing 1 of \d+ rides/);
 
     await page.getByTestId("rides-search-input").fill("No ride should match this");
 
@@ -23,7 +23,7 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
 
     await page.getByTestId("rides-clear-filters").click();
 
-    await expect(page.getByTestId("rides-result-count")).toContainText("Showing 4 of 4 rides");
+    await expect(page.getByTestId("rides-result-count")).toContainText(/Showing \d+ of \d+ rides/);
   });
 
   test("rides page supports category, thrill and sort filters", async ({ page }) => {
@@ -57,13 +57,13 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
 
     await expect(page.getByTestId("accommodation-card-1")).toContainText("Castle View Hotel");
     await expect(page.getByTestId("accommodation-card-2")).toContainText("Jungle Lodge");
-    await expect(page.getByTestId("accommodations-result-count")).toContainText("Showing 4 of 4 stays");
+    await expect(page.getByTestId("accommodations-result-count")).toContainText(/Showing \d+ of \d+ stays/);
 
     await page.getByTestId("accommodations-search-input").fill("Jungle");
 
     await expect(page.getByTestId("accommodation-card-2")).toBeVisible();
     await expect(page.getByText("Castle View Hotel")).not.toBeVisible();
-    await expect(page.getByTestId("accommodations-result-count")).toContainText("Showing 1 of 4 stays");
+    await expect(page.getByTestId("accommodations-result-count")).toContainText(/Showing 1 of \d+ stays/);
 
     await page.getByTestId("accommodations-search-input").fill("No stay should match this");
 
@@ -71,7 +71,7 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
 
     await page.getByTestId("accommodations-clear-filters").click();
 
-    await expect(page.getByTestId("accommodations-result-count")).toContainText("Showing 4 of 4 stays");
+    await expect(page.getByTestId("accommodations-result-count")).toContainText(/Showing \d+ of \d+ stays/);
   });
 
   test("accommodation page supports type, guest and sort filters", async ({ page }) => {
@@ -97,3 +97,5 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
     await expect(firstCard).toContainText("Galaxy Resort Suites");
   });
 });
+
+

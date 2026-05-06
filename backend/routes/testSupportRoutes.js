@@ -56,4 +56,63 @@ router.delete("/users/by-email", async (req, res, next) => {
   }
 });
 
+router.delete("/content/by-name", async (req, res, next) => {
+  try {
+    const type = (req.query.type || "").trim().toLowerCase();
+    const name = (req.query.name || "").trim();
+
+    if (!["ride", "accommodation"].includes(type)) {
+      return res.status(400).json({
+        message: "Type must be ride or accommodation",
+      });
+    }
+
+    if (!name) {
+      return res.status(400).json({
+        message: "Name query parameter is required",
+      });
+    }
+
+    const pool = await getPool();
+
+    if (type === "ride") {
+      const result = await pool
+        .request()
+        .input("Name", sql.NVarChar(150), name)
+        .query(`
+          DELETE FROM dbo.Rides
+          WHERE Name = @Name;
+
+          SELECT @@ROWCOUNT AS DeletedCount;
+        `);
+
+      return res.json({
+        message: "Test ride cleanup completed",
+        type,
+        name,
+        deletedCount: result.recordset[0]?.DeletedCount || 0,
+      });
+    }
+
+    const result = await pool
+      .request()
+      .input("Name", sql.NVarChar(150), name)
+      .query(`
+        DELETE FROM dbo.Accommodations
+        WHERE Name = @Name;
+
+        SELECT @@ROWCOUNT AS DeletedCount;
+      `);
+
+    return res.json({
+      message: "Test accommodation cleanup completed",
+      type,
+      name,
+      deletedCount: result.recordset[0]?.DeletedCount || 0,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
 module.exports = router;

@@ -58,4 +58,65 @@ export const api = {
       token,
     });
   },
+
+  async getAdminSubmissions(token) {
+    return request("/admin/submissions", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async submitAdminRide(token, ride) {
+    return request("/admin/rides", {
+      method: "POST",
+      token,
+      body: JSON.stringify(ride),
+    });
+  },
+
+  async submitAdminAccommodation(token, accommodation) {
+    return request("/admin/accommodations", {
+      method: "POST",
+      token,
+      body: JSON.stringify(accommodation),
+    });
+  },
+
+  async getManagerApprovalCount(token) {
+    return request("/manager/approvals/count", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getManagerApprovals(token) {
+    return request("/manager/approvals", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getManagerApprovalHistory(token) {
+    return request("/manager/approvals/history", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async approveManagerApproval(token, itemType, itemId) {
+    return request(`/manager/approvals/${itemType}/${itemId}/approve`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({}),
+    });
+  },
+
+  async rejectManagerApproval(token, itemType, itemId, rejectionReason) {
+    return request(`/manager/approvals/${itemType}/${itemId}/reject`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ rejectionReason }),
+    });
+  },
 };
+

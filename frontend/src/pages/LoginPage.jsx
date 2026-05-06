@@ -2,6 +2,22 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
+function getSafePostLoginPath(fromPath, role) {
+  if (!fromPath || fromPath === "/login" || fromPath === "/register") {
+    return "/dashboard";
+  }
+
+  if (fromPath.startsWith("/admin") && role !== "Admin") {
+    return "/dashboard";
+  }
+
+  if (fromPath.startsWith("/manager") && role !== "Manager") {
+    return "/dashboard";
+  }
+
+  return fromPath;
+}
+
 function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -29,8 +45,10 @@ function LoginPage() {
     setIsSubmitting(true);
 
     try {
-      await login(formData);
-      navigate(fromPath, { replace: true });
+      const result = await login(formData);
+      const safePath = getSafePostLoginPath(fromPath, result.user?.role);
+
+      navigate(safePath, { replace: true });
     } catch (error) {
       setFormError(error.message || "Login failed");
     } finally {

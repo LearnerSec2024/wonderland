@@ -1,7 +1,9 @@
-﻿import { NavLink, Link, useNavigate } from "react-router-dom";
+﻿import { useEffect, useState } from "react";
+import { NavLink, Link, useNavigate } from "react-router-dom";
+import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
-const navItems = [
+const publicNavItems = [
   { to: "/", label: "Home", testId: "nav-home" },
   { to: "/rides", label: "Rides", testId: "nav-rides" },
   { to: "/accommodations", label: "Stays", testId: "nav-accommodations" },
@@ -10,7 +12,26 @@ const navItems = [
 
 function Navbar() {
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { token, user, isAuthenticated, logout } = useAuth();
+  const [pendingCount, setPendingCount] = useState(0);
+
+  useEffect(() => {
+    const loadPendingCount = async () => {
+      if (!token || user?.role !== "Manager") {
+        setPendingCount(0);
+        return;
+      }
+
+      try {
+        const result = await api.getManagerApprovalCount(token);
+        setPendingCount(result.pendingCount || 0);
+      } catch {
+        setPendingCount(0);
+      }
+    };
+
+    loadPendingCount();
+  }, [token, user]);
 
   const linkClass = ({ isActive }) =>
     [
@@ -22,7 +43,7 @@ function Navbar() {
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/login", { replace: true, state: null });
   };
 
   return (
@@ -44,7 +65,7 @@ function Navbar() {
         </Link>
 
         <div className="hidden items-center gap-2 md:flex">
-          {navItems.map((item) => (
+          {publicNavItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
@@ -56,12 +77,28 @@ function Navbar() {
           ))}
 
           {isAuthenticated && (
-            <NavLink
-              to="/profile"
-              className={linkClass}
-              data-testid="nav-profile"
-            >
+            <NavLink to="/profile" className={linkClass} data-testid="nav-profile">
               Profile
+            </NavLink>
+          )}
+
+          {user?.role === "Admin" && (
+            <NavLink to="/admin/content" className={linkClass} data-testid="nav-admin-content">
+              Admin Content
+            </NavLink>
+          )}
+
+          {user?.role === "Manager" && (
+            <NavLink to="/manager/approvals" className={linkClass} data-testid="nav-manager-approvals">
+              Manager Tasks
+              {pendingCount > 0 && (
+                <span
+                  className="ml-2 inline-flex animate-pulse rounded-full bg-pink-400 px-2 py-0.5 text-xs font-black text-slate-950"
+                  data-testid="nav-manager-pending-count"
+                >
+                  {pendingCount}
+                </span>
+              )}
             </NavLink>
           )}
         </div>
@@ -109,3 +146,4 @@ function Navbar() {
 }
 
 export default Navbar;
+
