@@ -107,7 +107,7 @@ test.describe("Wonderland booking history", () => {
     await expect(page.getByTestId("booking-confirmation-items")).toContainText("Dragon Rush Coaster");
     await expect(page.getByTestId("booking-timeline")).toBeVisible();
     await expect(page.getByTestId("booking-timeline-confirmed")).toContainText("Confirmed");
-    await expect(page.getByTestId("booking-cancellation-prep")).toContainText("Cancellation coming soon");
+    await expect(page.getByTestId("booking-cancellation-prep")).toContainText("Cancellation management");
 
     await page.getByTestId("booking-detail-history-link").click();
 
@@ -138,3 +138,4 @@ test.describe("Wonderland booking history", () => {
     await expect(page.getByTestId("booking-history-empty")).toBeVisible();
   });
 });
+

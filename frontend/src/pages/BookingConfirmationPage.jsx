@@ -21,6 +21,9 @@ function BookingConfirmationPage() {
   const [booking, setBooking] = useState(location.state?.booking || null);
   const [loading, setLoading] = useState(!location.state?.booking);
   const [loadError, setLoadError] = useState("");
+  const [cancelMessage, setCancelMessage] = useState("");
+  const [cancelError, setCancelError] = useState("");
+  const [isCancelling, setIsCancelling] = useState(false);
 
   useEffect(() => {
     const loadBooking = async () => {
@@ -40,6 +43,33 @@ function BookingConfirmationPage() {
 
     loadBooking();
   }, [booking, bookingReference, token]);
+
+  const handleCancelBooking = async () => {
+    const confirmed = window.confirm(
+      `Cancel booking ${booking.bookingReference}? This will change the booking status to Cancelled.`
+    );
+
+    if (!confirmed) return;
+
+    try {
+      setIsCancelling(true);
+      setCancelMessage("");
+      setCancelError("");
+
+      const result = await api.cancelBooking(
+        token,
+        booking.bookingReference,
+        "Cancelled by customer from booking details page"
+      );
+
+      setBooking(result.booking);
+      setCancelMessage("Booking cancelled successfully");
+    } catch (error) {
+      setCancelError(error.message || "Failed to cancel booking");
+    } finally {
+      setIsCancelling(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -73,6 +103,7 @@ function BookingConfirmationPage() {
   }
 
   const bookingItems = booking.items || [];
+  const canCancel = booking.status === "Confirmed";
 
   return (
     <main className="mx-auto min-h-[70vh] max-w-7xl px-6 py-14 lg:px-10" data-testid="booking-confirmation-page">
@@ -80,7 +111,7 @@ function BookingConfirmationPage() {
         <p className="font-bold uppercase tracking-[0.25em]">Booking details</p>
         <h1 className="mt-3 text-5xl font-black">Your Wonderland booking</h1>
         <p className="mt-4 max-w-3xl text-lg font-semibold">
-          Reference, status, timeline, confirmed items and future management actions.
+          Reference, status, timeline, confirmed items and booking management actions.
         </p>
       </section>
 
@@ -111,16 +142,29 @@ function BookingConfirmationPage() {
                 testId="booking-timeline-created"
               />
               <TimelineStep
-                title="Status confirmed"
+                title="Current status"
                 detail={booking.status}
                 testId="booking-timeline-confirmed"
               />
               <TimelineStep
-                title="Rewards updated"
-                detail={`+${booking.totalPointsEarned} WonderPoints`}
-                testId="booking-timeline-points"
+                title={booking.status === "Cancelled" ? "Booking cancelled" : "Rewards updated"}
+                detail={
+                  booking.status === "Cancelled"
+                    ? formatDate(booking.cancelledAt)
+                    : `+${booking.totalPointsEarned} WonderPoints`
+                }
+                testId={booking.status === "Cancelled" ? "booking-timeline-cancelled" : "booking-timeline-points"}
               />
             </div>
+
+            {booking.status === "Cancelled" && booking.cancellationReason && (
+              <div
+                className="mt-5 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-bold text-red-700"
+                data-testid="booking-cancellation-reason"
+              >
+                Reason: {booking.cancellationReason}
+              </div>
+            )}
           </section>
 
           <div className="mt-8 grid gap-4" data-testid="booking-confirmation-items">
@@ -158,18 +202,49 @@ function BookingConfirmationPage() {
             className="mt-6 rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-900"
             data-testid="booking-cancellation-prep"
           >
-            <p className="font-black">Cancellation coming soon</p>
+            <p className="font-black">Cancellation management</p>
             <p className="mt-2 text-sm font-semibold">
-              A future iteration will add cancellation rules, audit history and status changes.
+              Confirmed bookings can be cancelled from this page. Cancelled bookings remain visible in booking history.
             </p>
-            <button
-              type="button"
-              disabled
-              className="mt-4 w-full rounded-xl bg-yellow-200 px-4 py-3 font-black text-yellow-900"
-              data-testid="booking-cancel-disabled"
-            >
-              Cancel booking coming soon
-            </button>
+
+            {cancelMessage && (
+              <div
+                className="mt-4 rounded-xl bg-emerald-100 p-3 text-sm font-black text-emerald-800"
+                data-testid="booking-cancel-message"
+              >
+                {cancelMessage}
+              </div>
+            )}
+
+            {cancelError && (
+              <div
+                className="mt-4 rounded-xl bg-red-100 p-3 text-sm font-black text-red-800"
+                data-testid="booking-cancel-error"
+              >
+                {cancelError}
+              </div>
+            )}
+
+            {canCancel ? (
+              <button
+                type="button"
+                onClick={handleCancelBooking}
+                disabled={isCancelling}
+                className="mt-4 w-full rounded-xl bg-red-500 px-4 py-3 font-black text-white disabled:bg-slate-300"
+                data-testid="booking-cancel-button"
+              >
+                {isCancelling ? "Cancelling..." : "Cancel booking"}
+              </button>
+            ) : (
+              <button
+                type="button"
+                disabled
+                className="mt-4 w-full rounded-xl bg-slate-200 px-4 py-3 font-black text-slate-500"
+                data-testid="booking-cancel-disabled"
+              >
+                Booking already cancelled
+              </button>
+            )}
           </section>
 
           <Link

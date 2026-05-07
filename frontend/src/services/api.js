@@ -142,6 +142,14 @@ export const api = {
     });
   },
 
+  async cancelBooking(token, bookingReference, cancellationReason) {
+    return request(`/bookings/${bookingReference}/cancel`, {
+      method: "POST",
+      token,
+      body: JSON.stringify({ cancellationReason }),
+    });
+  },
+
   async getMyBookings(token) {
     return request("/bookings/my", {
       method: "GET",
@@ -149,3 +157,4 @@ export const api = {
     });
   },
 };
+

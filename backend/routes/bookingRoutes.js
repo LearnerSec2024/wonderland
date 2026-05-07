@@ -55,6 +55,8 @@ function mapBookingRow(row, items = []) {
     visitDate: toDateOnly(row.VisitDate),
     customerNotes: row.CustomerNotes,
     createdAt: toIsoString(row.CreatedAt),
+    cancelledAt: toIsoString(row.CancelledAt),
+    cancellationReason: row.CancellationReason,
     items,
   };
 }
@@ -75,6 +77,33 @@ function mapBookingItemRow(row) {
   };
 }
 
+async function getBookingItems(poolOrTransaction, bookingId) {
+  const request = poolOrTransaction instanceof sql.Transaction
+    ? new sql.Request(poolOrTransaction)
+    : poolOrTransaction.request();
+
+  const result = await request
+    .input("BookingId", sql.Int, bookingId)
+    .query(`
+      SELECT
+        BookingItemId,
+        ItemType,
+        RideId,
+        AccommodationId,
+        ItemName,
+        UnitPrice,
+        Quantity,
+        GuestCount,
+        Subtotal,
+        PointsEarned
+      FROM dbo.BookingItems
+      WHERE BookingId = @BookingId
+      ORDER BY BookingItemId;
+    `);
+
+  return result.recordset.map((row) => mapBookingItemRow(row));
+}
+
 router.get("/my", async (req, res, next) => {
   try {
     const pool = await getPool();
@@ -93,7 +122,9 @@ router.get("/my", async (req, res, next) => {
           TotalPointsEarned,
           VisitDate,
           CustomerNotes,
-          CreatedAt
+          CreatedAt,
+          CancelledAt,
+          CancellationReason
         FROM dbo.Bookings
         WHERE UserId = @UserId
         ORDER BY CreatedAt DESC;
@@ -126,7 +157,9 @@ router.get("/:bookingReference", async (req, res, next) => {
           TotalPointsEarned,
           VisitDate,
           CustomerNotes,
-          CreatedAt
+          CreatedAt,
+          CancelledAt,
+          CancellationReason
         FROM dbo.Bookings
         WHERE UserId = @UserId
           AND BookingReference = @BookingReference;
@@ -139,34 +172,127 @@ router.get("/:bookingReference", async (req, res, next) => {
     }
 
     const booking = bookingResult.recordset[0];
-
-    const itemsResult = await pool
-      .request()
-      .input("BookingId", sql.Int, booking.BookingId)
-      .query(`
-        SELECT
-          BookingItemId,
-          ItemType,
-          RideId,
-          AccommodationId,
-          ItemName,
-          UnitPrice,
-          Quantity,
-          GuestCount,
-          Subtotal,
-          PointsEarned
-        FROM dbo.BookingItems
-        WHERE BookingId = @BookingId
-        ORDER BY BookingItemId;
-      `);
+    const items = await getBookingItems(pool, booking.BookingId);
 
     res.json({
-      booking: mapBookingRow(
-        booking,
-        itemsResult.recordset.map((row) => mapBookingItemRow(row))
-      ),
+      booking: mapBookingRow(booking, items),
     });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.post("/:bookingReference/cancel", async (req, res, next) => {
+  const pool = await getPool();
+  const transaction = new sql.Transaction(pool);
+
+  try {
+    const cancellationReason =
+      req.body?.cancellationReason || "Cancelled by customer";
+
+    await transaction.begin();
+
+    const bookingResult = await new sql.Request(transaction)
+      .input("UserId", sql.Int, req.user.userId)
+      .input("BookingReference", sql.NVarChar(50), req.params.bookingReference)
+      .query(`
+        SELECT
+          BookingId,
+          BookingReference,
+          UserId,
+          Status,
+          BasketItemCount,
+          TotalAmount,
+          TotalPointsEarned,
+          VisitDate,
+          CustomerNotes,
+          CreatedAt,
+          CancelledAt,
+          CancellationReason
+        FROM dbo.Bookings
+        WHERE UserId = @UserId
+          AND BookingReference = @BookingReference;
+      `);
+
+    if (bookingResult.recordset.length === 0) {
+      await transaction.rollback();
+      return res.status(404).json({
+        message: "Booking not found",
+      });
+    }
+
+    const existingBooking = bookingResult.recordset[0];
+
+    if (existingBooking.Status === "Cancelled") {
+      await transaction.rollback();
+      return res.status(400).json({
+        message: "Booking is already cancelled",
+      });
+    }
+
+    if (existingBooking.Status !== "Confirmed") {
+      await transaction.rollback();
+      return res.status(400).json({
+        message: "Only confirmed bookings can be cancelled",
+      });
+    }
+
+    const updateResult = await new sql.Request(transaction)
+      .input("BookingId", sql.Int, existingBooking.BookingId)
+      .input("CancellationReason", sql.NVarChar(1000), cancellationReason)
+      .query(`
+        UPDATE dbo.Bookings
+        SET
+          Status = 'Cancelled',
+          CancelledAt = SYSDATETIME(),
+          CancellationReason = @CancellationReason
+        OUTPUT
+          INSERTED.BookingId,
+          INSERTED.BookingReference,
+          INSERTED.UserId,
+          INSERTED.Status,
+          INSERTED.BasketItemCount,
+          INSERTED.TotalAmount,
+          INSERTED.TotalPointsEarned,
+          INSERTED.VisitDate,
+          INSERTED.CustomerNotes,
+          INSERTED.CreatedAt,
+          INSERTED.CancelledAt,
+          INSERTED.CancellationReason
+        WHERE BookingId = @BookingId;
+      `);
+
+    if (existingBooking.TotalPointsEarned > 0) {
+      await new sql.Request(transaction)
+        .input("UserId", sql.Int, req.user.userId)
+        .input("TotalPointsEarned", sql.Int, existingBooking.TotalPointsEarned)
+        .query(`
+          UPDATE dbo.Users
+          SET TotalPoints =
+            CASE
+              WHEN TotalPoints - @TotalPointsEarned < 0 THEN 0
+              ELSE TotalPoints - @TotalPointsEarned
+            END
+          WHERE UserId = @UserId;
+        `);
+    }
+
+    const updatedBooking = updateResult.recordset[0];
+    const items = await getBookingItems(transaction, updatedBooking.BookingId);
+
+    await transaction.commit();
+
+    res.json({
+      message: "Booking cancelled successfully",
+      booking: mapBookingRow(updatedBooking, items),
+    });
+  } catch (error) {
+    try {
+      await transaction.rollback();
+    } catch {
+      // Ignore rollback failure
+    }
+
     next(error);
   }
 });
@@ -314,7 +440,9 @@ router.post("/checkout", async (req, res, next) => {
           INSERTED.TotalPointsEarned,
           INSERTED.VisitDate,
           INSERTED.CustomerNotes,
-          INSERTED.CreatedAt
+          INSERTED.CreatedAt,
+          INSERTED.CancelledAt,
+          INSERTED.CancellationReason
         VALUES
           (
             @BookingReference,

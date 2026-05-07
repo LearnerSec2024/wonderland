@@ -3494,3 +3494,241 @@ Expected outcomes:
 - Prepare audit trail for future admin reporting
 - Playwright tests for cancellation flow and status updates
 
+
+---
+
+## Iteration 9 Completed: Booking Cancellation Workflow
+
+Wonderland now supports customer booking cancellation for confirmed bookings.
+
+This iteration extends the booking management workflow by allowing users to cancel their own confirmed bookings, while keeping cancelled bookings visible in booking history and booking details.
+
+---
+
+### Completed
+
+- Booking cancellation backend API added
+- Confirmed bookings can now be cancelled
+- Already cancelled bookings cannot be cancelled again
+- Booking status updates from Confirmed to Cancelled
+- CancelledAt is recorded
+- CancellationReason is recorded
+- Booking detail page now supports cancellation
+- Cancellation warning confirmation added
+- Cancel button is disabled after cancellation
+- Cancelled bookings remain visible in booking history
+- Booking history filter now supports Cancelled status
+- Booking detail timeline shows cancelled status
+- WonderPoints are reversed when a booking is cancelled
+- GitHub Actions workflow updated to run Iteration 9 SQL migration
+- Playwright tests added for cancellation flow and duplicate cancellation prevention
+
+No new database tables were added in this iteration.
+
+---
+
+### Database Changes
+
+Iteration 9 added cancellation fields to the existing table:
+
+    dbo.Bookings
+
+New columns:
+
+- CancelledAt
+- CancellationReason
+
+These fields prepare the app for future audit and admin reporting features.
+
+Example booking lifecycle:
+
+    Confirmed
+        ?
+    Cancelled
+
+---
+
+### New Backend API
+
+Booking cancellation API added:
+
+    POST /api/bookings/:bookingReference/cancel
+
+The API:
+
+- Requires authentication
+- Only allows the booking owner to cancel their booking
+- Allows cancellation only when Status = Confirmed
+- Updates booking status to Cancelled
+- Sets CancelledAt
+- Sets CancellationReason
+- Prevents duplicate cancellation
+- Reverses earned WonderPoints from the user account
+- Returns the updated booking
+
+If a booking is already cancelled, the API returns:
+
+    400 Booking is already cancelled
+
+---
+
+### Booking Details Page Updates
+
+The existing booking confirmation/details page now supports cancellation management.
+
+Route:
+
+    /booking-confirmation/:bookingReference
+
+The booking details page now displays:
+
+- Current booking status
+- Booking timeline
+- Cancellation management section
+- Cancel booking button for confirmed bookings
+- Disabled cancellation button for cancelled bookings
+- Cancellation reason after cancellation
+- Cancelled timeline event after cancellation
+
+---
+
+### Cancellation Warning
+
+Before cancelling a booking, the user sees a browser confirmation warning.
+
+Example:
+
+    Cancel booking WB-...? This will change the booking status to Cancelled.
+
+If the user cancels the warning, the booking remains Confirmed.
+
+If the user accepts the warning, the booking status changes to Cancelled.
+
+---
+
+### Booking History Updates
+
+Cancelled bookings remain visible in booking history.
+
+Route:
+
+    /bookings/history
+
+Booking history now supports filtering by:
+
+- Confirmed
+- Cancelled
+
+Cancelled bookings can still be opened from history to view the full booking detail page.
+
+---
+
+### WonderPoints Reversal
+
+When a confirmed booking is cancelled:
+
+- The booking remains in history
+- The booking status changes to Cancelled
+- The user’s earned WonderPoints from that booking are reversed
+- TotalPoints is protected from going below zero
+
+This keeps the reward balance aligned with booking status.
+
+---
+
+### GitHub Actions / CI Update
+
+GitHub Actions now runs the Iteration 9 SQL migration:
+
+    backend/sql/iteration-9-booking-cancellation.sql
+
+This ensures CI adds the cancellation columns before Playwright tests run.
+
+---
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- User can cancel a confirmed booking
+- Cancellation confirmation warning appears
+- Booking status changes from Confirmed to Cancelled
+- Cancellation success message appears
+- Cancellation timeline appears
+- Cancellation reason appears
+- Cancel button becomes disabled after cancellation
+- Cancelled booking appears in booking history
+- Booking history can filter by Cancelled status
+- Cancelled booking can still be opened from booking history
+- Backend prevents cancelling the same booking twice
+
+Existing booking history tests were updated to expect the new cancellation management section.
+
+---
+
+### Manual Testing Completed
+
+Manual testing confirmed:
+
+- Confirmed booking can be cancelled
+- Warning appears before cancellation
+- Cancelling the warning leaves booking as Confirmed
+- Accepting the warning changes status to Cancelled
+- Cancel button is disabled after cancellation
+- Cancelled booking appears in booking history
+- Cancelled filter works
+- Cancelled booking details can be opened from history
+- SQL Server shows Status = Cancelled
+- CancelledAt is populated
+- CancellationReason is populated
+
+---
+
+### Test Status
+
+Current test status:
+
+    Manual testing: Passed
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+- Iteration 7 — Booking history and dashboard/profile integration
+- Iteration 8 — Booking management enhancements
+- Iteration 9 — Booking cancellation workflow
+
+---
+
+### Next Iteration
+
+Iteration 10 — Admin and Manager Booking Visibility
+
+Expected outcomes:
+
+- Admin can view all customer bookings
+- Manager can view booking activity summary
+- Admin/Manager booking search and filters
+- Booking detail visibility for Admin/Manager
+- Role-based backend booking visibility APIs
+- Admin/Manager dashboard booking widgets
+- Prepare for future reporting and audit trail
+- Playwright tests for Admin/Manager booking visibility
+

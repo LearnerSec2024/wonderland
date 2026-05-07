@@ -90,6 +90,7 @@ jobs:
           docker cp backend/sql/iteration-3-6-profile-seed-employees.sql "$SQL_CONTAINER":/tmp/iteration-3-6-profile-seed-employees.sql
           docker cp backend/sql/iteration-3-7-approval-workflow.sql "$SQL_CONTAINER":/tmp/iteration-3-7-approval-workflow.sql
           docker cp backend/sql/iteration-6-checkout-bookings.sql "$SQL_CONTAINER":/tmp/iteration-6-checkout-bookings.sql
+          docker cp backend/sql/iteration-9-booking-cancellation.sql "$SQL_CONTAINER":/tmp/iteration-9-booking-cancellation.sql
 
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
@@ -98,6 +99,7 @@ jobs:
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-6-profile-seed-employees.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-7-approval-workflow.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-6-checkout-bookings.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-9-booking-cancellation.sql
 
       - name: Run Playwright tests
         run: npm run test:e2e
@@ -109,4 +111,5 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 7
+
 
