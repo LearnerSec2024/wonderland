@@ -5,7 +5,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 
-const { getPool } = require("./config/db");
+const { sql, getPool } = require("./config/db");
 const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const adminContentRoutes = require("./routes/adminContentRoutes");
@@ -92,6 +92,52 @@ app.get("/api/rides", async (req, res, next) => {
   }
 });
 
+app.get("/api/rides/:rideId", async (req, res, next) => {
+  try {
+    const rideId = Number(req.params.rideId);
+
+    if (!Number.isInteger(rideId) || rideId <= 0) {
+      return res.status(400).json({
+        message: "Ride id must be a positive number",
+      });
+    }
+
+    const pool = await getPool();
+
+    const result = await pool
+      .request()
+      .input("RideId", sql.Int, rideId)
+      .query(`
+        SELECT
+          RideId,
+          Name,
+          Description,
+          Category,
+          ThrillLevel,
+          MinimumHeightCm,
+          MinimumAgeYears,
+          RequiresAdultSupervision,
+          Price,
+          PointsEarned,
+          ImageUrl
+        FROM dbo.Rides
+        WHERE RideId = @RideId
+          AND IsActive = 1
+          AND ApprovalStatus = 'Approved';
+      `);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({
+        message: "Ride not found",
+      });
+    }
+
+    res.json(result.recordset[0]);
+  } catch (error) {
+    next(error);
+  }
+});
+
 app.get("/api/accommodations", async (req, res, next) => {
   try {
     const pool = await getPool();
@@ -114,6 +160,50 @@ app.get("/api/accommodations", async (req, res, next) => {
     `);
 
     res.json(result.recordset);
+  } catch (error) {
+    next(error);
+  }
+});
+
+app.get("/api/accommodations/:accommodationId", async (req, res, next) => {
+  try {
+    const accommodationId = Number(req.params.accommodationId);
+
+    if (!Number.isInteger(accommodationId) || accommodationId <= 0) {
+      return res.status(400).json({
+        message: "Accommodation id must be a positive number",
+      });
+    }
+
+    const pool = await getPool();
+
+    const result = await pool
+      .request()
+      .input("AccommodationId", sql.Int, accommodationId)
+      .query(`
+        SELECT
+          AccommodationId,
+          Name,
+          Description,
+          Type,
+          PricePerNight,
+          MaxGuests,
+          MinimumLeadGuestAgeYears,
+          IsFamilyFriendly,
+          ImageUrl
+        FROM dbo.Accommodations
+        WHERE AccommodationId = @AccommodationId
+          AND IsActive = 1
+          AND ApprovalStatus = 'Approved';
+      `);
+
+    if (result.recordset.length === 0) {
+      return res.status(404).json({
+        message: "Accommodation not found",
+      });
+    }
+
+    res.json(result.recordset[0]);
   } catch (error) {
     next(error);
   }

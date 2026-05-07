@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 function RidesPage() {
@@ -78,7 +79,7 @@ function RidesPage() {
         </p>
         <h1 className="mt-3 text-5xl font-black">Rides</h1>
         <p className="mt-4 max-w-3xl text-lg text-white/85">
-          Search, filter and sort Wonderland rides. This page is intentionally clean and test-friendly for Playwright automation.
+          Search, filter and sort Wonderland rides. Open a ride to view eligibility, points and pricing details.
         </p>
       </section>
 
@@ -239,6 +240,11 @@ function RideCard({ ride }) {
           {ride.Description}
         </p>
 
+        <div className="mt-5 grid gap-2 text-sm font-bold text-slate-600">
+          <span>Minimum age: {ride.MinimumAgeYears}+ years</span>
+          <span>Minimum height: {ride.MinimumHeightCm} cm</span>
+        </div>
+
         <div className="mt-5 flex items-center justify-between">
           <span className="text-xl font-black">${Number(ride.Price).toFixed(2)}</span>
           <span className="rounded-full bg-yellow-100 px-3 py-1 text-sm font-bold text-yellow-800">
@@ -246,14 +252,13 @@ function RideCard({ ride }) {
           </span>
         </div>
 
-        <button
-          type="button"
-          disabled
-          className="mt-5 w-full rounded-2xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-500"
-          data-testid={`ride-book-soon-${ride.RideId}`}
+        <Link
+          to={`/rides/${ride.RideId}`}
+          className="mt-5 block w-full rounded-2xl bg-purple-600 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-purple-700"
+          data-testid={`ride-details-link-${ride.RideId}`}
         >
-          Booking coming soon
-        </button>
+          View details
+        </Link>
       </div>
     </article>
   );

@@ -24,7 +24,7 @@ test.describe("Wonderland app shell smoke tests", () => {
     await page.getByTestId("nav-accommodations").click();
     await expect(page).toHaveURL(/\/accommodations$/);
     await expect(page.getByTestId("accommodations-page")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Accommodation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Accommodation", level: 1, exact: true })).toBeVisible();
 
     await page.getByTestId("nav-login").click();
     await expect(page).toHaveURL(/\/login$/);
@@ -79,3 +79,4 @@ test.describe("Wonderland app shell smoke tests", () => {
     await expect(page.getByTestId("register-submit-button")).toBeVisible();
   });
 });
+

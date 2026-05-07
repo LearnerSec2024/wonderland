@@ -1,4 +1,5 @@
 ﻿import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 
 function AccommodationsPage() {
@@ -231,6 +232,11 @@ function AccommodationCard({ stay }) {
           {stay.Description}
         </p>
 
+        <div className="mt-5 grid gap-2 text-sm font-bold text-slate-600">
+          <span>Lead guest age: {stay.MinimumLeadGuestAgeYears}+</span>
+          <span>{stay.IsFamilyFriendly ? "Family friendly" : "Premium adult-focused stay"}</span>
+        </div>
+
         <div className="mt-5 flex items-center justify-between">
           <span className="text-xl font-black">
             ${Number(stay.PricePerNight).toFixed(2)}
@@ -240,14 +246,13 @@ function AccommodationCard({ stay }) {
           </span>
         </div>
 
-        <button
-          type="button"
-          disabled
-          className="mt-5 w-full rounded-2xl bg-slate-200 px-4 py-3 text-sm font-black text-slate-500"
-          data-testid={`accommodation-book-soon-${stay.AccommodationId}`}
+        <Link
+          to={`/accommodations/${stay.AccommodationId}`}
+          className="mt-5 block w-full rounded-2xl bg-cyan-500 px-4 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-cyan-400"
+          data-testid={`accommodation-details-link-${stay.AccommodationId}`}
         >
-          Booking coming soon
-        </button>
+          View details
+        </Link>
       </div>
     </article>
   );

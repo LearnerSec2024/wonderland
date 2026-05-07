@@ -53,7 +53,7 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
     await page.goto("/accommodations");
 
     await expect(page.getByTestId("accommodations-page")).toBeVisible();
-    await expect(page.getByRole("heading", { name: "Accommodation" })).toBeVisible();
+    await expect(page.getByRole("heading", { name: "Accommodation", level: 1, exact: true })).toBeVisible();
 
     await expect(page.getByTestId("accommodation-card-1")).toContainText("Castle View Hotel");
     await expect(page.getByTestId("accommodation-card-2")).toContainText("Jungle Lodge");
@@ -97,5 +97,6 @@ test.describe("Wonderland rides and accommodation listing pages", () => {
     await expect(firstCard).toContainText("Galaxy Resort Suites");
   });
 });
+
 
 

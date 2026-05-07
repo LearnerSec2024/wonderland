@@ -2256,3 +2256,222 @@ Expected outcomes:
 - Clean 404 handling for invalid IDs
 - Playwright tests for detail page navigation and not-found states
 
+
+---
+
+## Iteration 4 Completed: Ride and Accommodation Details Pages
+
+Wonderland now includes public detail pages for approved rides and accommodation.
+
+### Completed
+
+- Ride details page added
+- Accommodation details page added
+- Backend single-item lookup endpoints added
+- Listing cards now link to detail pages
+- Detail pages only show approved active content
+- Clean not-found handling added for invalid IDs
+- Playwright tests added for detail page navigation and not-found states
+
+---
+
+### Ride Details Page
+
+New route:
+
+    /rides/:rideId
+
+Example:
+
+    /rides/1
+
+The ride details page displays:
+
+- Ride name
+- Description
+- Category
+- Thrill level
+- Minimum age
+- Minimum height
+- Adult supervision requirement
+- Price
+- WonderPoints earned
+- Booking coming soon message
+- Back to rides link
+
+This page prepares the app for future booking basket functionality, where users will later be able to add rides to a basket and validate rider age/height eligibility.
+
+---
+
+### Accommodation Details Page
+
+New route:
+
+    /accommodations/:accommodationId
+
+Example:
+
+    /accommodations/1
+
+The accommodation details page displays:
+
+- Accommodation name
+- Description
+- Stay type
+- Maximum guests
+- Minimum lead guest age
+- Family-friendly indicator
+- Price per night
+- Booking coming soon message
+- Back to stays link
+
+This page prepares the app for future accommodation booking functionality, where users will later be able to select dates, guest counts and validate lead guest age rules.
+
+---
+
+### Backend API Changes
+
+New public API endpoints added:
+
+    GET /api/rides/:rideId
+    GET /api/accommodations/:accommodationId
+
+These endpoints return a single approved active ride or accommodation record.
+
+The existing list endpoints remain:
+
+    GET /api/rides
+    GET /api/accommodations
+
+The single-item endpoints follow the same public visibility rule as the list endpoints.
+
+Only records with the following values are returned publicly:
+
+    IsActive = 1
+    ApprovalStatus = Approved
+
+This prevents pending or rejected Admin-submitted content from being viewed directly by guessing a URL.
+
+---
+
+### Listing Page Changes
+
+Ride cards now include:
+
+    View details
+
+which links to:
+
+    /rides/:rideId
+
+Accommodation cards now include:
+
+    View details
+
+which links to:
+
+    /accommodations/:accommodationId
+
+This creates a realistic user journey:
+
+    Browse list
+    Open details
+    Review item information
+    Return to list
+    Future step: add to booking basket
+
+---
+
+### Not-Found Handling
+
+Invalid or unavailable detail URLs now show friendly not-found states.
+
+Examples:
+
+    /rides/999999
+    /accommodations/999999
+
+Expected behaviour:
+
+- User sees a clean not-found message
+- App does not crash
+- User can navigate back to the relevant listing page
+
+Ride not-found message explains that the ride may not exist, may be inactive, or may still be waiting for Manager approval.
+
+Accommodation not-found message follows the same pattern.
+
+---
+
+### Playwright Tests Added / Updated
+
+New detail-page tests cover:
+
+- User can open a ride details page from the rides listing
+- Ride details page displays expected ride information
+- Ride details back link returns to the rides listing
+- Invalid ride ID shows a clean not-found state
+- User can open an accommodation details page from the stays listing
+- Accommodation details page displays expected accommodation information
+- Accommodation details back link returns to the accommodation listing
+- Invalid accommodation ID shows a clean not-found state
+
+Existing listing and app shell tests were also adjusted to better support dynamic CMS-approved content.
+
+### Playwright Locator Improvements
+
+Some tests were updated to use more precise locators.
+
+For example, accommodation page heading checks now target the page-level H1 instead of matching any heading that contains the word “Accommodation”.
+
+Improved pattern:
+
+    page.getByRole("heading", { name: "Accommodation", level: 1, exact: true })
+
+This prevents strict-mode failures when approved accommodation content contains “Accommodation” in item titles.
+
+---
+
+### Test Status
+
+Current test status:
+
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+
+---
+
+### Next Iteration
+
+Iteration 5 — Booking Basket
+
+Expected outcomes:
+
+- Add ride to basket
+- Add accommodation to basket
+- Basket count in navbar
+- Basket page
+- Update ride quantity or guest count
+- Remove basket item
+- Persist basket in frontend state or local storage initially
+- Prepare for future checkout and booking confirmation flow
+- Playwright tests for basket add/update/remove flows
+

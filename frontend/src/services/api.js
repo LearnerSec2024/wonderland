@@ -27,8 +27,16 @@ export const api = {
     return request("/rides");
   },
 
+  async getRideById(rideId) {
+    return request(`/rides/${rideId}`);
+  },
+
   async getAccommodations() {
     return request("/accommodations");
+  },
+
+  async getAccommodationById(accommodationId) {
+    return request(`/accommodations/${accommodationId}`);
   },
 
   async registerUser(userDetails) {
@@ -119,4 +127,5 @@ export const api = {
     });
   },
 };
+
 
