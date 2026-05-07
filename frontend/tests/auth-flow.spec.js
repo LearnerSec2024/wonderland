@@ -21,7 +21,7 @@ test.describe("Wonderland frontend authentication flow", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByTestId("dashboard-page")).toBeVisible();
     await expect(page.getByTestId("dashboard-user-email")).toContainText(email);
-    await expect(page.getByTestId("dashboard-user-name")).toContainText(firstName);
+    await expect(page.getByRole("heading", { name: new RegExp(`Welcome back, ${firstName}`) })).toBeVisible();
     await expect(page.getByTestId("dashboard-user-role")).toContainText("User");
     await expect(page.getByTestId("nav-user-greeting")).toContainText(firstName);
 
@@ -37,7 +37,7 @@ test.describe("Wonderland frontend authentication flow", () => {
     await expect(page).toHaveURL(/\/dashboard$/);
     await expect(page.getByTestId("dashboard-page")).toBeVisible();
     await expect(page.getByTestId("dashboard-user-email")).toContainText(email);
-    await expect(page.getByTestId("dashboard-total-points")).toContainText("0");
+    await expect(page.getByTestId("dashboard-user-points")).toContainText("0");
     await expect(page.getByTestId("dashboard-user-role")).toContainText("User");
   });
 
@@ -52,3 +52,4 @@ test.describe("Wonderland frontend authentication flow", () => {
     await expect(page.getByTestId("login-error")).toContainText("Invalid email or password");
   });
 });
+

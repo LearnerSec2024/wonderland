@@ -3039,3 +3039,210 @@ Expected outcomes:
 - Display booking reference, status, visit date, total and points
 - Playwright tests for booking history visibility after checkout
 
+
+---
+
+## Iteration 7 Completed: Booking History and Dashboard/Profile Integration
+
+Wonderland now includes booking history visibility across the user dashboard, profile page, and booking history page.
+
+This iteration builds on Iteration 6 booking persistence and makes confirmed bookings visible to users after checkout.
+
+---
+
+### Completed
+
+- User dashboard now shows recent bookings
+- Profile page now links to booking history
+- Booking history page added
+- Booking history route added:
+
+    /bookings/history
+
+- Booking details can be opened from booking history
+- Existing booking confirmation page is reused as the booking detail view
+- Booking history uses existing persisted booking data from SQL Server
+- Playwright tests added for booking history after checkout
+- Existing auth flow tests updated to match the new dashboard layout
+
+---
+
+### Dashboard Updates
+
+The dashboard now includes:
+
+- Logged-in user email
+- User role
+- WonderPoints
+- Recent bookings section
+- Link to view all bookings
+- Quick actions:
+  - View profile
+  - Browse rides
+  - Browse stays
+
+Recent bookings show:
+
+- Booking reference
+- Booking status
+- Visit date
+- Booking date
+- Total amount
+- WonderPoints earned
+- Link to view booking details
+
+If the user has no bookings, the dashboard shows an empty recent bookings message.
+
+---
+
+### Profile Page Updates
+
+The profile page now includes a booking history section.
+
+New profile action:
+
+    View booking history
+
+This links to:
+
+    /bookings/history
+
+The profile page remains protected and only visible to authenticated users.
+
+---
+
+### Booking History Page
+
+New route:
+
+    /bookings/history
+
+The booking history page displays all recent bookings for the logged-in user.
+
+Each booking card displays:
+
+- Booking reference
+- Status
+- Visit date
+- Booking created date
+- Total amount
+- WonderPoints earned
+- Basket item count
+- View booking details link
+
+If the user has no bookings, the page shows a friendly empty state with links to browse rides and accommodation.
+
+---
+
+### Booking Details from History
+
+The existing booking confirmation page is reused as the booking detail page.
+
+Route:
+
+    /booking-confirmation/:bookingReference
+
+This means users can open a past booking from history and see:
+
+- Booking reference
+- Status
+- Visit date
+- Total amount
+- WonderPoints earned
+- Ride items
+- Accommodation items
+
+This avoids creating a separate duplicate booking details page.
+
+---
+
+### Backend API Usage
+
+Iteration 7 uses the existing Iteration 6 booking APIs:
+
+    GET /api/bookings/my
+    GET /api/bookings/:bookingReference
+
+No new database tables were added in this iteration.
+
+Booking history reads from:
+
+    dbo.Bookings
+    dbo.BookingItems
+
+---
+
+### Test Updates
+
+Playwright tests now cover:
+
+- Booking appears on dashboard after checkout
+- Dashboard recent bookings section displays booking reference
+- Dashboard recent bookings section displays total and points
+- User can open booking history from dashboard
+- Booking appears on booking history page
+- User can open booking details from history
+- Booking details page displays the same booking reference
+- Profile page links to booking history
+- Booking history empty state appears for a user with no bookings
+
+Existing authentication tests were updated to match the new dashboard layout.
+
+The old dashboard test expected:
+
+    dashboard-user-name
+    dashboard-total-points
+
+The new dashboard uses:
+
+    Welcome back, [FirstName]
+    dashboard-user-points
+
+---
+
+### Test Status
+
+Current test status:
+
+    Manual testing: Passed
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+- Iteration 7 — Booking history and dashboard/profile integration
+
+---
+
+### Next Iteration
+
+Iteration 8 — Booking Management Enhancements
+
+Expected outcomes:
+
+- Booking history filters
+- Booking history search by booking reference
+- Booking status display improvements
+- Booking detail page polish
+- User-friendly booking timeline
+- Admin/Manager visibility preparation for bookings
+- Booking cancellation preparation
+- Playwright tests for booking history filtering/search
+

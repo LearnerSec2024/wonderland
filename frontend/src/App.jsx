@@ -13,6 +13,7 @@ import AccommodationDetailsPage from "./pages/AccommodationDetailsPage";
 import BasketPage from "./pages/BasketPage";
 import CheckoutPage from "./pages/CheckoutPage";
 import BookingConfirmationPage from "./pages/BookingConfirmationPage";
+import BookingHistoryPage from "./pages/BookingHistoryPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -50,6 +51,15 @@ function App() {
               element={
                 <ProtectedRoute>
                   <BookingConfirmationPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/bookings/history"
+              element={
+                <ProtectedRoute>
+                  <BookingHistoryPage />
                 </ProtectedRoute>
               }
             />

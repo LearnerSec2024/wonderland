@@ -1,4 +1,5 @@
 ﻿import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
@@ -60,7 +61,23 @@ function ProfilePage() {
           <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-cyan-300 border-t-transparent" />
           <p className="mt-4 text-white/80">Loading your Wonderland profile...</p>
         </div>
-      </main>
+      
+      <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/10 p-6" data-testid="profile-booking-history-section">
+        <p className="font-bold uppercase tracking-[0.25em] text-cyan-300">Bookings</p>
+        <h2 className="mt-3 text-3xl font-black">Booking history</h2>
+        <p className="mt-3 max-w-3xl text-white/70">
+          View confirmed Wonderland bookings, booking references, visit dates, totals and WonderPoints.
+        </p>
+
+        <Link
+          to="/bookings/history"
+          className="mt-6 inline-flex rounded-full bg-cyan-300 px-6 py-3 font-black text-slate-950"
+          data-testid="profile-booking-history-link"
+        >
+          View booking history
+        </Link>
+      </section>
+    </main>
     );
   }
 
@@ -70,7 +87,23 @@ function ProfilePage() {
         <section className="rounded-[2rem] border border-red-300/40 bg-red-500/15 p-6 text-red-100">
           {loadError}
         </section>
-      </main>
+      
+      <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/10 p-6" data-testid="profile-booking-history-section">
+        <p className="font-bold uppercase tracking-[0.25em] text-cyan-300">Bookings</p>
+        <h2 className="mt-3 text-3xl font-black">Booking history</h2>
+        <p className="mt-3 max-w-3xl text-white/70">
+          View confirmed Wonderland bookings, booking references, visit dates, totals and WonderPoints.
+        </p>
+
+        <Link
+          to="/bookings/history"
+          className="mt-6 inline-flex rounded-full bg-cyan-300 px-6 py-3 font-black text-slate-950"
+          data-testid="profile-booking-history-link"
+        >
+          View booking history
+        </Link>
+      </section>
+    </main>
     );
   }
 
@@ -146,6 +179,22 @@ function ProfilePage() {
           </div>
         </section>
       )}
+    
+      <section className="mt-8 rounded-[2rem] border border-white/10 bg-white/10 p-6" data-testid="profile-booking-history-section">
+        <p className="font-bold uppercase tracking-[0.25em] text-cyan-300">Bookings</p>
+        <h2 className="mt-3 text-3xl font-black">Booking history</h2>
+        <p className="mt-3 max-w-3xl text-white/70">
+          View confirmed Wonderland bookings, booking references, visit dates, totals and WonderPoints.
+        </p>
+
+        <Link
+          to="/bookings/history"
+          className="mt-6 inline-flex rounded-full bg-cyan-300 px-6 py-3 font-black text-slate-950"
+          data-testid="profile-booking-history-link"
+        >
+          View booking history
+        </Link>
+      </section>
     </main>
   );
 }
@@ -168,4 +217,5 @@ function ProfileCard({ label, value, testId, wrap = false }) {
 }
 
 export default ProfilePage;
+
 
