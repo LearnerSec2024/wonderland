@@ -3,6 +3,16 @@ import { Link, useLocation, useParams } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
+function formatDate(value) {
+  if (!value) return "Not set";
+
+  return new Date(value).toLocaleDateString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 function BookingConfirmationPage() {
   const { bookingReference } = useParams();
   const location = useLocation();
@@ -51,24 +61,26 @@ function BookingConfirmationPage() {
           <p className="mt-3">{loadError}</p>
 
           <Link
-            to="/basket"
+            to="/bookings/history"
             className="mt-6 inline-flex rounded-full bg-white px-6 py-3 font-black text-slate-950"
-            data-testid="booking-confirmation-basket-link"
+            data-testid="booking-confirmation-history-link"
           >
-            Back to basket
+            Back to booking history
           </Link>
         </section>
       </main>
     );
   }
 
+  const bookingItems = booking.items || [];
+
   return (
     <main className="mx-auto min-h-[70vh] max-w-7xl px-6 py-14 lg:px-10" data-testid="booking-confirmation-page">
       <section className="rounded-[2rem] bg-gradient-to-br from-emerald-300 via-cyan-400 to-purple-500 p-8 text-slate-950 shadow-2xl">
-        <p className="font-bold uppercase tracking-[0.25em]">Booking confirmed</p>
-        <h1 className="mt-3 text-5xl font-black">Your Wonderland booking is confirmed</h1>
+        <p className="font-bold uppercase tracking-[0.25em]">Booking details</p>
+        <h1 className="mt-3 text-5xl font-black">Your Wonderland booking</h1>
         <p className="mt-4 max-w-3xl text-lg font-semibold">
-          Keep this reference for your future visit.
+          Reference, status, timeline, confirmed items and future management actions.
         </p>
       </section>
 
@@ -87,8 +99,32 @@ function BookingConfirmationPage() {
             <SummaryCard label="WonderPoints" value={`+${booking.totalPointsEarned}`} testId="booking-points" />
           </div>
 
+          <section className="mt-8 rounded-2xl bg-slate-100 p-5" data-testid="booking-timeline">
+            <p className="text-sm font-bold uppercase tracking-wide text-slate-500">
+              Booking timeline
+            </p>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-3">
+              <TimelineStep
+                title="Booking created"
+                detail={formatDate(booking.createdAt)}
+                testId="booking-timeline-created"
+              />
+              <TimelineStep
+                title="Status confirmed"
+                detail={booking.status}
+                testId="booking-timeline-confirmed"
+              />
+              <TimelineStep
+                title="Rewards updated"
+                detail={`+${booking.totalPointsEarned} WonderPoints`}
+                testId="booking-timeline-points"
+              />
+            </div>
+          </section>
+
           <div className="mt-8 grid gap-4" data-testid="booking-confirmation-items">
-            {booking.items.map((item) => (
+            {bookingItems.map((item) => (
               <article
                 key={`${item.itemType}-${item.itemId}-${item.name}`}
                 className="rounded-2xl bg-slate-100 p-5"
@@ -118,9 +154,35 @@ function BookingConfirmationPage() {
             {booking.basketItemCount} basket item{booking.basketItemCount === 1 ? "" : "s"}
           </p>
 
+          <section
+            className="mt-6 rounded-2xl border border-yellow-200 bg-yellow-50 p-4 text-yellow-900"
+            data-testid="booking-cancellation-prep"
+          >
+            <p className="font-black">Cancellation coming soon</p>
+            <p className="mt-2 text-sm font-semibold">
+              A future iteration will add cancellation rules, audit history and status changes.
+            </p>
+            <button
+              type="button"
+              disabled
+              className="mt-4 w-full rounded-xl bg-yellow-200 px-4 py-3 font-black text-yellow-900"
+              data-testid="booking-cancel-disabled"
+            >
+              Cancel booking coming soon
+            </button>
+          </section>
+
+          <Link
+            to="/bookings/history"
+            className="mt-6 inline-flex w-full justify-center rounded-2xl bg-cyan-300 px-5 py-3 font-black text-slate-950"
+            data-testid="booking-detail-history-link"
+          >
+            Back to booking history
+          </Link>
+
           <Link
             to="/rides"
-            className="mt-6 inline-flex w-full justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white"
+            className="mt-3 inline-flex w-full justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white"
             data-testid="booking-confirmation-rides-link"
           >
             Browse more rides
@@ -146,6 +208,15 @@ function SummaryCard({ label, value, testId }) {
       <p className="mt-2 text-xl font-black" data-testid={testId}>
         {value}
       </p>
+    </article>
+  );
+}
+
+function TimelineStep({ title, detail, testId }) {
+  return (
+    <article className="rounded-2xl bg-white p-4" data-testid={testId}>
+      <p className="text-sm font-black text-purple-600">{title}</p>
+      <p className="mt-2 font-bold text-slate-700">{detail}</p>
     </article>
   );
 }

@@ -3246,3 +3246,251 @@ Expected outcomes:
 - Booking cancellation preparation
 - Playwright tests for booking history filtering/search
 
+
+---
+
+## Iteration 8 Completed: Booking Management Enhancements
+
+Wonderland now includes improved booking history management, booking search/filter/sort, summary cards, booking detail polish, timeline display, and cancellation preparation UI.
+
+This iteration improves the user experience around managing confirmed bookings after checkout.
+
+---
+
+### Completed
+
+- Booking history search added
+- Booking history status filter added
+- Booking history sort added
+- Booking history summary cards added
+- Booking history no-results state added
+- Clear filters action added
+- Booking detail page polished
+- Existing booking confirmation page enhanced as a reusable booking details page
+- Booking timeline added
+- Cancellation preparation UI added
+- Back to booking history link added from booking details
+- Playwright tests updated for booking history search/filter/detail polish
+
+No new database tables were added in this iteration.
+
+---
+
+### Booking History Enhancements
+
+Booking history route:
+
+    /bookings/history
+
+The booking history page now includes:
+
+- Total bookings summary
+- Total spend summary
+- WonderPoints earned summary
+- Search by booking reference
+- Filter by booking status
+- Sort options
+- No-results state
+- Clear filters button
+
+Users can now search and manage booking history more easily as more bookings are created.
+
+---
+
+### Booking History Search
+
+Users can search bookings by:
+
+- Booking reference
+- Booking status
+- Total amount
+
+Example:
+
+    WB-...
+
+If no matching booking is found, the page shows a friendly no-results state.
+
+---
+
+### Booking History Filters
+
+Users can filter booking history by status.
+
+Current status:
+
+    Confirmed
+
+This prepares the app for future statuses such as:
+
+    Cancelled
+    Pending
+    Refunded
+
+---
+
+### Booking History Sort Options
+
+Booking history can now be sorted by:
+
+- Newest first
+- Oldest first
+- Highest total
+- Lowest total
+
+This helps users manage larger booking histories over time.
+
+---
+
+### Booking Summary Cards
+
+The booking history page now displays summary cards:
+
+- Total bookings
+- Total spend
+- WonderPoints earned
+
+These are calculated from the logged-in user’s booking history.
+
+---
+
+### Booking Detail Page Polish
+
+The existing booking confirmation page is now also used as a richer booking details page.
+
+Route:
+
+    /booking-confirmation/:bookingReference
+
+It now displays:
+
+- Booking reference
+- Booking status
+- Visit date
+- WonderPoints earned
+- Booking total
+- Confirmed ride/accommodation items
+- Booking timeline
+- Cancellation preparation section
+- Back to booking history link
+- Browse more rides link
+- Back to dashboard link
+
+This avoids duplicating a separate booking details page.
+
+---
+
+### Booking Timeline
+
+A user-friendly booking timeline was added.
+
+The timeline currently shows:
+
+- Booking created
+- Status confirmed
+- Rewards updated
+
+This prepares the booking details page for future lifecycle events such as:
+
+- Booking cancelled
+- Refund requested
+- Refund processed
+- Booking changed
+- Admin review completed
+
+---
+
+### Cancellation Preparation UI
+
+A cancellation preparation section was added to booking details.
+
+Current behaviour:
+
+- Cancellation information is displayed
+- Cancel booking button is disabled
+- The UI explains cancellation is coming soon
+
+This prepares for a future cancellation workflow without enabling cancellation yet.
+
+Future cancellation workflow may include:
+
+- Cancellation rules
+- Cancellation confirmation
+- Status update from Confirmed to Cancelled
+- Audit/history tracking
+- Refund preparation
+- Admin/Manager visibility
+
+---
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- Booking appears on dashboard after checkout
+- Booking appears in booking history
+- Booking history summary cards show count, spend and points
+- Booking history search by booking reference
+- Booking history no-results state
+- Booking history clear filters action
+- Booking history status filter
+- Booking detail page opens from history
+- Booking detail page shows the same booking reference
+- Booking detail page shows confirmed items
+- Booking timeline appears
+- Booking timeline shows Confirmed status
+- Cancellation preparation section appears
+- Back to booking history link works
+- Profile page links to booking history
+- Booking history empty state appears for users with no bookings
+
+---
+
+### Test Status
+
+Current test status:
+
+    Manual testing: Passed
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+- Iteration 7 — Booking history and dashboard/profile integration
+- Iteration 8 — Booking management enhancements
+
+---
+
+### Next Iteration
+
+Iteration 9 — Booking Cancellation Workflow
+
+Expected outcomes:
+
+- Enable booking cancellation for confirmed bookings
+- Add backend cancellation API
+- Update booking status from Confirmed to Cancelled
+- Prevent cancellation of already cancelled bookings
+- Show cancellation confirmation warning
+- Update booking history filters to support Cancelled status
+- Show cancelled bookings in dashboard/history/details
+- Prepare audit trail for future admin reporting
+- Playwright tests for cancellation flow and status updates
+

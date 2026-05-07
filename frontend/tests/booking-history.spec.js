@@ -35,29 +35,33 @@ async function createLoggedInUser(page, request) {
   return authResult.user;
 }
 
+async function completeRideCheckout(page, request) {
+  await createLoggedInUser(page, request);
+
+  await page.goto("/rides/1");
+  await page.getByTestId("ride-details-add-to-basket").click();
+
+  await page.getByTestId("nav-basket").click();
+  await page.getByTestId("basket-checkout-link").click();
+
+  await expect(page.getByTestId("checkout-page")).toBeVisible();
+
+  await page.getByTestId("checkout-visit-date").fill("2026-12-24");
+  await page.getByTestId("checkout-notes").fill("Booking history Playwright test");
+  await page.getByTestId("checkout-submit-button").click();
+
+  await expect(page.getByTestId("booking-confirmation-page")).toBeVisible();
+
+  return (await page.getByTestId("booking-reference").innerText()).trim();
+}
+
 test.describe("Wonderland booking history", () => {
   test.beforeEach(async ({ page }) => {
     await clearBasket(page);
   });
 
   test("booking appears on dashboard and booking history after checkout", async ({ page, request }) => {
-    await createLoggedInUser(page, request);
-
-    await page.goto("/rides/1");
-    await page.getByTestId("ride-details-add-to-basket").click();
-
-    await page.getByTestId("nav-basket").click();
-    await page.getByTestId("basket-checkout-link").click();
-
-    await expect(page.getByTestId("checkout-page")).toBeVisible();
-
-    await page.getByTestId("checkout-visit-date").fill("2026-12-24");
-    await page.getByTestId("checkout-notes").fill("Booking history Playwright test");
-    await page.getByTestId("checkout-submit-button").click();
-
-    await expect(page.getByTestId("booking-confirmation-page")).toBeVisible();
-
-    const bookingReference = (await page.getByTestId("booking-reference").innerText()).trim();
+    const bookingReference = await completeRideCheckout(page, request);
 
     await expect(bookingReference).toMatch(/^WB-/);
 
@@ -74,7 +78,26 @@ test.describe("Wonderland booking history", () => {
     await expect(page).toHaveURL(/\/bookings\/history$/);
     await expect(page.getByTestId("booking-history-page")).toBeVisible();
     await expect(page.getByTestId("booking-history-list")).toContainText(bookingReference);
-    await expect(page.getByTestId("booking-history-list")).toContainText("$45.00");
+    await expect(page.getByTestId("booking-history-total-count")).toContainText("1");
+    await expect(page.getByTestId("booking-history-total-spend")).toContainText("$45.00");
+    await expect(page.getByTestId("booking-history-total-points")).toContainText("+120");
+
+    await page.getByTestId("booking-history-search-input").fill(bookingReference);
+
+    await expect(page.getByTestId("booking-history-filter-count")).toContainText("Showing 1 of 1 bookings");
+    await expect(page.getByTestId("booking-history-list")).toContainText(bookingReference);
+
+    await page.getByTestId("booking-history-status-filter").selectOption("Confirmed");
+
+    await expect(page.getByTestId("booking-history-filter-count")).toContainText("Showing 1 of 1 bookings");
+
+    await page.getByTestId("booking-history-search-input").fill("NO-MATCHING-BOOKING");
+
+    await expect(page.getByTestId("booking-history-no-results")).toBeVisible();
+
+    await page.getByTestId("booking-history-clear-filters").click();
+
+    await expect(page.getByTestId("booking-history-list")).toContainText(bookingReference);
 
     await page.getByTestId(`booking-history-view-${bookingReference}`).click();
 
@@ -82,6 +105,14 @@ test.describe("Wonderland booking history", () => {
     await expect(page.getByTestId("booking-confirmation-page")).toBeVisible();
     await expect(page.getByTestId("booking-reference")).toContainText(bookingReference);
     await expect(page.getByTestId("booking-confirmation-items")).toContainText("Dragon Rush Coaster");
+    await expect(page.getByTestId("booking-timeline")).toBeVisible();
+    await expect(page.getByTestId("booking-timeline-confirmed")).toContainText("Confirmed");
+    await expect(page.getByTestId("booking-cancellation-prep")).toContainText("Cancellation coming soon");
+
+    await page.getByTestId("booking-detail-history-link").click();
+
+    await expect(page).toHaveURL(/\/bookings\/history$/);
+    await expect(page.getByTestId("booking-history-page")).toBeVisible();
   });
 
   test("profile page links to booking history", async ({ page, request }) => {
