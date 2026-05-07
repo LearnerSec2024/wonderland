@@ -10,6 +10,7 @@ const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const adminContentRoutes = require("./routes/adminContentRoutes");
 const managerApprovalRoutes = require("./routes/managerApprovalRoutes");
+const bookingRoutes = require("./routes/bookingRoutes");
 const testSupportRoutes = require("./routes/testSupportRoutes");
 
 const app = express();
@@ -31,6 +32,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminContentRoutes);
 app.use("/api/manager", managerApprovalRoutes);
+app.use("/api/bookings", bookingRoutes);
 
 if (process.env.ENABLE_TEST_SUPPORT === "true") {
   app.use("/api/test-support", testSupportRoutes);
@@ -227,3 +229,4 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Wonderland backend running on http://localhost:${PORT}`);
 });
+

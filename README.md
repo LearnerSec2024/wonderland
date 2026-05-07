@@ -2722,3 +2722,320 @@ Expected outcomes:
 - Booking history preparation for dashboard/profile
 - Playwright tests for checkout and booking confirmation flow
 
+
+---
+
+## Iteration 6 Completed: Checkout and Booking Confirmation
+
+Wonderland now supports authenticated checkout, booking persistence in SQL Server, booking confirmation, and WonderPoints updates.
+
+This iteration moves the app from a frontend-only basket to a real persisted booking workflow.
+
+---
+
+### Completed
+
+- Checkout page added
+- Checkout route added:
+
+    /checkout
+
+- Booking confirmation page added
+- Booking confirmation route added:
+
+    /booking-confirmation/:bookingReference
+
+- Checkout is protected and requires authentication
+- Logged-out users are redirected to Login when trying to checkout
+- Logged-in users can confirm a booking from basket contents
+- Confirmed bookings are saved to SQL Server
+- Booking items are saved to SQL Server
+- Booking reference is generated automatically
+- Booking confirmation page displays confirmed booking details
+- Basket is cleared after successful checkout
+- Ride WonderPoints are added to the user account after checkout
+- Booking history API preparation added
+- GitHub Actions workflow updated to run the Iteration 6 SQL migration
+- Playwright tests added for checkout and booking confirmation
+
+---
+
+### New Database Tables
+
+Iteration 6 added two new SQL Server tables:
+
+    dbo.Bookings
+    dbo.BookingItems
+
+#### dbo.Bookings
+
+Stores the booking/order header.
+
+Important fields:
+
+- BookingId
+- BookingReference
+- UserId
+- Status
+- BasketItemCount
+- TotalAmount
+- TotalPointsEarned
+- VisitDate
+- CustomerNotes
+- CreatedAt
+
+#### dbo.BookingItems
+
+Stores the individual ride and accommodation items inside a booking.
+
+Important fields:
+
+- BookingItemId
+- BookingId
+- ItemType
+- RideId
+- AccommodationId
+- ItemName
+- UnitPrice
+- Quantity
+- GuestCount
+- Subtotal
+- PointsEarned
+- CreatedAt
+
+Relationship:
+
+    Bookings.BookingId
+        ? BookingItems.BookingId
+
+Bookings are also linked to users:
+
+    Users.UserId
+        ? Bookings.UserId
+
+---
+
+### New Backend APIs
+
+Booking APIs added:
+
+    POST /api/bookings/checkout
+    GET  /api/bookings/my
+    GET  /api/bookings/:bookingReference
+
+#### POST /api/bookings/checkout
+
+Creates a confirmed booking from basket items.
+
+The API:
+
+- Requires authentication
+- Validates the basket has items
+- Re-checks ride/accommodation availability from the database
+- Only allows approved active rides/accommodation
+- Recalculates pricing on the backend
+- Creates a booking record
+- Creates booking item records
+- Updates user WonderPoints
+- Returns the confirmed booking
+
+Important design point:
+
+The backend does not blindly trust frontend basket totals. It recalculates prices and points from SQL Server data.
+
+---
+
+### Checkout Page
+
+New route:
+
+    /checkout
+
+The checkout page displays:
+
+- Logged-in user details
+- Basket item summary
+- Visit date field
+- Optional notes field
+- Basket count
+- WonderPoints total
+- Booking total
+- Confirm booking button
+- Back to basket link
+
+Checkout requires a logged-in user.
+
+If a logged-out user tries to checkout, they are redirected to:
+
+    /login
+
+---
+
+### Booking Confirmation Page
+
+New route:
+
+    /booking-confirmation/:bookingReference
+
+Example:
+
+    /booking-confirmation/WB-177...
+
+The confirmation page displays:
+
+- Booking reference
+- Booking status
+- Visit date
+- Total amount
+- Total WonderPoints earned
+- Confirmed ride items
+- Confirmed accommodation items
+- Browse more rides link
+- Back to dashboard link
+
+The booking reference starts with:
+
+    WB-
+
+---
+
+### Basket and Checkout Flow
+
+Expected user journey:
+
+    Add ride to basket
+    Add accommodation to basket
+    Open basket
+    Review basket total
+    Click Checkout
+    Login/register if required
+    Enter visit date
+    Add optional notes
+    Confirm booking
+    Booking saved to SQL Server
+    Booking confirmation page displayed
+    Basket cleared
+    WonderPoints updated
+
+---
+
+### Pricing Behaviour
+
+Ride pricing:
+
+    Ride unit price × quantity
+
+Accommodation pricing continues to use the guest surcharge rule introduced in Iteration 5:
+
+    Base accommodation price
+    + 50% of base price for guest 1
+    + 25% of base price for guest 2
+    + 25% of base price for guest 3
+    + 10% of base price for guest 4
+    + 0% for guest 5 and above
+
+The checkout backend recalculates accommodation pricing to ensure totals are not trusted only from the frontend.
+
+---
+
+### WonderPoints Behaviour
+
+Ride items earn WonderPoints.
+
+During checkout:
+
+- Ride points are calculated from approved ride data
+- Points are multiplied by ride quantity
+- Booking stores TotalPointsEarned
+- User TotalPoints is increased after successful booking
+
+Accommodation currently earns:
+
+    0 points
+
+This can be expanded in a future rewards iteration.
+
+---
+
+### GitHub Actions / CI Update
+
+GitHub Actions now runs the Iteration 6 SQL migration:
+
+    backend/sql/iteration-6-checkout-bookings.sql
+
+This ensures CI creates:
+
+- dbo.Bookings
+- dbo.BookingItems
+
+before running Playwright tests.
+
+---
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- Checkout requires authentication
+- Logged-out user is redirected to Login when trying to checkout
+- Logged-in user can add ride to basket
+- Logged-in user can add accommodation to basket
+- Basket total appears correctly before checkout
+- User can open checkout page
+- Checkout page displays basket summary
+- User can enter visit date and notes
+- User can confirm booking
+- Booking confirmation page appears
+- Booking reference starts with WB-
+- Booking status is Confirmed
+- Booking total is displayed
+- WonderPoints are displayed
+- Confirmed booking items are displayed
+- Basket is empty after successful checkout
+- Basket count disappears after checkout
+
+---
+
+### Test Status
+
+Current test status:
+
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+
+---
+
+### Next Iteration
+
+Iteration 7 — Booking History and Dashboard/Profile Integration
+
+Expected outcomes:
+
+- User dashboard shows recent bookings
+- Profile page links to booking history
+- Booking history page
+- Booking details view from history
+- Backend booking history API refinement if needed
+- Display booking reference, status, visit date, total and points
+- Playwright tests for booking history visibility after checkout
+

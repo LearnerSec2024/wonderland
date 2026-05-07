@@ -126,6 +126,26 @@ export const api = {
       body: JSON.stringify({ rejectionReason }),
     });
   },
+
+  async checkoutBasket(token, checkoutDetails) {
+    return request("/bookings/checkout", {
+      method: "POST",
+      token,
+      body: JSON.stringify(checkoutDetails),
+    });
+  },
+
+  async getBookingByReference(token, bookingReference) {
+    return request(`/bookings/${bookingReference}`, {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getMyBookings(token) {
+    return request("/bookings/my", {
+      method: "GET",
+      token,
+    });
+  },
 };
-
-

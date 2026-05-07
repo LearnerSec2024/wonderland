@@ -11,6 +11,8 @@ import RideDetailsPage from "./pages/RideDetailsPage";
 import AccommodationsPage from "./pages/AccommodationsPage";
 import AccommodationDetailsPage from "./pages/AccommodationDetailsPage";
 import BasketPage from "./pages/BasketPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import BookingConfirmationPage from "./pages/BookingConfirmationPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -33,6 +35,24 @@ function App() {
             <Route path="/basket" element={<BasketPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+
+            <Route
+              path="/checkout"
+              element={
+                <ProtectedRoute>
+                  <CheckoutPage />
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/booking-confirmation/:bookingReference"
+              element={
+                <ProtectedRoute>
+                  <BookingConfirmationPage />
+                </ProtectedRoute>
+              }
+            />
 
             <Route
               path="/dashboard"

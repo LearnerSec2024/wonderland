@@ -88,14 +88,13 @@ function BasketPage() {
               </div>
             </div>
 
-            <button
-              type="button"
-              disabled
-              className="mt-6 w-full rounded-2xl bg-slate-200 px-5 py-3 font-black text-slate-500"
-              data-testid="basket-checkout-disabled"
+            <Link
+              to="/checkout"
+              className="mt-6 inline-flex w-full justify-center rounded-2xl bg-purple-600 px-5 py-3 font-black text-white transition hover:bg-purple-700"
+              data-testid="basket-checkout-link"
             >
-              Checkout coming soon
-            </button>
+              Checkout
+            </Link>
 
             <button
               type="button"
@@ -247,3 +246,4 @@ function BasketItem({
 }
 
 export default BasketPage;
+
