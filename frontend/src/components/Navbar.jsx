@@ -2,17 +2,20 @@
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+import { useBasket } from "../context/BasketContext";
 
 const publicNavItems = [
   { to: "/", label: "Home", testId: "nav-home" },
   { to: "/rides", label: "Rides", testId: "nav-rides" },
   { to: "/accommodations", label: "Stays", testId: "nav-accommodations" },
+  { to: "/basket", label: "Basket", testId: "nav-basket" },
   { to: "/dashboard", label: "Dashboard", testId: "nav-dashboard" },
 ];
 
 function Navbar() {
   const navigate = useNavigate();
   const { token, user, isAuthenticated, logout } = useAuth();
+  const { basketCount } = useBasket();
   const [pendingCount, setPendingCount] = useState(0);
 
   useEffect(() => {
@@ -73,6 +76,14 @@ function Navbar() {
               data-testid={item.testId}
             >
               {item.label}
+              {item.to === "/basket" && basketCount > 0 && (
+                <span
+                  className="ml-2 inline-flex rounded-full bg-cyan-300 px-2 py-0.5 text-xs font-black text-slate-950"
+                  data-testid="nav-basket-count"
+                >
+                  {basketCount}
+                </span>
+              )}
             </NavLink>
           ))}
 
@@ -146,4 +157,3 @@ function Navbar() {
 }
 
 export default Navbar;
-

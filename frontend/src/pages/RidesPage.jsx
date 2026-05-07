@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
+import { useBasket } from "../context/BasketContext";
 
 function RidesPage() {
   const [rides, setRides] = useState([]);
@@ -217,6 +218,14 @@ function RidesPage() {
 }
 
 function RideCard({ ride }) {
+  const { addRide } = useBasket();
+  const [basketMessage, setBasketMessage] = useState("");
+
+  const handleAddToBasket = () => {
+    addRide(ride);
+    setBasketMessage(`${ride.Name} added to basket`);
+  };
+
   return (
     <article
       className="overflow-hidden rounded-[2rem] bg-white text-slate-950 shadow-2xl transition hover:-translate-y-2"
@@ -252,16 +261,40 @@ function RideCard({ ride }) {
           </span>
         </div>
 
-        <Link
-          to={`/rides/${ride.RideId}`}
-          className="mt-5 block w-full rounded-2xl bg-purple-600 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-purple-700"
-          data-testid={`ride-details-link-${ride.RideId}`}
-        >
-          View details
-        </Link>
+        {basketMessage && (
+          <p
+            className="mt-4 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-800"
+            data-testid={`ride-card-basket-message-${ride.RideId}`}
+          >
+            {basketMessage}
+          </p>
+        )}
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={handleAddToBasket}
+            className="rounded-2xl bg-pink-400 px-4 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-pink-300"
+            data-testid={`ride-card-add-to-basket-${ride.RideId}`}
+          >
+            Add to basket
+          </button>
+
+          <Link
+            to={`/rides/${ride.RideId}`}
+            className="rounded-2xl bg-purple-600 px-4 py-3 text-center text-sm font-black text-white transition hover:bg-purple-700"
+            data-testid={`ride-details-link-${ride.RideId}`}
+          >
+            View details
+          </Link>
+        </div>
       </div>
     </article>
   );
 }
 
 export default RidesPage;
+
+
+
+

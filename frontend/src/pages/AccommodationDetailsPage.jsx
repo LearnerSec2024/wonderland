@@ -1,9 +1,12 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useBasket } from "../context/BasketContext";
 import { api } from "../services/api";
 
 function AccommodationDetailsPage() {
   const { accommodationId } = useParams();
+  const { addAccommodation } = useBasket();
+  const [basketMessage, setBasketMessage] = useState("");
 
   const [accommodation, setAccommodation] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -98,19 +101,36 @@ function AccommodationDetailsPage() {
         </div>
 
         <div className="border-t border-slate-200 p-8">
-          <h2 className="text-3xl font-black">Booking coming soon</h2>
+          <h2 className="text-3xl font-black">Ready for your basket?</h2>
           <p className="mt-3 max-w-3xl text-slate-600">
-            A future iteration will allow guests to add accommodation to a booking basket and enforce lead guest age rules during checkout.
+            Add this accommodation to your booking basket. A future checkout iteration will validate dates, guest count and lead guest age rules.
           </p>
+
+          {basketMessage && (
+            <div className="mt-5 rounded-2xl bg-emerald-100 p-4 font-bold text-emerald-800" data-testid="accommodation-details-basket-message">
+              {basketMessage}
+            </div>
+          )}
 
           <button
             type="button"
-            disabled
-            className="mt-6 rounded-2xl bg-slate-200 px-6 py-3 font-black text-slate-500"
-            data-testid="accommodation-details-booking-disabled"
+            onClick={() => {
+              addAccommodation(accommodation);
+              setBasketMessage(`${accommodation.Name} added to basket`);
+            }}
+            className="mt-6 rounded-2xl bg-cyan-500 px-6 py-3 font-black text-slate-950 transition hover:bg-cyan-400"
+            data-testid="accommodation-details-add-to-basket"
           >
-            Add to basket coming soon
+            Add to basket
           </button>
+
+          <Link
+            to="/basket"
+            className="ml-3 mt-6 inline-flex rounded-2xl border border-slate-300 px-6 py-3 font-black text-slate-700"
+            data-testid="accommodation-details-view-basket"
+          >
+            View basket
+          </Link>
         </div>
       </section>
     </main>
@@ -129,3 +149,4 @@ function DetailCard({ label, value, testId }) {
 }
 
 export default AccommodationDetailsPage;
+

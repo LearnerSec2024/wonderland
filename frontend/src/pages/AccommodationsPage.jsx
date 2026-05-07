@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../services/api";
+import { useBasket } from "../context/BasketContext";
 
 function AccommodationsPage() {
   const [accommodations, setAccommodations] = useState([]);
@@ -209,6 +210,14 @@ function AccommodationsPage() {
 }
 
 function AccommodationCard({ stay }) {
+  const { addAccommodation } = useBasket();
+  const [basketMessage, setBasketMessage] = useState("");
+
+  const handleAddToBasket = () => {
+    addAccommodation(stay);
+    setBasketMessage(`${stay.Name} added to basket`);
+  };
+
   return (
     <article
       className="overflow-hidden rounded-[2rem] bg-white text-slate-950 shadow-2xl transition hover:-translate-y-2"
@@ -246,16 +255,37 @@ function AccommodationCard({ stay }) {
           </span>
         </div>
 
-        <Link
-          to={`/accommodations/${stay.AccommodationId}`}
-          className="mt-5 block w-full rounded-2xl bg-cyan-500 px-4 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-cyan-400"
-          data-testid={`accommodation-details-link-${stay.AccommodationId}`}
-        >
-          View details
-        </Link>
+        {basketMessage && (
+          <p
+            className="mt-4 rounded-2xl bg-emerald-100 p-3 text-sm font-bold text-emerald-800"
+            data-testid={`accommodation-card-basket-message-${stay.AccommodationId}`}
+          >
+            {basketMessage}
+          </p>
+        )}
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            onClick={handleAddToBasket}
+            className="rounded-2xl bg-emerald-400 px-4 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-emerald-300"
+            data-testid={`accommodation-card-add-to-basket-${stay.AccommodationId}`}
+          >
+            Add to basket
+          </button>
+
+          <Link
+            to={`/accommodations/${stay.AccommodationId}`}
+            className="rounded-2xl bg-cyan-500 px-4 py-3 text-center text-sm font-black text-slate-950 transition hover:bg-cyan-400"
+            data-testid={`accommodation-details-link-${stay.AccommodationId}`}
+          >
+            View details
+          </Link>
+        </div>
       </div>
     </article>
   );
 }
 
 export default AccommodationsPage;
+

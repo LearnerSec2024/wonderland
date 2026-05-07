@@ -10,6 +10,7 @@ import RidesPage from "./pages/RidesPage";
 import RideDetailsPage from "./pages/RideDetailsPage";
 import AccommodationsPage from "./pages/AccommodationsPage";
 import AccommodationDetailsPage from "./pages/AccommodationDetailsPage";
+import BasketPage from "./pages/BasketPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
@@ -29,6 +30,7 @@ function App() {
             <Route path="/rides/:rideId" element={<RideDetailsPage />} />
             <Route path="/accommodations" element={<AccommodationsPage />} />
             <Route path="/accommodations/:accommodationId" element={<AccommodationDetailsPage />} />
+            <Route path="/basket" element={<BasketPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
 

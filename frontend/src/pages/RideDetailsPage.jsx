@@ -1,9 +1,12 @@
 ﻿import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
+import { useBasket } from "../context/BasketContext";
 import { api } from "../services/api";
 
 function RideDetailsPage() {
   const { rideId } = useParams();
+  const { addRide } = useBasket();
+  const [basketMessage, setBasketMessage] = useState("");
 
   const [ride, setRide] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -91,19 +94,36 @@ function RideDetailsPage() {
         </div>
 
         <div className="border-t border-slate-200 p-8">
-          <h2 className="text-3xl font-black">Booking coming soon</h2>
+          <h2 className="text-3xl font-black">Ready for your basket?</h2>
           <p className="mt-3 max-w-3xl text-slate-600">
-            A future iteration will allow guests to add rides to a booking basket and enforce age, height and supervision rules during checkout.
+            Add this ride to your booking basket. A future checkout iteration will enforce rider age, height and supervision rules.
           </p>
+
+          {basketMessage && (
+            <div className="mt-5 rounded-2xl bg-emerald-100 p-4 font-bold text-emerald-800" data-testid="ride-details-basket-message">
+              {basketMessage}
+            </div>
+          )}
 
           <button
             type="button"
-            disabled
-            className="mt-6 rounded-2xl bg-slate-200 px-6 py-3 font-black text-slate-500"
-            data-testid="ride-details-booking-disabled"
+            onClick={() => {
+              addRide(ride);
+              setBasketMessage(`${ride.Name} added to basket`);
+            }}
+            className="mt-6 rounded-2xl bg-purple-600 px-6 py-3 font-black text-white transition hover:bg-purple-700"
+            data-testid="ride-details-add-to-basket"
           >
-            Add to basket coming soon
+            Add to basket
           </button>
+
+          <Link
+            to="/basket"
+            className="ml-3 mt-6 inline-flex rounded-2xl border border-slate-300 px-6 py-3 font-black text-slate-700"
+            data-testid="ride-details-view-basket"
+          >
+            View basket
+          </Link>
         </div>
       </section>
     </main>
@@ -122,3 +142,4 @@ function DetailCard({ label, value, testId }) {
 }
 
 export default RideDetailsPage;
+

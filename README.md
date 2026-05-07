@@ -2475,3 +2475,250 @@ Expected outcomes:
 - Prepare for future checkout and booking confirmation flow
 - Playwright tests for basket add/update/remove flows
 
+
+---
+
+## Iteration 5 Completed: Booking Basket
+
+Wonderland now includes a frontend booking basket for rides and accommodation.
+
+This iteration prepares the app for the future checkout and booking confirmation workflow.
+
+### Completed
+
+- Booking basket page added
+- Basket route added:
+
+    /basket
+
+- Basket link added to the navbar
+- Basket count displays in the navbar when items are added
+- Users can add rides to the basket from:
+  - Ride details page
+  - Rides listing cards
+- Users can add accommodation to the basket from:
+  - Accommodation details page
+  - Accommodation listing cards
+- Users can update ride quantity
+- Users can update accommodation guest count
+- Users can remove individual basket items
+- Users can clear the full basket
+- Remove item action now shows a confirmation warning
+- Clear basket action now shows a confirmation warning
+- Basket persists in localStorage
+- Basket state is managed through a shared React BasketContext
+- BasketProvider now wraps the app from main.jsx so navbar, layout and pages can all access basket state
+
+---
+
+### Basket Page
+
+New route:
+
+    /basket
+
+The basket page displays:
+
+- Ride basket items
+- Accommodation basket items
+- Basket count
+- WonderPoints total
+- Basket total
+- Item subtotals
+- Update controls
+- Remove buttons
+- Clear basket button
+- Checkout coming soon message
+
+Checkout remains disabled for now and will be implemented in a future iteration.
+
+---
+
+### Basket State
+
+Basket state is currently frontend-only and stored in:
+
+    localStorage
+
+Storage key:
+
+    wonderland_basket
+
+This keeps the basket available after page refresh.
+
+Future checkout iterations will move confirmed bookings into SQL Server tables.
+
+---
+
+### Ride Basket Behaviour
+
+Users can add rides to the basket.
+
+Ride items include:
+
+- Ride ID
+- Ride name
+- Description
+- Unit price
+- Quantity
+- WonderPoints
+- Minimum age
+- Minimum height
+
+Ride subtotal is calculated as:
+
+    Unit price × Quantity
+
+Users can increase or decrease ride quantity.
+
+Minimum ride quantity is:
+
+    1
+
+---
+
+### Accommodation Basket Behaviour
+
+Users can add accommodation to the basket.
+
+Accommodation items include:
+
+- Accommodation ID
+- Accommodation name
+- Description
+- Unit price
+- Guest count
+- Maximum guests
+- Minimum lead guest age
+
+Accommodation guest count can be changed up to the accommodation maximum guest capacity.
+
+---
+
+### Accommodation Guest Pricing Rule
+
+Accommodation pricing now adjusts based on guest count.
+
+Pricing rule:
+
+    Base accommodation price
+    + 50% of base price for guest 1
+    + 25% of base price for guest 2
+    + 25% of base price for guest 3
+    + 10% of base price for guest 4
+    + 0% for guest 5 and above
+
+Example for a $320 accommodation:
+
+    1 guest  = 320 + 160 = 480
+    2 guests = 320 + 160 + 80 = 560
+    3 guests = 320 + 160 + 80 + 80 = 640
+    4 guests = 320 + 160 + 80 + 80 + 32 = 672
+    5+ guests = 672
+
+The basket page displays a guest pricing note for accommodation items.
+
+---
+
+### Listing Card Basket Actions
+
+Ride listing cards now include:
+
+- Add to basket
+- View details
+
+Accommodation listing cards now include:
+
+- Add to basket
+- View details
+
+This allows users to add items directly from listing pages without needing to open the details page first.
+
+The details pages still support Add to basket as well.
+
+---
+
+### Confirmation Warnings
+
+Basket removal actions now include warnings.
+
+Remove single item:
+
+    Remove [item name] from your Wonderland basket?
+
+Clear basket:
+
+    Are you sure you want to clear your entire Wonderland basket?
+
+This prevents accidental basket deletion during manual testing and real user workflows.
+
+---
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- Add ride to basket from ride details page
+- Add accommodation to basket from accommodation details page
+- Add ride to basket from rides listing card
+- Add accommodation to basket from accommodation listing card
+- Basket count updates in navbar
+- Basket page displays added ride
+- Basket page displays added accommodation
+- Ride quantity can be increased
+- Accommodation guest count can be updated
+- Accommodation pricing updates based on guest count
+- Remove item confirmation dialog appears and can be accepted
+- Clear basket confirmation dialog appears and can be accepted
+- Basket persists after page reload
+- Basket can be cleared
+- View details links continue to work after Add to basket buttons were added
+
+---
+
+### Test Status
+
+Current test status:
+
+    Local Playwright tests: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+
+---
+
+### Next Iteration
+
+Iteration 6 — Checkout and Booking Confirmation
+
+Expected outcomes:
+
+- Checkout page
+- Basket review before checkout
+- Auth-required checkout
+- Guest/User booking submission
+- Backend booking/order APIs
+- SQL Server booking/order persistence
+- Booking confirmation page
+- WonderPoints update after successful booking
+- Empty basket after successful checkout
+- Booking history preparation for dashboard/profile
+- Playwright tests for checkout and booking confirmation flow
+
