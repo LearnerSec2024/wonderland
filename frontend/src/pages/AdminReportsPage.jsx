@@ -44,7 +44,7 @@ function AdminReportsPage() {
         <p className="font-bold uppercase tracking-[0.25em] text-yellow-100">Admin reports</p>
         <h1 className="mt-3 text-5xl font-black">Booking reporting dashboard</h1>
         <p className="mt-4 max-w-3xl text-lg text-white/85">
-          Review booking metrics, revenue indicators, status breakdowns and audit events.
+          Review booking metrics, CDC booking change events and trigger-based content audit events.
         </p>
       </section>
 
@@ -67,6 +67,19 @@ function AdminReportsPage() {
             <SummaryCard label="Confirmed value" value={`$${report.summary.confirmedValue.toFixed(2)}`} testId="admin-report-confirmed-value" />
             <SummaryCard label="Cancelled value" value={`$${report.summary.cancelledValue.toFixed(2)}`} testId="admin-report-cancelled-value" />
             <SummaryCard label="Average booking" value={`$${report.summary.averageBookingValue.toFixed(2)}`} testId="admin-report-average-booking" />
+          </section>
+
+          <section className="mt-8 rounded-[2rem] border border-cyan-300/40 bg-cyan-400/10 p-6" data-testid="admin-report-cdc-status">
+            <h2 className="text-3xl font-black">CDC status for dbo.Bookings</h2>
+            <p className="mt-3 font-semibold text-white/75">
+              Database CDC enabled: {report.cdcStatus.isDatabaseCdcEnabled ? "Yes" : "No"}
+            </p>
+            <p className="mt-1 font-semibold text-white/75">
+              Bookings table CDC enabled: {report.cdcStatus.isBookingsCdcEnabled ? "Yes" : "No"}
+            </p>
+            <p className="mt-1 font-semibold text-white/75">
+              Capture instance: {report.cdcStatus.captureInstance}
+            </p>
           </section>
 
           <section className="mt-8 grid gap-6 lg:grid-cols-2">
@@ -105,7 +118,8 @@ function AdminReportsPage() {
             </div>
           </section>
 
-          <AuditPanel events={report.recentAuditEvents} testId="admin-report-audit-events" />
+          <CdcPanel events={report.recentBookingChangeEvents} testId="admin-report-booking-cdc-events" />
+          <ContentAuditPanel events={report.contentAuditEvents} testId="admin-report-content-audit-events" />
 
           <section className="mt-8 rounded-[2rem] border border-yellow-200 bg-yellow-50 p-6 text-yellow-950" data-testid="admin-report-export-prep">
             <h2 className="text-3xl font-black">Export preparation</h2>
@@ -156,30 +170,61 @@ function ReportRow({ label, value }) {
   );
 }
 
-function AuditPanel({ events, testId }) {
+function CdcPanel({ events, testId }) {
   return (
     <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid={testId}>
-      <h2 className="text-3xl font-black">Recent audit events</h2>
+      <h2 className="text-3xl font-black">CDC booking change events</h2>
 
       <div className="mt-5 grid gap-4">
         {events.length === 0 ? (
           <p className="rounded-2xl bg-slate-100 p-4 font-semibold text-slate-600">
-            No audit events yet.
+            CDC is enabled. No booking change rows have been captured yet.
           </p>
         ) : (
-          events.map((event) => (
+          events.map((event, index) => (
             <article
-              key={event.bookingAuditEventId}
+              key={`${event.bookingReference}-${event.operation}-${event.changeTime}-${index}`}
               className="rounded-2xl bg-slate-100 p-4"
-              data-testid={`admin-report-audit-event-${event.bookingAuditEventId}`}
             >
               <p className="text-xs font-black uppercase tracking-wide text-purple-600">
-                {event.eventType}
+                {event.operation}
               </p>
               <h3 className="mt-1 break-all text-xl font-black">{event.bookingReference}</h3>
               <p className="mt-2 text-sm font-semibold text-slate-600">{event.eventSummary}</p>
               <p className="mt-2 text-xs font-bold text-slate-500">
-                {event.customerEmail} • {formatDate(event.createdAt)}
+                {event.customerEmail || "Customer pending"} • {formatDate(event.changeTime)}
+              </p>
+            </article>
+          ))
+        )}
+      </div>
+    </section>
+  );
+}
+
+function ContentAuditPanel({ events, testId }) {
+  return (
+    <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid={testId}>
+      <h2 className="text-3xl font-black">Trigger-based content audit events</h2>
+
+      <div className="mt-5 grid gap-4">
+        {events.length === 0 ? (
+          <p className="rounded-2xl bg-slate-100 p-4 font-semibold text-slate-600">
+            No content approval trigger events yet.
+          </p>
+        ) : (
+          events.map((event) => (
+            <article
+              key={event.contentAuditEventId}
+              className="rounded-2xl bg-slate-100 p-4"
+            >
+              <p className="text-xs font-black uppercase tracking-wide text-purple-600">
+                {event.eventType}
+              </p>
+              <h3 className="mt-1 text-xl font-black">{event.entityName}</h3>
+              <p className="mt-2 text-sm font-semibold text-slate-600">{event.eventSummary}</p>
+              <p className="mt-2 text-xs font-bold text-slate-500">
+                {event.entityType} • {formatDate(event.createdAt)}
               </p>
             </article>
           ))

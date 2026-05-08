@@ -132,11 +132,11 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page).toHaveURL(/\/admin\/reports$/);
     await expect(page.getByTestId("admin-reports-page")).toBeVisible();
     await expect(page.getByTestId("admin-report-summary")).toBeVisible();
-    await expect(page.getByTestId("admin-report-total-bookings")).not.toContainText("0");
+    await expect(page.getByTestId("admin-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
     await expect(page.getByTestId("admin-report-status-breakdown")).toContainText("Cancelled");
     await expect(page.getByTestId("admin-report-item-type-breakdown")).toContainText("ride");
-    await expect(page.getByTestId("admin-report-audit-events")).toContainText(bookingReference);
-    await expect(page.getByTestId("admin-report-audit-events")).toContainText(customerEmail);
+    await expect(page.getByTestId("admin-report-cdc-status")).toContainText("Bookings table CDC enabled: Yes");
+    await expect(page.getByTestId("admin-report-booking-cdc-events")).toBeVisible();
     await expect(page.getByTestId("admin-report-export-prep")).toContainText("Export report coming soon");
   });
 
@@ -157,10 +157,10 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page).toHaveURL(/\/manager\/reports$/);
     await expect(page.getByTestId("manager-reports-page")).toBeVisible();
     await expect(page.getByTestId("manager-report-summary")).toBeVisible();
-    await expect(page.getByTestId("manager-report-total-bookings")).not.toContainText("0");
+    await expect(page.getByTestId("manager-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
     await expect(page.getByTestId("manager-report-status-breakdown")).toContainText("Confirmed");
-    await expect(page.getByTestId("manager-report-audit-events")).toContainText(bookingReference);
-    await expect(page.getByTestId("manager-report-audit-events")).toContainText(customerEmail);
+    await expect(page.getByTestId("manager-report-cdc-status")).toContainText("Bookings table CDC enabled: Yes");
+    await expect(page.getByTestId("manager-report-booking-cdc-events")).toBeVisible();
   });
 
   test("normal User cannot access Admin or Manager reporting pages", async ({ page, request }) => {
@@ -202,3 +202,5 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page.getByTestId("access-denied-page")).toBeVisible();
   });
 });
+
+

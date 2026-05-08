@@ -44,7 +44,7 @@ function ManagerReportsPage() {
         <p className="font-bold uppercase tracking-[0.25em] text-yellow-100">Manager reports</p>
         <h1 className="mt-3 text-5xl font-black">Operational booking summary</h1>
         <p className="mt-4 max-w-3xl text-lg text-white/85">
-          Monitor confirmed/cancelled booking activity and recent audit events.
+          Monitor confirmed/cancelled booking activity and CDC booking change events.
         </p>
       </section>
 
@@ -70,6 +70,19 @@ function ManagerReportsPage() {
             <SummaryCard label="Points issued" value={`+${report.summary.totalPointsIssued}`} testId="manager-report-points" />
           </section>
 
+          <section className="mt-8 rounded-[2rem] border border-cyan-300/40 bg-cyan-400/10 p-6" data-testid="manager-report-cdc-status">
+            <h2 className="text-3xl font-black">CDC status for dbo.Bookings</h2>
+            <p className="mt-3 font-semibold text-white/75">
+              Database CDC enabled: {report.cdcStatus.isDatabaseCdcEnabled ? "Yes" : "No"}
+            </p>
+            <p className="mt-1 font-semibold text-white/75">
+              Bookings table CDC enabled: {report.cdcStatus.isBookingsCdcEnabled ? "Yes" : "No"}
+            </p>
+            <p className="mt-1 font-semibold text-white/75">
+              Capture instance: {report.cdcStatus.captureInstance}
+            </p>
+          </section>
+
           <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid="manager-report-status-breakdown">
             <h2 className="text-3xl font-black">Status breakdown</h2>
 
@@ -88,28 +101,27 @@ function ManagerReportsPage() {
             </div>
           </section>
 
-          <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid="manager-report-audit-events">
-            <h2 className="text-3xl font-black">Recent audit events</h2>
+          <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid="manager-report-booking-cdc-events">
+            <h2 className="text-3xl font-black">CDC booking change events</h2>
 
             <div className="mt-5 grid gap-4">
-              {report.recentAuditEvents.length === 0 ? (
+              {report.recentBookingChangeEvents.length === 0 ? (
                 <p className="rounded-2xl bg-slate-100 p-4 font-semibold text-slate-600">
-                  No audit events yet.
+                  CDC is enabled. No booking change rows have been captured yet.
                 </p>
               ) : (
-                report.recentAuditEvents.map((event) => (
+                report.recentBookingChangeEvents.map((event, index) => (
                   <article
-                    key={event.bookingAuditEventId}
+                    key={`${event.bookingReference}-${event.operation}-${event.changeTime}-${index}`}
                     className="rounded-2xl bg-slate-100 p-4"
-                    data-testid={`manager-report-audit-event-${event.bookingAuditEventId}`}
                   >
                     <p className="text-xs font-black uppercase tracking-wide text-purple-600">
-                      {event.eventType}
+                      {event.operation}
                     </p>
                     <h3 className="mt-1 break-all text-xl font-black">{event.bookingReference}</h3>
                     <p className="mt-2 text-sm font-semibold text-slate-600">{event.eventSummary}</p>
                     <p className="mt-2 text-xs font-bold text-slate-500">
-                      {event.customerEmail} • {formatDate(event.createdAt)}
+                      {event.customerEmail || "Customer pending"} • {formatDate(event.changeTime)}
                     </p>
                   </article>
                 ))

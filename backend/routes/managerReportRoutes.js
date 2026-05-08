@@ -14,18 +14,109 @@ function toIsoString(value) {
   return new Date(value).toISOString();
 }
 
-function mapAuditEvent(row) {
+function mapBookingCdcEvent(row) {
+  const operationMap = {
+    1: "Delete",
+    2: "Insert",
+    3: "UpdateBefore",
+    4: "UpdateAfter",
+  };
+
+  const operationName = operationMap[row.Operation] || "Unknown";
+
   return {
-    bookingAuditEventId: row.BookingAuditEventId,
     bookingReference: row.BookingReference,
-    eventType: row.EventType,
-    oldStatus: row.OldStatus,
-    newStatus: row.NewStatus,
-    eventSummary: row.EventSummary,
-    createdAt: toIsoString(row.CreatedAt),
+    operation: operationName,
+    status: row.Status,
+    totalAmount: Number(row.TotalAmount || 0),
+    totalPointsEarned: Number(row.TotalPointsEarned || 0),
+    cancelledAt: toIsoString(row.CancelledAt),
+    cancellationReason: row.CancellationReason,
+    changeTime: toIsoString(row.ChangeTime),
     customerEmail: row.Email,
     customerName: `${row.FirstName || ""} ${row.LastName || ""}`.trim(),
+    eventSummary:
+      operationName === "Insert"
+        ? `CDC captured booking ${row.BookingReference} being created`
+        : `CDC captured booking ${row.BookingReference} changing to status ${row.Status}`,
   };
+}
+
+async function getCdcStatus(pool) {
+  const result = await pool.request().query(`
+    SELECT
+      DB_NAME() AS DatabaseName,
+      d.is_cdc_enabled AS IsDatabaseCdcEnabled,
+      CASE
+        WHEN EXISTS (
+          SELECT 1
+          FROM cdc.change_tables
+          WHERE source_object_id = OBJECT_ID('dbo.Bookings')
+        )
+        THEN 1
+        ELSE 0
+      END AS IsBookingsCdcEnabled
+    FROM sys.databases d
+    WHERE d.name = DB_NAME();
+  `);
+
+  const row = result.recordset[0];
+
+  return {
+    databaseName: row.DatabaseName,
+    isDatabaseCdcEnabled: Boolean(row.IsDatabaseCdcEnabled),
+    isBookingsCdcEnabled: Boolean(row.IsBookingsCdcEnabled),
+    captureInstance: "dbo_Bookings",
+  };
+}
+
+async function getBookingCdcEvents(pool) {
+  const result = await pool.request().query(`
+    DECLARE @from_lsn binary(10);
+    DECLARE @to_lsn binary(10);
+
+    SET @from_lsn = sys.fn_cdc_get_min_lsn('dbo_Bookings');
+    SET @to_lsn = sys.fn_cdc_get_max_lsn();
+
+    IF @from_lsn IS NULL OR @to_lsn IS NULL
+    BEGIN
+      SELECT TOP 0
+        CAST(NULL AS INT) AS Operation,
+        CAST(NULL AS DATETIME2) AS ChangeTime,
+        CAST(NULL AS NVARCHAR(50)) AS BookingReference,
+        CAST(NULL AS INT) AS UserId,
+        CAST(NULL AS NVARCHAR(50)) AS Status,
+        CAST(NULL AS DECIMAL(10,2)) AS TotalAmount,
+        CAST(NULL AS INT) AS TotalPointsEarned,
+        CAST(NULL AS DATETIME2) AS CancelledAt,
+        CAST(NULL AS NVARCHAR(1000)) AS CancellationReason,
+        CAST(NULL AS NVARCHAR(100)) AS FirstName,
+        CAST(NULL AS NVARCHAR(100)) AS LastName,
+        CAST(NULL AS NVARCHAR(256)) AS Email;
+    END
+    ELSE
+    BEGIN
+      SELECT TOP 15
+        c.__$operation AS Operation,
+        sys.fn_cdc_map_lsn_to_time(c.__$start_lsn) AS ChangeTime,
+        c.BookingReference,
+        c.UserId,
+        c.Status,
+        c.TotalAmount,
+        c.TotalPointsEarned,
+        c.CancelledAt,
+        c.CancellationReason,
+        u.FirstName,
+        u.LastName,
+        u.Email
+      FROM cdc.fn_cdc_get_all_changes_dbo_Bookings(@from_lsn, @to_lsn, 'all') c
+      LEFT JOIN dbo.Users u ON u.UserId = c.UserId
+      WHERE c.__$operation IN (2, 4)
+      ORDER BY c.__$start_lsn DESC, c.__$seqval DESC;
+    END
+  `);
+
+  return result.recordset.map((row) => mapBookingCdcEvent(row));
 }
 
 router.get("/reports/bookings", async (req, res, next) => {
@@ -53,25 +144,10 @@ router.get("/reports/bookings", async (req, res, next) => {
       ORDER BY Status;
     `);
 
-    const auditResult = await pool.request().query(`
-      SELECT TOP 15
-        a.BookingAuditEventId,
-        a.BookingReference,
-        a.EventType,
-        a.OldStatus,
-        a.NewStatus,
-        a.EventSummary,
-        a.CreatedAt,
-        u.FirstName,
-        u.LastName,
-        u.Email
-      FROM dbo.BookingAuditEvents a
-      INNER JOIN dbo.Bookings b ON b.BookingId = a.BookingId
-      INNER JOIN dbo.Users u ON u.UserId = b.UserId
-      ORDER BY a.CreatedAt DESC, a.BookingAuditEventId DESC;
-    `);
-
     const summary = summaryResult.recordset[0];
+
+    const cdcStatus = await getCdcStatus(pool);
+    const recentBookingChangeEvents = await getBookingCdcEvents(pool);
 
     res.json({
       summary: {
@@ -87,7 +163,8 @@ router.get("/reports/bookings", async (req, res, next) => {
         bookingCount: row.BookingCount,
         totalAmount: Number(row.TotalAmount),
       })),
-      recentAuditEvents: auditResult.recordset.map((row) => mapAuditEvent(row)),
+      cdcStatus,
+      recentBookingChangeEvents,
     });
   } catch (error) {
     next(error);

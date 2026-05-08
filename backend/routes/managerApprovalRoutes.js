@@ -1,15 +1,15 @@
-﻿const express = require("express");
+﻿const express = require('express');
 
-const { sql, getPool } = require("../config/db");
-const { requireAuth } = require("../middleware/authMiddleware");
-const { requireRole } = require("../middleware/roleMiddleware");
+const { sql, getPool } = require('../config/db');
+const { requireAuth } = require('../middleware/authMiddleware');
+const { requireRole } = require('../middleware/roleMiddleware');
 
 const router = express.Router();
 
 router.use(requireAuth);
-router.use(requireRole("Manager"));
+router.use(requireRole('Manager'));
 
-router.get("/approvals/count", async (req, res, next) => {
+router.get('/approvals/count', async (req, res, next) => {
   try {
     const pool = await getPool();
 
@@ -36,7 +36,7 @@ router.get("/approvals/count", async (req, res, next) => {
   }
 });
 
-router.get("/approvals", async (req, res, next) => {
+router.get('/approvals', async (req, res, next) => {
   try {
     const pool = await getPool();
 
@@ -80,14 +80,11 @@ router.get("/approvals", async (req, res, next) => {
   }
 });
 
-router.get("/approvals/history", async (req, res, next) => {
+router.get('/approvals/history', async (req, res, next) => {
   try {
     const pool = await getPool();
 
-    const result = await pool
-      .request()
-      .input("ReviewedByUserId", sql.Int, req.user.userId)
-      .query(`
+    const result = await pool.request().input('ReviewedByUserId', sql.Int, req.user.userId).query(`
         SELECT
           'ride' AS ItemType,
           r.RideId AS ItemId,
@@ -133,25 +130,33 @@ router.get("/approvals/history", async (req, res, next) => {
   }
 });
 
-router.post("/approvals/:type/:id/approve", async (req, res, next) => {
+router.post('/approvals/:type/:id/approve', async (req, res, next) => {
   try {
     const { type, id } = req.params;
     const pool = await getPool();
 
-    if (!["ride", "accommodation"].includes(type)) {
+    if (!['ride', 'accommodation'].includes(type)) {
       return res.status(400).json({
-        message: "Approval type must be ride or accommodation",
+        message: 'Approval type must be ride or accommodation',
       });
     }
 
-    const tableName = type === "ride" ? "dbo.Rides" : "dbo.Accommodations";
-    const idColumn = type === "ride" ? "RideId" : "AccommodationId";
+    const tableName = type === 'ride' ? 'dbo.Rides' : 'dbo.Accommodations';
+    const idColumn = type === 'ride' ? 'RideId' : 'AccommodationId';
 
     const result = await pool
       .request()
-      .input("Id", sql.Int, Number(id))
-      .input("ReviewedByUserId", sql.Int, req.user.userId)
-      .query(`
+      .input('Id', sql.Int, Number(id))
+      .input('ReviewedByUserId', sql.Int, req.user.userId).query(`
+        DECLARE @UpdatedContent TABLE
+        (
+          ItemId INT,
+          Name NVARCHAR(200),
+          ApprovalStatus NVARCHAR(50),
+          IsActive BIT,
+          RejectionReason NVARCHAR(1000) NULL
+        );
+
         UPDATE ${tableName}
         SET
           ApprovalStatus = 'Approved',
@@ -160,22 +165,32 @@ router.post("/approvals/:type/:id/approve", async (req, res, next) => {
           ReviewedAt = SYSDATETIME(),
           RejectionReason = NULL
         OUTPUT
-          INSERTED.${idColumn} AS ItemId,
+          INSERTED.${idColumn},
           INSERTED.Name,
           INSERTED.ApprovalStatus,
-          INSERTED.IsActive
+          INSERTED.IsActive,
+          INSERTED.RejectionReason
+        INTO @UpdatedContent
         WHERE ${idColumn} = @Id
           AND ApprovalStatus = 'PendingApproval';
+
+        SELECT
+          ItemId,
+          Name,
+          ApprovalStatus,
+          IsActive,
+          RejectionReason
+        FROM @UpdatedContent;
       `);
 
     if (result.recordset.length === 0) {
       return res.status(404).json({
-        message: "Pending approval item not found",
+        message: 'Pending approval item not found',
       });
     }
 
     res.json({
-      message: "Content approved successfully",
+      message: 'Content approved successfully',
       item: result.recordset[0],
     });
   } catch (error) {
@@ -183,27 +198,35 @@ router.post("/approvals/:type/:id/approve", async (req, res, next) => {
   }
 });
 
-router.post("/approvals/:type/:id/reject", async (req, res, next) => {
+router.post('/approvals/:type/:id/reject', async (req, res, next) => {
   try {
     const { type, id } = req.params;
-    const { rejectionReason = "Rejected by manager" } = req.body || {};
+    const { rejectionReason = 'Rejected by manager' } = req.body || {};
     const pool = await getPool();
 
-    if (!["ride", "accommodation"].includes(type)) {
+    if (!['ride', 'accommodation'].includes(type)) {
       return res.status(400).json({
-        message: "Approval type must be ride or accommodation",
+        message: 'Approval type must be ride or accommodation',
       });
     }
 
-    const tableName = type === "ride" ? "dbo.Rides" : "dbo.Accommodations";
-    const idColumn = type === "ride" ? "RideId" : "AccommodationId";
+    const tableName = type === 'ride' ? 'dbo.Rides' : 'dbo.Accommodations';
+    const idColumn = type === 'ride' ? 'RideId' : 'AccommodationId';
 
     const result = await pool
       .request()
-      .input("Id", sql.Int, Number(id))
-      .input("ReviewedByUserId", sql.Int, req.user.userId)
-      .input("RejectionReason", sql.NVarChar(500), rejectionReason)
-      .query(`
+      .input('Id', sql.Int, Number(id))
+      .input('ReviewedByUserId', sql.Int, req.user.userId)
+      .input('RejectionReason', sql.NVarChar(500), rejectionReason).query(`
+        DECLARE @UpdatedContent TABLE
+        (
+          ItemId INT,
+          Name NVARCHAR(200),
+          ApprovalStatus NVARCHAR(50),
+          IsActive BIT,
+          RejectionReason NVARCHAR(1000) NULL
+        );
+
         UPDATE ${tableName}
         SET
           ApprovalStatus = 'Rejected',
@@ -212,23 +235,32 @@ router.post("/approvals/:type/:id/reject", async (req, res, next) => {
           ReviewedAt = SYSDATETIME(),
           RejectionReason = @RejectionReason
         OUTPUT
-          INSERTED.${idColumn} AS ItemId,
+          INSERTED.${idColumn},
           INSERTED.Name,
           INSERTED.ApprovalStatus,
           INSERTED.IsActive,
           INSERTED.RejectionReason
+        INTO @UpdatedContent
         WHERE ${idColumn} = @Id
           AND ApprovalStatus = 'PendingApproval';
+
+        SELECT
+          ItemId,
+          Name,
+          ApprovalStatus,
+          IsActive,
+          RejectionReason
+        FROM @UpdatedContent;
       `);
 
     if (result.recordset.length === 0) {
       return res.status(404).json({
-        message: "Pending approval item not found",
+        message: 'Pending approval item not found',
       });
     }
 
     res.json({
-      message: "Content rejected successfully",
+      message: 'Content rejected successfully',
       item: result.recordset[0],
     });
   } catch (error) {

@@ -4025,3 +4025,364 @@ Expected outcomes:
 - Export/reporting preparation
 - Playwright tests for reporting widgets and role access
 
+
+---
+
+## Iteration 11 Completed: Admin/Manager Reporting, CDC Booking Audit and Trigger Learning Example
+
+Wonderland now includes Admin and Manager reporting dashboards, CDC-based booking change visibility, and a separate trigger-based content audit example.
+
+This iteration improves the enterprise learning value of the app by showing two different SQL Server data-change patterns:
+
+    CDC for booking change capture
+    Triggers for content approval audit events
+
+---
+
+### Completed
+
+- Admin reporting dashboard added
+- Manager reporting dashboard added
+- Booking metrics by status added
+- Booking metrics by revenue/value added
+- Booking item type breakdown added
+- Recent daily booking activity added
+- CDC enabled for `dbo.Bookings`
+- CDC status displayed in Admin and Manager reports
+- CDC booking change events displayed in reporting pages
+- Booking audit triggers removed from `dbo.Bookings`
+- Trigger-based content audit example added for rides and accommodation approval changes
+- Content audit table added
+- Admin/Manager reporting routes added
+- Admin Reports link added to Admin navbar
+- Manager Reports link added to Manager navbar
+- Normal Users blocked from Admin/Manager reporting pages
+- Playwright tests added for reporting access and widgets
+- Playwright config updated to reduce parallel test flakiness with shared SQL Server state
+- SQL trigger + `OUTPUT` issue fixed in booking and manager approval routes
+
+---
+
+### New Database Objects
+
+Iteration 11 introduced:
+
+    dbo.BookingAuditEvents
+    dbo.ContentAuditEvents
+
+Iteration 11.1 changed the booking audit approach.
+
+Booking audit now uses:
+
+    SQL Server CDC on dbo.Bookings
+
+Content approval audit uses:
+
+    dbo.ContentAuditEvents
+    TR_Rides_ContentAudit_ApprovalStatusUpdate
+    TR_Accommodations_ContentAudit_ApprovalStatusUpdate
+
+---
+
+### CDC for Booking Audit
+
+CDC is now enabled for:
+
+    dbo.Bookings
+
+The CDC capture table is:
+
+    cdc.dbo_Bookings_CT
+
+This captures changes such as:
+
+- Booking created
+- Booking status changed
+- Booking cancelled
+- CancelledAt populated
+- CancellationReason populated
+
+CDC operation meanings:
+
+    1 = Delete
+    2 = Insert
+    3 = Update Before
+    4 = Update After
+
+Useful SQL check:
+
+    USE WonderlandDB;
+    GO
+
+    SELECT TOP 20
+      CASE [__$operation]
+        WHEN 1 THEN 'Delete'
+        WHEN 2 THEN 'Insert'
+        WHEN 3 THEN 'Update Before'
+        WHEN 4 THEN 'Update After'
+        ELSE 'Unknown'
+      END AS OperationName,
+      sys.fn_cdc_map_lsn_to_time([__$start_lsn]) AS ChangeTime,
+      BookingReference,
+      Status,
+      CancelledAt,
+      CancellationReason
+    FROM cdc.dbo_Bookings_CT
+    ORDER BY [__$start_lsn] DESC, [__$seqval] DESC;
+
+---
+
+### Why CDC Is Used for Bookings
+
+Booking changes are enterprise-style data events.
+
+CDC is a better fit for this because it captures database changes from the transaction log without adding extra business logic inside the booking transaction.
+
+Examples:
+
+    Booking inserted
+    Booking cancelled
+    Status changed from Confirmed to Cancelled
+
+This makes CDC useful for:
+
+- Audit reporting
+- Data warehouse feeds
+- Analytics
+- Change tracking
+- Operational reporting
+
+---
+
+### Trigger Learning Example
+
+Triggers are still used in Wonderland, but now on a separate learning use case.
+
+Trigger audit is used for content approval changes on:
+
+    dbo.Rides
+    dbo.Accommodations
+
+The trigger audit table is:
+
+    dbo.ContentAuditEvents
+
+This records events such as:
+
+- Ride approval status changed
+- Ride approved
+- Ride rejected
+- Accommodation approved
+- Accommodation rejected
+
+This gives the project examples of both approaches:
+
+    CDC = change capture / audit / reporting pattern
+    Trigger = database-side reaction to a specific business event
+
+---
+
+### SQL Server OUTPUT Fix
+
+After adding triggers to `dbo.Rides` and `dbo.Accommodations`, SQL Server no longer allows direct:
+
+    OUTPUT INSERTED...
+
+against those tables unless the output goes into a table variable.
+
+The app was updated to use:
+
+    OUTPUT INSERTED...
+    INTO @UpdatedContent
+
+This was fixed in:
+
+    backend/routes/bookingRoutes.js
+    backend/routes/managerApprovalRoutes.js
+
+This protects checkout, cancellation, ride approval and accommodation approval workflows.
+
+---
+
+### New Admin Reporting Route
+
+New frontend route:
+
+    /admin/reports
+
+Visible only to Admin users.
+
+The Admin Reports page displays:
+
+- Total bookings
+- Confirmed booking value
+- Cancelled booking value
+- Average booking value
+- CDC status for `dbo.Bookings`
+- Booking status breakdown
+- Booking item type breakdown
+- Recent daily activity
+- CDC booking change events
+- Trigger-based content audit events
+- Export preparation section
+
+---
+
+### New Manager Reporting Route
+
+New frontend route:
+
+    /manager/reports
+
+Visible only to Manager users.
+
+The Manager Reports page displays:
+
+- Total bookings
+- Confirmed bookings
+- Cancelled bookings
+- Confirmed booking value
+- Total points issued
+- CDC status for `dbo.Bookings`
+- Booking status breakdown
+- CDC booking change events
+
+---
+
+### Backend APIs Added
+
+Admin reporting API:
+
+    GET /api/admin/reports/bookings
+
+Manager reporting API:
+
+    GET /api/manager/reports/bookings
+
+These APIs are role-protected.
+
+Admin reporting requires:
+
+    Role = Admin
+
+Manager reporting requires:
+
+    Role = Manager
+
+Normal Users cannot access these APIs.
+
+---
+
+### Playwright Stability Update
+
+The Playwright config was updated to reduce flakiness from shared SQL Server state.
+
+Current config approach:
+
+    fullyParallel: false
+    workers: 2
+
+This is more stable for Wonderland because tests now share:
+
+- SQL Server database
+- Seed employees
+- Role registration state
+- Booking data
+- Cancellation data
+- CDC capture data
+- Content approval data
+
+---
+
+### Playwright Tests Added / Updated
+
+The Playwright suite now covers:
+
+- Admin can view booking reporting dashboard
+- Admin report summary cards appear
+- Admin report status breakdown appears
+- Admin report item type breakdown appears
+- Admin report CDC status appears
+- Admin report CDC booking change event panel appears
+- Admin export preparation section appears
+- Manager can view operational booking report
+- Manager report summary cards appear
+- Manager report status breakdown appears
+- Manager report CDC status appears
+- Manager report CDC booking change event panel appears
+- Normal User cannot access Admin reporting page
+- Normal User cannot access Manager reporting page
+- Approval workflow still works with content audit triggers enabled
+- Reporting numeric assertion updated to check non-zero values correctly
+
+---
+
+### Manual Testing Completed
+
+Manual testing confirmed:
+
+- Normal user can create bookings
+- Normal user can cancel bookings
+- CDC captures booking inserts and updates
+- CDC records show Insert and Update After events
+- Admin Reports page loads
+- Admin Reports page shows CDC status
+- Admin Reports page shows CDC booking change events
+- Admin Reports page shows reporting metrics
+- Manager Reports page loads
+- Manager Reports page shows operational reporting summary
+- Content approval workflow still works after adding content audit triggers
+
+---
+
+### Test Status
+
+Current test status:
+
+    Manual testing: Passed
+    Local Playwright tests: Passed
+    Full Playwright suite: Passed
+
+GitHub Actions should be checked after pushing this iteration.
+
+---
+
+### Latest Project Status
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+- Iteration 7 — Booking history and dashboard/profile integration
+- Iteration 8 — Booking management enhancements
+- Iteration 9 — Booking cancellation workflow
+- Iteration 10 — Admin and Manager booking visibility
+- Iteration 11 — Admin/Manager reporting and audit preparation
+- Iteration 11.1 — CDC booking audit and trigger learning example
+
+---
+
+### Next Iteration
+
+Iteration 12 — Export and Reporting Enhancements
+
+Expected outcomes:
+
+- Admin report export preparation
+- CSV export for bookings/reporting
+- Report download endpoint
+- Admin report date filters
+- Manager report date/status filters
+- Booking report refinement
+- Playwright tests for report filters and export/download flow
+
