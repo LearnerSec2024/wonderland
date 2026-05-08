@@ -16,7 +16,7 @@ function formatDate(value) {
 function BookingConfirmationPage() {
   const { bookingReference } = useParams();
   const location = useLocation();
-  const { token } = useAuth();
+  const { token, user } = useAuth();
 
   const [booking, setBooking] = useState(location.state?.booking || null);
   const [loading, setLoading] = useState(!location.state?.booking);
@@ -32,7 +32,15 @@ function BookingConfirmationPage() {
       try {
         setLoading(true);
         setLoadError("");
-        const result = await api.getBookingByReference(token, bookingReference);
+        let result;
+
+        if (user?.role === "Admin") {
+          result = await api.getAdminBookingByReference(token, bookingReference);
+        } else if (user?.role === "Manager") {
+          result = await api.getManagerBookingByReference(token, bookingReference);
+        } else {
+          result = await api.getBookingByReference(token, bookingReference);
+        }
         setBooking(result.booking);
       } catch (error) {
         setLoadError(error.message || "Booking not found");
@@ -42,7 +50,7 @@ function BookingConfirmationPage() {
     };
 
     loadBooking();
-  }, [booking, bookingReference, token]);
+  }, [booking, bookingReference, token, user]);
 
   const handleCancelBooking = async () => {
     const confirmed = window.confirm(
@@ -123,6 +131,14 @@ function BookingConfirmationPage() {
           <h2 className="mt-2 break-all text-4xl font-black" data-testid="booking-reference">
             {booking.bookingReference}
           </h2>
+
+          {booking.customerEmail && (
+            <section className="mt-6 rounded-2xl bg-slate-100 p-5" data-testid="booking-customer-details">
+              <p className="text-sm font-bold uppercase tracking-wide text-slate-500">Customer</p>
+              <p className="mt-2 text-xl font-black">{booking.customerName || "Customer"}</p>
+              <p className="mt-1 break-all text-sm font-semibold text-slate-600">{booking.customerEmail}</p>
+            </section>
+          )}
 
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             <SummaryCard label="Status" value={booking.status} testId="booking-status" />
@@ -297,3 +313,4 @@ function TimelineStep({ title, detail, testId }) {
 }
 
 export default BookingConfirmationPage;
+

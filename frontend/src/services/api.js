@@ -142,6 +142,41 @@ export const api = {
     });
   },
 
+  async getAdminBookings(token) {
+    return request("/admin/bookings", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getAdminBookingSummary(token) {
+    return request("/admin/bookings/summary", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getAdminBookingByReference(token, bookingReference) {
+    return request(`/admin/bookings/${bookingReference}`, {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getManagerBookingActivity(token) {
+    return request("/manager/bookings/activity", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getManagerBookingByReference(token, bookingReference) {
+    return request(`/manager/bookings/${bookingReference}`, {
+      method: "GET",
+      token,
+    });
+  },
+
   async cancelBooking(token, bookingReference, cancellationReason) {
     return request(`/bookings/${bookingReference}/cancel`, {
       method: "POST",
@@ -157,4 +192,5 @@ export const api = {
     });
   },
 };
+
 

@@ -20,9 +20,9 @@ jobs:
       sqlserver:
         image: mcr.microsoft.com/mssql/server:2022-latest
         env:
-          ACCEPT_EULA: "Y"
-          MSSQL_SA_PASSWORD: "WonderlandCI@12345"
-          MSSQL_PID: "Developer"
+          ACCEPT_EULA: 'Y'
+          MSSQL_SA_PASSWORD: 'WonderlandCI@12345'
+          MSSQL_PID: 'Developer'
         ports:
           - 1433:1433
         options: >-
@@ -38,11 +38,11 @@ jobs:
       DB_DATABASE: WonderlandDB
       DB_USER: sa
       DB_PASSWORD: WonderlandCI@12345
-      DB_ENCRYPT: "false"
-      DB_TRUST_SERVER_CERTIFICATE: "true"
+      DB_ENCRYPT: 'false'
+      DB_TRUST_SERVER_CERTIFICATE: 'true'
       JWT_SECRET: github_actions_wonderland_test_secret
       FRONTEND_URL: http://localhost:5173
-      ENABLE_TEST_SUPPORT: "true"
+      ENABLE_TEST_SUPPORT: 'true'
 
     steps:
       - name: Check out repository
@@ -91,6 +91,7 @@ jobs:
           docker cp backend/sql/iteration-3-7-approval-workflow.sql "$SQL_CONTAINER":/tmp/iteration-3-7-approval-workflow.sql
           docker cp backend/sql/iteration-6-checkout-bookings.sql "$SQL_CONTAINER":/tmp/iteration-6-checkout-bookings.sql
           docker cp backend/sql/iteration-9-booking-cancellation.sql "$SQL_CONTAINER":/tmp/iteration-9-booking-cancellation.sql
+          docker cp backend/sql/iteration-10-booking-visibility-test-employees.sql "$SQL_CONTAINER":/tmp/iteration-10-booking-visibility-test-employees.sql
 
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
@@ -100,16 +101,15 @@ jobs:
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-7-approval-workflow.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-6-checkout-bookings.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-9-booking-cancellation.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-10-booking-visibility-test-employees.sql
 
       - name: Run Playwright tests
         run: npm run test:e2e
 
-      - name: Upload Playwright report
+      - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v6
         with:
           name: playwright-report
           path: frontend/playwright-report/
-          retention-days: 7
-
-
+          retention-days: 30

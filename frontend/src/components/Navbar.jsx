@@ -94,23 +94,33 @@ function Navbar() {
           )}
 
           {user?.role === "Admin" && (
-            <NavLink to="/admin/content" className={linkClass} data-testid="nav-admin-content">
-              Admin Content
-            </NavLink>
+            <>
+              <NavLink to="/admin/content" className={linkClass} data-testid="nav-admin-content">
+                Admin Content
+              </NavLink>
+              <NavLink to="/admin/bookings" className={linkClass} data-testid="nav-admin-bookings">
+                Admin Bookings
+              </NavLink>
+            </>
           )}
 
           {user?.role === "Manager" && (
-            <NavLink to="/manager/approvals" className={linkClass} data-testid="nav-manager-approvals">
-              Manager Tasks
-              {pendingCount > 0 && (
-                <span
-                  className="ml-2 inline-flex animate-pulse rounded-full bg-pink-400 px-2 py-0.5 text-xs font-black text-slate-950"
-                  data-testid="nav-manager-pending-count"
-                >
-                  {pendingCount}
-                </span>
-              )}
-            </NavLink>
+            <>
+              <NavLink to="/manager/approvals" className={linkClass} data-testid="nav-manager-approvals">
+                Manager Tasks
+                {pendingCount > 0 && (
+                  <span
+                    className="ml-2 inline-flex animate-pulse rounded-full bg-pink-400 px-2 py-0.5 text-xs font-black text-slate-950"
+                    data-testid="nav-manager-pending-count"
+                  >
+                    {pendingCount}
+                  </span>
+                )}
+              </NavLink>
+              <NavLink to="/manager/bookings" className={linkClass} data-testid="nav-manager-bookings">
+                Booking Activity
+              </NavLink>
+            </>
           )}
         </div>
 
@@ -157,3 +167,4 @@ function Navbar() {
 }
 
 export default Navbar;
+

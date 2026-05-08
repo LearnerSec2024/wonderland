@@ -19,7 +19,9 @@ import RegisterPage from "./pages/RegisterPage";
 import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminContentPage from "./pages/AdminContentPage";
+import AdminBookingsPage from "./pages/AdminBookingsPage";
 import ManagerApprovalsPage from "./pages/ManagerApprovalsPage";
+import ManagerBookingActivityPage from "./pages/ManagerBookingActivityPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
@@ -94,11 +96,33 @@ function App() {
             />
 
             <Route
+              path="/admin/bookings"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminBookingsPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/manager/approvals"
               element={
                 <ProtectedRoute>
                   <RoleProtectedRoute allowedRoles={["Manager"]}>
                     <ManagerApprovalsPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/manager/bookings"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Manager"]}>
+                    <ManagerBookingActivityPage />
                   </RoleProtectedRoute>
                 </ProtectedRoute>
               }
