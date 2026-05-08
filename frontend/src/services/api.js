@@ -142,6 +142,20 @@ export const api = {
     });
   },
 
+  async getAdminBookingReport(token) {
+    return request("/admin/reports/bookings", {
+      method: "GET",
+      token,
+    });
+  },
+
+  async getManagerBookingReport(token) {
+    return request("/manager/reports/bookings", {
+      method: "GET",
+      token,
+    });
+  },
+
   async getAdminBookings(token) {
     return request("/admin/bookings", {
       method: "GET",
@@ -192,5 +206,6 @@ export const api = {
     });
   },
 };
+
 
 

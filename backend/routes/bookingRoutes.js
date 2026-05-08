@@ -1,7 +1,7 @@
-﻿const express = require("express");
+﻿const express = require('express');
 
-const { sql, getPool } = require("../config/db");
-const { requireAuth } = require("../middleware/authMiddleware");
+const { sql, getPool } = require('../config/db');
+const { requireAuth } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
@@ -65,7 +65,7 @@ function mapBookingItemRow(row) {
   return {
     bookingItemId: row.BookingItemId,
     itemType: row.ItemType,
-    itemId: row.ItemType === "ride" ? row.RideId : row.AccommodationId,
+    itemId: row.ItemType === 'ride' ? row.RideId : row.AccommodationId,
     rideId: row.RideId,
     accommodationId: row.AccommodationId,
     name: row.ItemName,
@@ -78,13 +78,10 @@ function mapBookingItemRow(row) {
 }
 
 async function getBookingItems(poolOrTransaction, bookingId) {
-  const request = poolOrTransaction instanceof sql.Transaction
-    ? new sql.Request(poolOrTransaction)
-    : poolOrTransaction.request();
+  const request =
+    poolOrTransaction instanceof sql.Transaction ? new sql.Request(poolOrTransaction) : poolOrTransaction.request();
 
-  const result = await request
-    .input("BookingId", sql.Int, bookingId)
-    .query(`
+  const result = await request.input('BookingId', sql.Int, bookingId).query(`
       SELECT
         BookingItemId,
         ItemType,
@@ -104,14 +101,11 @@ async function getBookingItems(poolOrTransaction, bookingId) {
   return result.recordset.map((row) => mapBookingItemRow(row));
 }
 
-router.get("/my", async (req, res, next) => {
+router.get('/my', async (req, res, next) => {
   try {
     const pool = await getPool();
 
-    const result = await pool
-      .request()
-      .input("UserId", sql.Int, req.user.userId)
-      .query(`
+    const result = await pool.request().input('UserId', sql.Int, req.user.userId).query(`
         SELECT TOP 20
           BookingId,
           BookingReference,
@@ -138,15 +132,14 @@ router.get("/my", async (req, res, next) => {
   }
 });
 
-router.get("/:bookingReference", async (req, res, next) => {
+router.get('/:bookingReference', async (req, res, next) => {
   try {
     const pool = await getPool();
 
     const bookingResult = await pool
       .request()
-      .input("UserId", sql.Int, req.user.userId)
-      .input("BookingReference", sql.NVarChar(50), req.params.bookingReference)
-      .query(`
+      .input('UserId', sql.Int, req.user.userId)
+      .input('BookingReference', sql.NVarChar(50), req.params.bookingReference).query(`
         SELECT
           BookingId,
           BookingReference,
@@ -167,7 +160,7 @@ router.get("/:bookingReference", async (req, res, next) => {
 
     if (bookingResult.recordset.length === 0) {
       return res.status(404).json({
-        message: "Booking not found",
+        message: 'Booking not found',
       });
     }
 
@@ -182,20 +175,18 @@ router.get("/:bookingReference", async (req, res, next) => {
   }
 });
 
-router.post("/:bookingReference/cancel", async (req, res, next) => {
+router.post('/:bookingReference/cancel', async (req, res, next) => {
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
 
   try {
-    const cancellationReason =
-      req.body?.cancellationReason || "Cancelled by customer";
+    const cancellationReason = req.body?.cancellationReason || 'Cancelled by customer';
 
     await transaction.begin();
 
     const bookingResult = await new sql.Request(transaction)
-      .input("UserId", sql.Int, req.user.userId)
-      .input("BookingReference", sql.NVarChar(50), req.params.bookingReference)
-      .query(`
+      .input('UserId', sql.Int, req.user.userId)
+      .input('BookingReference', sql.NVarChar(50), req.params.bookingReference).query(`
         SELECT
           BookingId,
           BookingReference,
@@ -217,30 +208,45 @@ router.post("/:bookingReference/cancel", async (req, res, next) => {
     if (bookingResult.recordset.length === 0) {
       await transaction.rollback();
       return res.status(404).json({
-        message: "Booking not found",
+        message: 'Booking not found',
       });
     }
 
     const existingBooking = bookingResult.recordset[0];
 
-    if (existingBooking.Status === "Cancelled") {
+    if (existingBooking.Status === 'Cancelled') {
       await transaction.rollback();
       return res.status(400).json({
-        message: "Booking is already cancelled",
+        message: 'Booking is already cancelled',
       });
     }
 
-    if (existingBooking.Status !== "Confirmed") {
+    if (existingBooking.Status !== 'Confirmed') {
       await transaction.rollback();
       return res.status(400).json({
-        message: "Only confirmed bookings can be cancelled",
+        message: 'Only confirmed bookings can be cancelled',
       });
     }
 
     const updateResult = await new sql.Request(transaction)
-      .input("BookingId", sql.Int, existingBooking.BookingId)
-      .input("CancellationReason", sql.NVarChar(1000), cancellationReason)
-      .query(`
+      .input('BookingId', sql.Int, existingBooking.BookingId)
+      .input('CancellationReason', sql.NVarChar(1000), cancellationReason).query(`
+        DECLARE @UpdatedBooking TABLE
+        (
+          BookingId INT,
+          BookingReference NVARCHAR(50),
+          UserId INT,
+          Status NVARCHAR(50),
+          BasketItemCount INT,
+          TotalAmount DECIMAL(10,2),
+          TotalPointsEarned INT,
+          VisitDate DATE NULL,
+          CustomerNotes NVARCHAR(1000) NULL,
+          CreatedAt DATETIME2,
+          CancelledAt DATETIME2 NULL,
+          CancellationReason NVARCHAR(1000) NULL
+        );
+
         UPDATE dbo.Bookings
         SET
           Status = 'Cancelled',
@@ -259,14 +265,29 @@ router.post("/:bookingReference/cancel", async (req, res, next) => {
           INSERTED.CreatedAt,
           INSERTED.CancelledAt,
           INSERTED.CancellationReason
+        INTO @UpdatedBooking
         WHERE BookingId = @BookingId;
+
+        SELECT
+          BookingId,
+          BookingReference,
+          UserId,
+          Status,
+          BasketItemCount,
+          TotalAmount,
+          TotalPointsEarned,
+          VisitDate,
+          CustomerNotes,
+          CreatedAt,
+          CancelledAt,
+          CancellationReason
+        FROM @UpdatedBooking;
       `);
 
     if (existingBooking.TotalPointsEarned > 0) {
       await new sql.Request(transaction)
-        .input("UserId", sql.Int, req.user.userId)
-        .input("TotalPointsEarned", sql.Int, existingBooking.TotalPointsEarned)
-        .query(`
+        .input('UserId', sql.Int, req.user.userId)
+        .input('TotalPointsEarned', sql.Int, existingBooking.TotalPointsEarned).query(`
           UPDATE dbo.Users
           SET TotalPoints =
             CASE
@@ -283,7 +304,7 @@ router.post("/:bookingReference/cancel", async (req, res, next) => {
     await transaction.commit();
 
     res.json({
-      message: "Booking cancelled successfully",
+      message: 'Booking cancelled successfully',
       booking: mapBookingRow(updatedBooking, items),
     });
   } catch (error) {
@@ -297,7 +318,7 @@ router.post("/:bookingReference/cancel", async (req, res, next) => {
   }
 });
 
-router.post("/checkout", async (req, res, next) => {
+router.post('/checkout', async (req, res, next) => {
   const pool = await getPool();
   const transaction = new sql.Transaction(pool);
 
@@ -306,7 +327,7 @@ router.post("/checkout", async (req, res, next) => {
 
     if (!Array.isArray(items) || items.length === 0) {
       return res.status(400).json({
-        message: "Basket must contain at least one item",
+        message: 'Basket must contain at least one item',
       });
     }
 
@@ -315,13 +336,11 @@ router.post("/checkout", async (req, res, next) => {
     const normalizedItems = [];
 
     for (const item of items) {
-      if (item.itemType === "ride") {
+      if (item.itemType === 'ride') {
         const rideId = Number(item.itemId);
         const quantity = Math.max(1, Number(item.quantity || 1));
 
-        const rideResult = await new sql.Request(transaction)
-          .input("RideId", sql.Int, rideId)
-          .query(`
+        const rideResult = await new sql.Request(transaction).input('RideId', sql.Int, rideId).query(`
             SELECT
               RideId,
               Name,
@@ -344,7 +363,7 @@ router.post("/checkout", async (req, res, next) => {
         const pointsEarned = Number(ride.PointsEarned || 0) * quantity;
 
         normalizedItems.push({
-          itemType: "ride",
+          itemType: 'ride',
           itemId: ride.RideId,
           rideId: ride.RideId,
           accommodationId: null,
@@ -355,13 +374,15 @@ router.post("/checkout", async (req, res, next) => {
           subtotal,
           pointsEarned,
         });
-      } else if (item.itemType === "accommodation") {
+      } else if (item.itemType === 'accommodation') {
         const accommodationId = Number(item.itemId);
         const requestedGuestCount = Math.max(1, Number(item.guestCount || 1));
 
-        const accommodationResult = await new sql.Request(transaction)
-          .input("AccommodationId", sql.Int, accommodationId)
-          .query(`
+        const accommodationResult = await new sql.Request(transaction).input(
+          'AccommodationId',
+          sql.Int,
+          accommodationId,
+        ).query(`
             SELECT
               AccommodationId,
               Name,
@@ -385,7 +406,7 @@ router.post("/checkout", async (req, res, next) => {
         const pricing = calculateAccommodationPricing(unitPrice, guestCount);
 
         normalizedItems.push({
-          itemType: "accommodation",
+          itemType: 'accommodation',
           itemId: accommodation.AccommodationId,
           rideId: null,
           accommodationId: accommodation.AccommodationId,
@@ -397,28 +418,43 @@ router.post("/checkout", async (req, res, next) => {
           pointsEarned: 0,
         });
       } else {
-        throw new Error("Basket item type must be ride or accommodation");
+        throw new Error('Basket item type must be ride or accommodation');
       }
     }
 
     const totalAmount = normalizedItems.reduce((total, item) => total + item.subtotal, 0);
     const totalPointsEarned = normalizedItems.reduce((total, item) => total + item.pointsEarned, 0);
     const basketItemCount = normalizedItems.reduce((total, item) => {
-      if (item.itemType === "ride") return total + item.quantity;
+      if (item.itemType === 'ride') return total + item.quantity;
       return total + 1;
     }, 0);
 
     const bookingReference = makeBookingReference(req.user.userId);
 
     const bookingResult = await new sql.Request(transaction)
-      .input("BookingReference", sql.NVarChar(50), bookingReference)
-      .input("UserId", sql.Int, req.user.userId)
-      .input("BasketItemCount", sql.Int, basketItemCount)
-      .input("TotalAmount", sql.Decimal(10, 2), totalAmount)
-      .input("TotalPointsEarned", sql.Int, totalPointsEarned)
-      .input("VisitDate", sql.Date, visitDate || null)
-      .input("CustomerNotes", sql.NVarChar(1000), customerNotes || null)
-      .query(`
+      .input('BookingReference', sql.NVarChar(50), bookingReference)
+      .input('UserId', sql.Int, req.user.userId)
+      .input('BasketItemCount', sql.Int, basketItemCount)
+      .input('TotalAmount', sql.Decimal(10, 2), totalAmount)
+      .input('TotalPointsEarned', sql.Int, totalPointsEarned)
+      .input('VisitDate', sql.Date, visitDate || null)
+      .input('CustomerNotes', sql.NVarChar(1000), customerNotes || null).query(`
+        DECLARE @InsertedBooking TABLE
+        (
+          BookingId INT,
+          BookingReference NVARCHAR(50),
+          UserId INT,
+          Status NVARCHAR(50),
+          BasketItemCount INT,
+          TotalAmount DECIMAL(10,2),
+          TotalPointsEarned INT,
+          VisitDate DATE NULL,
+          CustomerNotes NVARCHAR(1000) NULL,
+          CreatedAt DATETIME2,
+          CancelledAt DATETIME2 NULL,
+          CancellationReason NVARCHAR(1000) NULL
+        );
+
         INSERT INTO dbo.Bookings
           (
             BookingReference,
@@ -443,6 +479,7 @@ router.post("/checkout", async (req, res, next) => {
           INSERTED.CreatedAt,
           INSERTED.CancelledAt,
           INSERTED.CancellationReason
+        INTO @InsertedBooking
         VALUES
           (
             @BookingReference,
@@ -454,23 +491,37 @@ router.post("/checkout", async (req, res, next) => {
             @VisitDate,
             @CustomerNotes
           );
+
+        SELECT
+          BookingId,
+          BookingReference,
+          UserId,
+          Status,
+          BasketItemCount,
+          TotalAmount,
+          TotalPointsEarned,
+          VisitDate,
+          CustomerNotes,
+          CreatedAt,
+          CancelledAt,
+          CancellationReason
+        FROM @InsertedBooking;
       `);
 
     const booking = bookingResult.recordset[0];
 
     for (const item of normalizedItems) {
       await new sql.Request(transaction)
-        .input("BookingId", sql.Int, booking.BookingId)
-        .input("ItemType", sql.NVarChar(50), item.itemType)
-        .input("RideId", sql.Int, item.rideId)
-        .input("AccommodationId", sql.Int, item.accommodationId)
-        .input("ItemName", sql.NVarChar(200), item.name)
-        .input("UnitPrice", sql.Decimal(10, 2), item.unitPrice)
-        .input("Quantity", sql.Int, item.quantity)
-        .input("GuestCount", sql.Int, item.guestCount)
-        .input("Subtotal", sql.Decimal(10, 2), item.subtotal)
-        .input("PointsEarned", sql.Int, item.pointsEarned)
-        .query(`
+        .input('BookingId', sql.Int, booking.BookingId)
+        .input('ItemType', sql.NVarChar(50), item.itemType)
+        .input('RideId', sql.Int, item.rideId)
+        .input('AccommodationId', sql.Int, item.accommodationId)
+        .input('ItemName', sql.NVarChar(200), item.name)
+        .input('UnitPrice', sql.Decimal(10, 2), item.unitPrice)
+        .input('Quantity', sql.Int, item.quantity)
+        .input('GuestCount', sql.Int, item.guestCount)
+        .input('Subtotal', sql.Decimal(10, 2), item.subtotal)
+        .input('PointsEarned', sql.Int, item.pointsEarned).query(`
           INSERT INTO dbo.BookingItems
             (
               BookingId,
@@ -502,9 +553,8 @@ router.post("/checkout", async (req, res, next) => {
 
     if (totalPointsEarned > 0) {
       await new sql.Request(transaction)
-        .input("UserId", sql.Int, req.user.userId)
-        .input("TotalPointsEarned", sql.Int, totalPointsEarned)
-        .query(`
+        .input('UserId', sql.Int, req.user.userId)
+        .input('TotalPointsEarned', sql.Int, totalPointsEarned).query(`
           UPDATE dbo.Users
           SET TotalPoints = TotalPoints + @TotalPointsEarned
           WHERE UserId = @UserId;
@@ -514,7 +564,7 @@ router.post("/checkout", async (req, res, next) => {
     await transaction.commit();
 
     res.status(201).json({
-      message: "Booking confirmed successfully",
+      message: 'Booking confirmed successfully',
       booking: mapBookingRow(booking, normalizedItems),
     });
   } catch (error) {

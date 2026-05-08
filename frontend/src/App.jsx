@@ -20,8 +20,10 @@ import DashboardPage from "./pages/DashboardPage";
 import ProfilePage from "./pages/ProfilePage";
 import AdminContentPage from "./pages/AdminContentPage";
 import AdminBookingsPage from "./pages/AdminBookingsPage";
+import AdminReportsPage from "./pages/AdminReportsPage";
 import ManagerApprovalsPage from "./pages/ManagerApprovalsPage";
 import ManagerBookingActivityPage from "./pages/ManagerBookingActivityPage";
+import ManagerReportsPage from "./pages/ManagerReportsPage";
 import NotFoundPage from "./pages/NotFoundPage";
 
 function App() {
@@ -107,6 +109,17 @@ function App() {
             />
 
             <Route
+              path="/admin/reports"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Admin"]}>
+                    <AdminReportsPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
               path="/manager/approvals"
               element={
                 <ProtectedRoute>
@@ -123,6 +136,17 @@ function App() {
                 <ProtectedRoute>
                   <RoleProtectedRoute allowedRoles={["Manager"]}>
                     <ManagerBookingActivityPage />
+                  </RoleProtectedRoute>
+                </ProtectedRoute>
+              }
+            />
+
+            <Route
+              path="/manager/reports"
+              element={
+                <ProtectedRoute>
+                  <RoleProtectedRoute allowedRoles={["Manager"]}>
+                    <ManagerReportsPage />
                   </RoleProtectedRoute>
                 </ProtectedRoute>
               }

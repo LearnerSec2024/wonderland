@@ -101,6 +101,9 @@ function Navbar() {
               <NavLink to="/admin/bookings" className={linkClass} data-testid="nav-admin-bookings">
                 Admin Bookings
               </NavLink>
+              <NavLink to="/admin/reports" className={linkClass} data-testid="nav-admin-reports">
+                Admin Reports
+              </NavLink>
             </>
           )}
 
@@ -119,6 +122,9 @@ function Navbar() {
               </NavLink>
               <NavLink to="/manager/bookings" className={linkClass} data-testid="nav-manager-bookings">
                 Booking Activity
+              </NavLink>
+              <NavLink to="/manager/reports" className={linkClass} data-testid="nav-manager-reports">
+                Manager Reports
               </NavLink>
             </>
           )}
@@ -167,4 +173,5 @@ function Navbar() {
 }
 
 export default Navbar;
+
 
