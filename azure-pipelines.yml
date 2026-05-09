@@ -150,7 +150,8 @@ steps:
       RideId,
       Name,
       IsActive,
-      ApprovalStatus
+      ApprovalStatus,
+      IsFamilyFriendly
       FROM dbo.Rides
       ORDER BY RideId;
 
