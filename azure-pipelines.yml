@@ -86,16 +86,20 @@ steps:
         -d WonderlandDB \
         -Q "
         SELECT
-          'dbo.Rides' AS TableName,
-          COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn;
+      'dbo.Rides' AS TableName,
+      COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
+      COL_LENGTH('dbo.Rides', 'MinimumAgeYears') AS MinimumAgeYearsColumn,
+      COL_LENGTH('dbo.Rides', 'RequiresAdultSupervision') AS RequiresAdultSupervisionColumn;
 
-        SELECT
-          RideId,
-          Name,
-          IsActive,
-          IsFamilyFriendly
-        FROM dbo.Rides
-        ORDER BY RideId;
+      SELECT
+      RideId,
+      Name,
+      IsActive,
+      IsFamilyFriendly,
+      MinimumAgeYears,
+      RequiresAdultSupervision
+      FROM dbo.Rides
+      ORDER BY RideId;
         "
     displayName: 'Run rides family friendly schema migration explicitly'
 
