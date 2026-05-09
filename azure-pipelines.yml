@@ -62,6 +62,44 @@ steps:
     displayName: 'Run SQL migrations'
 
   - script: |
+      echo "Running rides family friendly schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "family" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-1-rides-family-friendly-schema.sql"
+
+      echo "Checking IsFamilyFriendly column after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Rides' AS TableName,
+          COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn;
+
+        SELECT
+          RideId,
+          Name,
+          IsActive,
+          IsFamilyFriendly
+        FROM dbo.Rides
+        ORDER BY RideId;
+        "
+    displayName: 'Run rides family friendly schema migration explicitly'
+
+  - script: |
       echo "Running content approval schema migration explicitly..."
       echo "Files available in /tmp/sql:"
       docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "iteration-3-7" || true
