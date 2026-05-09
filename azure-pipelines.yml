@@ -62,6 +62,25 @@ steps:
     displayName: 'Run SQL migrations'
 
   - script: |
+      cat > backend/.env <<EOF
+      NODE_ENV=test
+      PORT=5010
+      FRONTEND_URL=http://localhost:5173
+      JWT_SECRET=azure-devops-ci-wonderland-secret
+      ENABLE_TEST_SUPPORT=true
+
+      DB_SERVER=localhost
+      DB_DATABASE=WonderlandDB
+      DB_USER=sa
+      DB_PASSWORD=$(DB_PASSWORD)
+      DB_ENCRYPT=false
+      DB_TRUST_SERVER_CERTIFICATE=true
+      EOF
+
+      echo "Created backend/.env for Azure DevOps CI"
+    displayName: 'Create backend CI environment file'
+
+  - script: |
       npm ci
       npm ci --prefix backend
       npm ci --prefix frontend
