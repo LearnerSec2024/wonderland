@@ -27,9 +27,14 @@ async function createGuestBooking(page, request) {
     },
   });
 
-  expect(registerResponse.ok()).toBeTruthy();
+  const authResult = await registerResponse.json().catch(async () => ({
+    rawBody: await registerResponse.text().catch(() => 'Unable to read response body'),
+  }));
 
-  const authResult = await registerResponse.json();
+  expect(
+    registerResponse.ok(),
+    `Guest registration failed with status ${registerResponse.status()}: ${JSON.stringify(authResult)}`,
+  ).toBeTruthy();
 
   await page.goto('/');
   await page.evaluate((token) => {

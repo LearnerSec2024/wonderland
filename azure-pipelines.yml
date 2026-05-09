@@ -282,6 +282,21 @@ steps:
       curl -i http://localhost:5010/api/accommodations || true
 
       echo ""
+      echo "Checking /api/auth/register response..."
+      EMAIL="azure.smoke.${BUILD_BUILDID}.${RANDOM}@wonderland.local"
+
+      curl -i -X POST http://localhost:5010/api/auth/register \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"accountType\": \"Guest\",
+          \"firstName\": \"Azure\",
+          \"lastName\": \"Smoke\",
+          \"email\": \"${EMAIL}\",
+          \"dateOfBirth\": \"1992-04-12\",
+          \"password\": \"Password123!\"
+        }" || true
+
+      echo ""
       echo "Backend log output:"
       cat backend-ci.log
     displayName: 'Smoke test backend API responses'
