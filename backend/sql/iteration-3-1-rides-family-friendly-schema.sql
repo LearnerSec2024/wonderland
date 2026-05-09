@@ -2,10 +2,10 @@
 GO
 
 /* =========================================================
-   Iteration 3.1: Rides Family Friendly Schema
+   Rides Family Friendly Schema Fix
    Safe to run multiple times.
 
-   Adds dbo.Rides.IsFamilyFriendly used by the rides API/listing UI.
+   Adds dbo.Rides.IsFamilyFriendly because the rides API expects it.
    ========================================================= */
 
 IF COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') IS NULL
@@ -20,8 +20,7 @@ UPDATE dbo.Rides
 SET IsFamilyFriendly = CASE
     WHEN Name IN ('Enchanted Carousel', 'Pirate Splash Falls', 'Galaxy Spinner') THEN 1
     ELSE 0
-END
-WHERE IsFamilyFriendly IS NOT NULL;
+END;
 GO
 
 SELECT
@@ -31,9 +30,10 @@ SELECT
 SELECT
     RideId,
     Name,
+    IsActive,
     IsFamilyFriendly
 FROM dbo.Rides
 ORDER BY RideId;
 
-SELECT 'Iteration 3.1 rides family friendly schema migration completed successfully' AS Message;
+SELECT 'Rides family friendly schema migration completed successfully' AS Message;
 GO
