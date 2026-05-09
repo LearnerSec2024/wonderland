@@ -96,11 +96,29 @@ steps:
       UNION ALL
       SELECT 'Bookings', COUNT(*) FROM dbo.Bookings;
 
-      SELECT TOP 10 RideId, Name, ApprovalStatus, IsActive
+      SELECT
+        'dbo.Rides' AS TableName,
+        COL_LENGTH('dbo.Rides', 'ApprovalStatus') AS ApprovalStatusColumn,
+        COL_LENGTH('dbo.Rides', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
+        COL_LENGTH('dbo.Rides', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
+
+      SELECT
+        'dbo.Accommodations' AS TableName,
+        COL_LENGTH('dbo.Accommodations', 'ApprovalStatus') AS ApprovalStatusColumn,
+        COL_LENGTH('dbo.Accommodations', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
+        COL_LENGTH('dbo.Accommodations', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
+
+      SELECT TOP 10
+        RideId,
+        Name,
+        IsActive
       FROM dbo.Rides
       ORDER BY RideId;
 
-      SELECT TOP 10 AccommodationId, Name, ApprovalStatus, IsActive
+      SELECT TOP 10
+        AccommodationId,
+        Name,
+        IsActive
       FROM dbo.Accommodations
       ORDER BY AccommodationId;
       "
