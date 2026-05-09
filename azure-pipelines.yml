@@ -75,7 +75,7 @@ steps:
         -d WonderlandDB \
         -i "/tmp/sql/iteration-3-1-rides-family-friendly-schema.sql"
 
-      echo "Checking IsFamilyFriendly column after explicit migration..."
+      echo "Checking ride eligibility columns after explicit migration..."
 
       docker exec $(SQL_CONTAINER) $(SQLCMD) \
         -b \
@@ -86,22 +86,62 @@ steps:
         -d WonderlandDB \
         -Q "
         SELECT
-      'dbo.Rides' AS TableName,
-      COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
-      COL_LENGTH('dbo.Rides', 'MinimumAgeYears') AS MinimumAgeYearsColumn,
-      COL_LENGTH('dbo.Rides', 'RequiresAdultSupervision') AS RequiresAdultSupervisionColumn;
+          'dbo.Rides' AS TableName,
+          COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
+          COL_LENGTH('dbo.Rides', 'MinimumAgeYears') AS MinimumAgeYearsColumn,
+          COL_LENGTH('dbo.Rides', 'RequiresAdultSupervision') AS RequiresAdultSupervisionColumn;
 
-      SELECT
-      RideId,
-      Name,
-      IsActive,
-      IsFamilyFriendly,
-      MinimumAgeYears,
-      RequiresAdultSupervision
-      FROM dbo.Rides
-      ORDER BY RideId;
+        SELECT
+          RideId,
+          Name,
+          IsActive,
+          IsFamilyFriendly,
+          MinimumAgeYears,
+          RequiresAdultSupervision
+        FROM dbo.Rides
+        ORDER BY RideId;
         "
     displayName: 'Run rides family friendly schema migration explicitly'
+
+  - script: |
+      echo "Running accommodations eligibility schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "accommodations" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-2-accommodations-eligibility-schema.sql"
+
+      echo "Checking accommodation eligibility columns after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Accommodations' AS TableName,
+          COL_LENGTH('dbo.Accommodations', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
+          COL_LENGTH('dbo.Accommodations', 'MinimumLeadGuestAgeYears') AS MinimumLeadGuestAgeYearsColumn;
+
+        SELECT
+          AccommodationId,
+          Name,
+          IsActive,
+          IsFamilyFriendly,
+          MinimumLeadGuestAgeYears
+        FROM dbo.Accommodations
+        ORDER BY AccommodationId;
+        "
+    displayName: 'Run accommodations eligibility schema migration explicitly'
 
   - script: |
       echo "Running content approval schema migration explicitly..."
@@ -178,30 +218,39 @@ steps:
 
       SELECT
         'dbo.Rides' AS TableName,
+        COL_LENGTH('dbo.Rides', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
+        COL_LENGTH('dbo.Rides', 'MinimumAgeYears') AS MinimumAgeYearsColumn,
+        COL_LENGTH('dbo.Rides', 'RequiresAdultSupervision') AS RequiresAdultSupervisionColumn,
         COL_LENGTH('dbo.Rides', 'ApprovalStatus') AS ApprovalStatusColumn,
         COL_LENGTH('dbo.Rides', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
         COL_LENGTH('dbo.Rides', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
 
       SELECT
         'dbo.Accommodations' AS TableName,
+        COL_LENGTH('dbo.Accommodations', 'IsFamilyFriendly') AS IsFamilyFriendlyColumn,
+        COL_LENGTH('dbo.Accommodations', 'MinimumLeadGuestAgeYears') AS MinimumLeadGuestAgeYearsColumn,
         COL_LENGTH('dbo.Accommodations', 'ApprovalStatus') AS ApprovalStatusColumn,
         COL_LENGTH('dbo.Accommodations', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
         COL_LENGTH('dbo.Accommodations', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
 
       SELECT TOP 10
-      RideId,
-      Name,
-      IsActive,
-      ApprovalStatus,
-      IsFamilyFriendly
+        RideId,
+        Name,
+        IsActive,
+        IsFamilyFriendly,
+        MinimumAgeYears,
+        RequiresAdultSupervision,
+        ApprovalStatus
       FROM dbo.Rides
       ORDER BY RideId;
 
       SELECT TOP 10
-      AccommodationId,
-      Name,
-      IsActive,
-      ApprovalStatus
+        AccommodationId,
+        Name,
+        IsActive,
+        IsFamilyFriendly,
+        MinimumLeadGuestAgeYears,
+        ApprovalStatus
       FROM dbo.Accommodations
       ORDER BY AccommodationId;
       "
