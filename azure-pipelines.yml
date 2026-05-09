@@ -84,7 +84,7 @@ steps:
       echo "Checking WonderlandDB seed data..."
 
       docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -d WonderlandDB -Q "
-      SELECT 'Users' AS TableName, COUNT(*) AS RowCount FROM dbo.Users
+      SELECT 'Users' AS TableName, COUNT(*) AS TotalRows FROM dbo.Users
       UNION ALL
       SELECT 'Employees', COUNT(*) FROM dbo.Employees
       UNION ALL
