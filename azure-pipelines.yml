@@ -64,7 +64,7 @@ steps:
   - script: |
       echo "Running rides family friendly schema migration explicitly..."
       echo "Files available in /tmp/sql:"
-      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "family" || true
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | package "family" || true
 
       docker exec $(SQL_CONTAINER) $(SQLCMD) \
         -b \
@@ -353,6 +353,56 @@ steps:
           \"lastName\": \"Smoke\",
           \"email\": \"${EMAIL}\",
           \"dateOfBirth\": \"1992-04-12\",
+          \"password\": \"Password123!\"
+        }" || true
+
+      echo ""
+      echo "Checking guest profile API response..."
+      PROFILE_EMAIL="azure.profile.${BUILD_BUILDID}.${RANDOM}@wonderland.local"
+
+      PROFILE_REGISTER_RESPONSE=$(curl -sS -X POST http://localhost:5010/api/auth/register \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"accountType\": \"Guest\",
+          \"firstName\": \"Azure\",
+          \"lastName\": \"Profile\",
+          \"email\": \"${PROFILE_EMAIL}\",
+          \"dateOfBirth\": \"1992-04-12\",
+          \"password\": \"Password123!\"
+        }")
+
+      echo "$PROFILE_REGISTER_RESPONSE"
+
+      PROFILE_TOKEN=$(node -e "const data = JSON.parse(process.argv[1]); console.log(data.token || '')" "$PROFILE_REGISTER_RESPONSE")
+
+      curl -i http://localhost:5010/api/profile/me \
+        -H "Authorization: Bearer ${PROFILE_TOKEN}" || true
+
+      echo ""
+      echo "Checking Admin employee registration response..."
+
+      curl -i -X POST http://localhost:5010/api/auth/register \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"accountType\": \"Admin\",
+          \"firstName\": \"Azure\",
+          \"lastName\": \"AdminSmoke\",
+          \"email\": \"visibility.admin@wonderland.local\",
+          \"dateOfBirth\": \"1986-03-03\",
+          \"password\": \"Password123!\"
+        }" || true
+
+      echo ""
+      echo "Checking Manager employee registration response..."
+
+      curl -i -X POST http://localhost:5010/api/auth/register \
+        -H "Content-Type: application/json" \
+        -d "{
+          \"accountType\": \"Manager\",
+          \"firstName\": \"Azure\",
+          \"lastName\": \"ManagerSmoke\",
+          \"email\": \"visibility.manager@wonderland.local\",
+          \"dateOfBirth\": \"1989-08-08\",
           \"password\": \"Password123!\"
         }" || true
 
