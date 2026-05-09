@@ -1,0 +1,93 @@
+﻿trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  DB_PASSWORD: 'Your_strong_password123!'
+  SQL_CONTAINER: 'wonderland-sql'
+  SQLCMD: '/opt/mssql-tools18/bin/sqlcmd'
+
+steps:
+  - checkout: self
+
+  - task: NodeTool@0
+    displayName: 'Use Node.js 24'
+    inputs:
+      versionSpec: '24.x'
+
+  - script: |
+      docker run -e "ACCEPT_EULA=Y" \
+        -e "MSSQL_SA_PASSWORD=$(DB_PASSWORD)" \
+        -e "MSSQL_PID=Developer" \
+        -e "MSSQL_AGENT_ENABLED=true" \
+        -p 1433:1433 \
+        --name $(SQL_CONTAINER) \
+        -d mcr.microsoft.com/mssql/server:2022-latest
+
+      echo "Waiting for SQL Server..."
+      for i in {1..60}; do
+        docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -Q "SELECT 1" && break
+        echo "SQL Server not ready yet..."
+        sleep 5
+      done
+    displayName: 'Start SQL Server container'
+
+  - script: |
+      docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -Q "IF DB_ID('WonderlandDB') IS NULL CREATE DATABASE WonderlandDB;"
+    displayName: 'Create WonderlandDB'
+
+  - script: |
+      echo "Copying SQL scripts into SQL container..."
+      docker cp backend/sql/. $(SQL_CONTAINER):/tmp/sql
+
+      echo "Running SQL scripts..."
+
+      # Run all SQL files except Iteration 11.1 first.
+      # Iteration 11.1 must run after Iteration 11 because it modifies the audit approach.
+      for file in $(find backend/sql -maxdepth 1 -name "*.sql" ! -name "iteration-11-1-cdc-booking-audit-content-trigger.sql" | sort -V); do
+        filename=$(basename "$file")
+        echo "Running $filename"
+        docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -d WonderlandDB -i "/tmp/sql/$filename"
+      done
+
+      if [ -f "backend/sql/iteration-11-1-cdc-booking-audit-content-trigger.sql" ]; then
+        echo "Running iteration-11-1-cdc-booking-audit-content-trigger.sql last"
+        docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -d WonderlandDB -i "/tmp/sql/iteration-11-1-cdc-booking-audit-content-trigger.sql"
+      fi
+    displayName: 'Run SQL migrations'
+
+  - script: |
+      npm ci
+      npm ci --prefix backend
+      npm ci --prefix frontend
+    displayName: 'Install dependencies'
+
+  - script: |
+      npx playwright install --with-deps chromium
+    workingDirectory: frontend
+    displayName: 'Install Playwright browsers'
+
+  - script: |
+      npm run test:e2e
+    displayName: 'Run Playwright tests'
+
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    displayName: 'Publish Playwright HTML report'
+    inputs:
+      targetPath: 'frontend/playwright-report'
+      artifact: 'playwright-report'
+      publishLocation: 'pipeline'
+
+  - task: PublishPipelineArtifact@1
+    condition: always()
+    displayName: 'Publish Playwright test results'
+    inputs:
+      targetPath: 'frontend/test-results'
+      artifact: 'playwright-test-results'
+      publishLocation: 'pipeline'
