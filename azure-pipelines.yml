@@ -62,6 +62,44 @@ steps:
     displayName: 'Run SQL migrations'
 
   - script: |
+      echo "Running content approval schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "iteration-3-7" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-7-content-approval-schema.sql"
+
+      echo "Checking content approval columns after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Rides' AS TableName,
+          COL_LENGTH('dbo.Rides', 'ApprovalStatus') AS ApprovalStatusColumn,
+          COL_LENGTH('dbo.Rides', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
+          COL_LENGTH('dbo.Rides', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
+
+        SELECT
+          'dbo.Accommodations' AS TableName,
+          COL_LENGTH('dbo.Accommodations', 'ApprovalStatus') AS ApprovalStatusColumn,
+          COL_LENGTH('dbo.Accommodations', 'SubmittedByUserId') AS SubmittedByUserIdColumn,
+          COL_LENGTH('dbo.Accommodations', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
+        "
+    displayName: 'Run content approval schema migration explicitly'
+
+  - script: |
       cat > backend/.env <<EOF
       NODE_ENV=test
       PORT=5010
