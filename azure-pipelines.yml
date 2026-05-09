@@ -81,6 +81,32 @@ steps:
     displayName: 'Create backend CI environment file'
 
   - script: |
+      echo "Checking WonderlandDB seed data..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) -S localhost -U sa -P "$(DB_PASSWORD)" -C -d WonderlandDB -Q "
+      SELECT 'Users' AS TableName, COUNT(*) AS RowCount FROM dbo.Users
+      UNION ALL
+      SELECT 'Employees', COUNT(*) FROM dbo.Employees
+      UNION ALL
+      SELECT 'Roles', COUNT(*) FROM dbo.Roles
+      UNION ALL
+      SELECT 'Rides', COUNT(*) FROM dbo.Rides
+      UNION ALL
+      SELECT 'Accommodations', COUNT(*) FROM dbo.Accommodations
+      UNION ALL
+      SELECT 'Bookings', COUNT(*) FROM dbo.Bookings;
+
+      SELECT TOP 10 RideId, Name, ApprovalStatus, IsActive
+      FROM dbo.Rides
+      ORDER BY RideId;
+
+      SELECT TOP 10 AccommodationId, Name, ApprovalStatus, IsActive
+      FROM dbo.Accommodations
+      ORDER BY AccommodationId;
+      "
+    displayName: 'Verify WonderlandDB seed data'
+
+  - script: |
       npm ci
       npm ci --prefix backend
       npm ci --prefix frontend
