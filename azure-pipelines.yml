@@ -182,6 +182,36 @@ steps:
     displayName: 'Run content approval schema migration explicitly'
 
   - script: |
+      echo "Running users employee link schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "users-employee" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-5-users-employee-link-schema.sql"
+
+      echo "Checking Users.EmployeeId column after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Users' AS TableName,
+          COL_LENGTH('dbo.Users', 'EmployeeId') AS EmployeeIdColumn;
+        "
+    displayName: 'Run users employee link schema migration explicitly'
+
+  - script: |
       cat > backend/.env <<EOF
       NODE_ENV=test
       PORT=5010

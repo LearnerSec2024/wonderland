@@ -13,7 +13,7 @@ test.describe("Wonderland ride and accommodation detail pages", () => {
     await expect(page.getByTestId("ride-details-page")).toBeVisible();
     await expect(page.getByTestId("ride-details-title")).toContainText("Dragon Rush Coaster");
     await expect(page.getByTestId("ride-details-thrill")).toContainText("Extreme");
-    await expect(page.getByTestId("ride-details-age")).toContainText("13+ years");
+    await expect(page.getByTestId("ride-details-age")).toContainText("12+ years");
     await expect(page.getByTestId("ride-details-height")).toContainText("140 cm");
     await expect(page.getByTestId("ride-details-price")).toContainText("$45.00");
     await expect(page.getByTestId("ride-details-points")).toContainText("+120 points");
@@ -62,3 +62,4 @@ test.describe("Wonderland ride and accommodation detail pages", () => {
     await expect(page).toHaveURL(/\/accommodations$/);
   });
 });
+
