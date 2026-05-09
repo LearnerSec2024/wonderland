@@ -147,16 +147,18 @@ steps:
         COL_LENGTH('dbo.Accommodations', 'ReviewedByUserId') AS ReviewedByUserIdColumn;
 
       SELECT TOP 10
-        RideId,
-        Name,
-        IsActive
+      RideId,
+      Name,
+      IsActive,
+      ApprovalStatus
       FROM dbo.Rides
       ORDER BY RideId;
 
       SELECT TOP 10
-        AccommodationId,
-        Name,
-        IsActive
+      AccommodationId,
+      Name,
+      IsActive,
+      ApprovalStatus
       FROM dbo.Accommodations
       ORDER BY AccommodationId;
       "
@@ -167,6 +169,30 @@ steps:
       npm ci --prefix backend
       npm ci --prefix frontend
     displayName: 'Install dependencies'
+
+  - script: |
+      echo "Starting backend for API smoke checks..."
+      npm run dev --prefix backend > backend-ci.log 2>&1 &
+
+      echo "Waiting for backend health endpoint..."
+      for i in {1..30}; do
+        curl -sS http://localhost:5010/api/health && break
+        echo "Backend not ready yet..."
+        sleep 3
+      done
+
+      echo ""
+      echo "Checking /api/rides response..."
+      curl -i http://localhost:5010/api/rides || true
+
+      echo ""
+      echo "Checking /api/accommodations response..."
+      curl -i http://localhost:5010/api/accommodations || true
+
+      echo ""
+      echo "Backend log output:"
+      cat backend-ci.log
+    displayName: 'Smoke test backend API responses'
 
   - script: |
       npx playwright install --with-deps chromium
