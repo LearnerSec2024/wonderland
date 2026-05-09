@@ -212,6 +212,36 @@ steps:
     displayName: 'Run users employee link schema migration explicitly'
 
   - script: |
+      echo "Running users DateOfBirth schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "dateofbirth" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-5-users-dateofbirth-schema.sql"
+
+      echo "Checking Users.DateOfBirth column after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Users' AS TableName,
+          COL_LENGTH('dbo.Users', 'DateOfBirth') AS DateOfBirthColumn;
+        "
+    displayName: 'Run users DateOfBirth schema migration explicitly'
+
+  - script: |
       cat > backend/.env <<EOF
       NODE_ENV=test
       PORT=5010
