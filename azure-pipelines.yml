@@ -64,7 +64,7 @@ steps:
   - script: |
       echo "Running rides family friendly schema migration explicitly..."
       echo "Files available in /tmp/sql:"
-      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | package "family" || true
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "family" || true
 
       docker exec $(SQL_CONTAINER) $(SQLCMD) \
         -b \
@@ -240,6 +240,38 @@ steps:
           COL_LENGTH('dbo.Users', 'DateOfBirth') AS DateOfBirthColumn;
         "
     displayName: 'Run users DateOfBirth schema migration explicitly'
+
+  - script: |
+      echo "Running employees registration tracking schema migration explicitly..."
+      echo "Files available in /tmp/sql:"
+      docker exec $(SQL_CONTAINER) ls -la /tmp/sql | grep "employees-registration" || true
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -i "/tmp/sql/iteration-3-6-employees-registration-tracking-schema.sql"
+
+      echo "Checking Employees registration tracking columns after explicit migration..."
+
+      docker exec $(SQL_CONTAINER) $(SQLCMD) \
+        -b \
+        -S localhost \
+        -U sa \
+        -P "$(DB_PASSWORD)" \
+        -C \
+        -d WonderlandDB \
+        -Q "
+        SELECT
+          'dbo.Employees' AS TableName,
+          COL_LENGTH('dbo.Employees', 'IsRegistered') AS IsRegisteredColumn,
+          COL_LENGTH('dbo.Employees', 'RegisteredUserId') AS RegisteredUserIdColumn,
+          COL_LENGTH('dbo.Employees', 'RegisteredAt') AS RegisteredAtColumn;
+        "
+    displayName: 'Run employees registration tracking schema migration explicitly'
 
   - script: |
       cat > backend/.env <<EOF
