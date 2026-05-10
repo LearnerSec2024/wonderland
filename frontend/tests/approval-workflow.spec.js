@@ -94,33 +94,35 @@ test.describe('Wonderland admin submission and manager approval workflow', () =>
   });
 
   test('normal user cannot access Admin or Manager workflow pages', async ({ page, request }) => {
-    const email = `workflow.guest.${Date.now()}@wonderland.local`;
-    const password = 'Password123!';
+    const email = `workflow.normal.${Date.now()}@wonderland.local`;
 
     const registerResponse = await request.post(`${API_BASE_URL}/auth/register`, {
       data: {
         accountType: 'Guest',
         firstName: 'Workflow',
-        lastName: 'Guest',
+        lastName: 'Normal',
         email,
-        dateOfBirth: '1994-02-02',
-        password,
+        dateOfBirth: '1992-04-12',
+        password: 'Password123!',
       },
     });
 
-    expect(registerResponse.ok()).toBeTruthy();
+    const authResult = await registerResponse.json().catch(async () => ({
+      rawBody: await registerResponse.text().catch(() => 'Unable to read response body'),
+    }));
 
-    const authResult = await registerResponse.json();
+    expect(
+      registerResponse.ok(),
+      `Normal user registration failed with status ${registerResponse.status()}: ${JSON.stringify(authResult)}`,
+    ).toBeTruthy();
 
-    await page.goto('/');
-    await page.evaluate((token) => {
-      localStorage.setItem('wonderland_token', token);
+    await page.addInitScript((token) => {
+      window.localStorage.setItem('wonderland_token', token);
     }, authResult.token);
 
     await page.goto('/dashboard');
-
     await expect(page.getByTestId('dashboard-page')).toBeVisible();
-    await expect(page.getByTestId('nav-user-greeting')).toContainText('Workflow');
+    await expect(page.getByTestId('dashboard-user-role')).toContainText('User');
 
     await page.goto('/admin/content');
     await expect(page.getByTestId('access-denied-page')).toBeVisible();
