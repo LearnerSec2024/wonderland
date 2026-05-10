@@ -42,7 +42,7 @@ SET
         ELSE 0
     END,
     MinimumAgeYears = CASE
-        WHEN Name = 'Dragon Rush Coaster' THEN 12
+        WHEN Name = 'Dragon Rush Coaster' THEN 13
         WHEN Name = 'Pirate Splash Falls' THEN 8
         WHEN Name = 'Galaxy Spinner' THEN 10
         WHEN Name = 'Enchanted Carousel' THEN 3
@@ -72,3 +72,4 @@ ORDER BY RideId;
 
 SELECT 'Rides eligibility / family friendly schema migration completed successfully' AS Message;
 GO
+
