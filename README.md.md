@@ -1,4 +1,4 @@
-﻿# Wonderland Full Stack App
+# Wonderland Full Stack App
 
 Wonderland is a learning-focused full-stack web application for a modern theme park experience.
 
@@ -15,16 +15,17 @@ This project is being built locally on a personal Windows 11 laptop for learning
 
 | Area | Status |
 |---|---|
-| SQL Server local database | Complete |
-| Backend Express API | Complete foundation |
+| SQL Server local database | Complete and actively used |
+| Backend Express API | Complete foundation plus booking, Admin, Manager, reporting and export APIs |
 | Backend SQL Server connection | Working |
 | Backend authentication APIs | Working |
-| React frontend | Created |
-| Frontend routing/app shell | Complete |
-| Playwright smoke tests | Passing |
+| React frontend | Complete foundation with role-based user, Admin and Manager flows |
+| Playwright test suite | Passing locally |
 | GitHub repository | Published |
-| GitHub Actions workflow | Added |
-| Next iteration | **Iteration 2 — Frontend Authentication Flow** |
+| GitHub Actions workflow | Passing |
+| Azure DevOps Pipeline | Passing |
+| Latest completed iteration | **Iteration 12 — Export and Reporting Enhancements** |
+| Next iteration | **Iteration 13 — Application Audit Logs** |
 
 Current local URLs:
 
@@ -34,18 +35,30 @@ Backend:  http://localhost:5010
 Database: WonderlandDB
 ```
 
+Current local project folder:
+
+```text
+D:\Real Projects Backup\wonderland
+```
+
 ---
 
 ## Development Rhythm
 
-Every feature iteration should follow this process:
+Every feature iteration should follow the full Wonderland safe delivery flow.
 
 1. Implement the iteration changes.
-2. Add or extend Playwright tests for the existing plus new functionality.
-3. Run all tests.
-4. Fix issues until tests are green.
-5. Commit and push.
-6. Move to the next iteration.
+2. Add or update SQL migrations if the change affects schema, seed data, CDC, triggers or reporting objects.
+3. Add or extend Playwright tests for existing plus new functionality.
+4. Run the full local Playwright suite.
+5. Fix issues until tests are green.
+6. Update README if project behaviour, APIs, database, tests, reporting, CI or roadmap changed.
+7. Commit the feature, tests, database scripts and README together.
+8. Push to GitHub first.
+9. Confirm GitHub Actions passes.
+10. Push the same commit to Azure DevOps.
+11. Confirm Azure DevOps Pipeline passes.
+12. Move to the next iteration.
 
 Current test command from the project root:
 
@@ -53,6 +66,13 @@ Current test command from the project root:
 npm run test:e2e
 ```
 
+Current definition of done:
+
+```text
+Local Playwright tests passing
++ GitHub Actions passing
++ Azure DevOps Pipeline passing
+```
 
 ---
 
@@ -186,7 +206,7 @@ Installed tools:
 Local project folder:
 
 ```text
-D:\Projects\wonderland
+D:\Real Projects Backup\wonderland
 ```
 
 Current project structure:
@@ -294,7 +314,7 @@ WonderlandDW
 Run these from the project root:
 
 ```powershell
-cd D:\Projects\wonderland
+cd D:\Real Projects Backup\wonderland
 ```
 
 Start frontend and backend together:
@@ -346,7 +366,7 @@ npm run test:e2e:report
 Go to the backend folder:
 
 ```powershell
-cd D:\Projects\wonderland\backend
+cd D:\Real Projects Backup\wonderland\backend
 ```
 
 Start backend only:
@@ -374,7 +394,7 @@ npm run postman:generate
 Go to the frontend folder:
 
 ```powershell
-cd D:\Projects\wonderland\frontend
+cd D:\Real Projects Backup\wonderland\frontend
 ```
 
 Start frontend only:
@@ -764,7 +784,8 @@ npm run test:e2e
 Current expected result:
 
 ```text
-4 passed
+Full Playwright suite passing.
+Refer to the latest project status section for the current full local, GitHub Actions and Azure DevOps Pipeline status.
 ```
 
 ---
@@ -878,107 +899,163 @@ Completed:
 | Foundation | Local setup, DB, backend, frontend foundation | Complete | SQL Server, backend, frontend, seed data, API health checks |
 | Iteration 1 | Frontend app shell and routing | Complete | Multi-page React app with navbar and 404 |
 | Iteration 1.5 | Playwright smoke test safety net | Complete | Existing app shell protected by E2E smoke tests |
-| Iteration 2 | Frontend authentication flow | **Next** | Register/login from frontend, token storage, protected dashboard, logout |
-| Iteration 3 | Clean rides and accommodation pages | Planned | Search, filters, loading states, error states |
-| Iteration 4 | Ride and accommodation details pages | Planned | Detail pages and backend single-item APIs |
-| Iteration 5 | Booking basket | Planned | Add ride/accommodation to basket, update/remove items |
-| Iteration 6 | Checkout and booking confirmation | Planned | Multi-step checkout, save bookings, points earned |
-| Iteration 7 | User dashboard | Planned | User bookings, points, recent activity |
-| Iteration 8 | Admin role and dashboard | Planned | Admin CRUD, tables, sorting, pagination |
-| Iteration 9 | API cleanup and error handling polish | Planned | Cleaner controllers/routes and predictable API errors |
-| Iteration 10 | Testability polish | Planned | Stable selectors, accessible names, mockable APIs |
-| Iteration 11 | Beginner Automation Lab | Planned | Forms, tables, modals, search, buttons |
-| Iteration 12 | Tricky Automation Lab | Planned | Dynamic locators, Shadow DOM, iframes, XPath, drag/drop |
+| Iteration 2 | Frontend authentication flow | Complete | Register/login, token storage, protected dashboard, logout |
+| Iteration 3 | Clean rides and accommodation pages | Complete | Search, filters, loading states, error states |
+| Iteration 3.5 | Role-based registration, DOB and age eligibility | Complete | Guest/Admin/Manager registration rules and eligibility data |
+| Iteration 3.5.1 | Employee registration status tracking | Complete | Employee registration lifecycle tracked in SQL Server |
+| Iteration 3.6 | Profile page | Complete | User and employee-linked profile views |
+| Iteration 3.7 | Admin content submission and Manager approval workflow | Complete | Admin submissions, Manager approvals/rejections, role-based visibility |
+| Iteration 4 | Ride and accommodation details pages | Complete | Approved active item details and not-found handling |
+| Iteration 5 | Booking basket | Complete | Add/update/remove basket items and localStorage persistence |
+| Iteration 6 | Checkout and booking confirmation | Complete | Auth-required checkout, SQL booking persistence, WonderPoints |
+| Iteration 7 | Booking history and dashboard/profile integration | Complete | Booking history, dashboard recent bookings, profile link |
+| Iteration 8 | Booking management enhancements | Complete | Booking search/filter/sort, summary cards and timeline polish |
+| Iteration 9 | Booking cancellation workflow | Complete | Customer cancellation, status updates and WonderPoints reversal |
+| Iteration 10 | Admin and Manager booking visibility | Complete | Internal booking views and role-protected booking detail visibility |
+| Iteration 11 | Admin/Manager reporting and audit preparation | Complete | Reporting dashboards and audit preparation |
+| Iteration 11.1 | CDC booking audit and trigger learning example | Complete | CDC on Bookings and trigger-based content approval audit |
+| Iteration 12 | Export and reporting enhancements | Complete | Admin/Manager report filters and Admin CSV export |
+| Iteration 13 | Application audit logs | **Next** | Capture who did what in business terms |
+| Iteration 14 | Security events / SIEM simulator | Planned | Capture security-relevant events and show monitoring dashboard |
+| Iteration 15 | Data warehouse foundation | Planned | Create WonderlandDW star schema foundation for reporting |
+| Iteration 16 | Power BI-ready reporting views and measures | Planned | Prepare SQL views/measures for Power BI dashboards |
+| Iteration 17 | Azure Monitor / Sentinel learning integration | Later | Connect security monitoring concepts to cloud logging/SIEM patterns |
+| Later | Playwright Automation Lab expansion | Planned | Beginner and tricky locator training pages |
 
 ---
 
-## Next Task: Iteration 2 — Frontend Authentication Flow
+## Next Task: Iteration 13 — Application Audit Logs
 
 This is the next task to pick up.
 
-### Goal
+### Purpose
 
-Connect the frontend login and registration screens to the backend authentication APIs.
+Add an application-level audit trail that captures **who did what in business terms**.
 
-### Expected Outcomes
+CDC currently captures booking table changes, and SQL triggers currently capture content approval status changes. Application audit logs will add a higher-level business view of user actions from the app/API perspective.
 
-By the end of Iteration 2:
+### Example Audit Events
 
-- User can register from the frontend.
-- User can log in from the frontend.
-- JWT token is saved on the client.
-- Frontend can call `GET /api/auth/me`.
-- Dashboard becomes protected.
-- Logged-in user details display on the dashboard.
-- Logout works.
-- Unauthenticated users are redirected to `/login` when trying to open `/dashboard`.
-- Navbar changes based on login state.
-- Playwright tests cover the new authentication flow.
-- Existing Playwright smoke tests still pass.
+Application audit events should capture actions such as:
 
-### Implementation Tasks
+- Admin created a Ride
+- Admin created an Accommodation
+- Manager approved a Ride
+- Manager rejected an Accommodation
+- User completed checkout
+- User cancelled a booking
+- Admin downloaded the booking report CSV
+- Normal User attempted to access a restricted Admin/Manager page
 
-1. Extend `frontend/src/services/api.js` with auth methods:
-   - `register`
-   - `login`
-   - `getCurrentUser`
+### Planned Database Changes
 
-2. Create `frontend/src/context/AuthContext.jsx`:
-   - stores user
-   - stores token
-   - loads token from local storage
-   - calls `/api/auth/me`
-   - exposes `login`, `register`, and `logout`
+Add a new table:
 
-3. Create `frontend/src/components/ProtectedRoute.jsx`.
-
-4. Update `frontend/src/App.jsx`:
-   - wrap routes with `AuthProvider`
-   - protect `/dashboard`
-
-5. Update `LoginPage.jsx`:
-   - controlled form state
-   - submit to backend
-   - show loading state
-   - show error message
-   - redirect to dashboard on success
-
-6. Update `RegisterPage.jsx`:
-   - controlled form state
-   - submit to backend
-   - show loading state
-   - show error message
-   - redirect to dashboard on success
-
-7. Update `DashboardPage.jsx`:
-   - show logged-in user
-   - show user points
-   - add logout button or navbar logout option
-
-8. Update `Navbar.jsx`:
-   - show Login/Register when logged out
-   - show Dashboard/Logout when logged in
-
-9. Extend Playwright tests:
-   - register a new user from frontend
-   - log in from frontend
-   - verify dashboard is protected
-   - verify logout works
-   - rerun existing app shell tests
-
-10. Run:
-
-```powershell
-npm run test:e2e
+```text
+dbo.ApplicationAuditEvents
 ```
+
+Suggested columns:
+
+- ApplicationAuditEventId
+- CorrelationId
+- UserId
+- UserEmail
+- UserRole
+- ActionType
+- EntityType
+- EntityId
+- EntityName
+- Outcome
+- Route
+- HttpMethod
+- IpAddress
+- UserAgent
+- MetadataJson
+- CreatedAt
+
+### Planned Backend Changes
+
+Add an audit logger service, for example:
+
+```text
+backend/services/auditLogger.js
+```
+
+The logger should write business audit events from important backend API flows.
+
+Initial audited actions should include:
+
+- Content submitted by Admin
+- Content approved/rejected by Manager
+- Checkout completed by User
+- Booking cancelled by User
+- CSV report downloaded by Admin
+- Restricted access attempt where practical
+
+### Planned Frontend Changes
+
+Add a protected Admin page:
+
+```text
+/admin/audit-logs
+```
+
+The page should show:
+
+- Audit event summary cards
+- Recent audit events
+- Filters by date range, user role, action type, entity type and outcome
+- Search by user email or entity name
+
+### Planned Playwright Tests
+
+The Playwright suite should cover:
+
+- Admin can view the audit logs page
+- Normal User cannot access the audit logs page
+- Admin content submission creates an audit event
+- Manager approval/rejection creates an audit event
+- User checkout creates an audit event
+- User booking cancellation creates an audit event
+- Admin CSV export creates an audit event
+- Audit filters/search work
+
+### Relationship to DW and Power BI
+
+Application audit logs are a strong future input into the data warehouse and Power BI learning path.
+
+Future DW flow:
+
+```text
+WonderlandDB.dbo.ApplicationAuditEvents
+    ↓
+ETL / load procedure
+    ↓
+WonderlandDW.FactApplicationAuditEvent
+    ↓
+Power BI audit dashboard
+```
+
+This will support visuals such as:
+
+- Actions by role
+- Audit events over time
+- Failed actions by route
+- Admin CSV exports by user
+- Manager approvals vs rejections
+- Booking cancellations over time
 
 ### Done When
 
-- All Iteration 2 functionality works in browser.
-- Auth flow works against backend and SQL Server.
-- All Playwright tests pass.
-- README is updated with Iteration 2 completion notes.
-- Changes are committed and pushed.
+- Application audit table exists and is migration-safe.
+- Key backend flows write audit events.
+- Admin can view audit logs in the app.
+- Normal Users are blocked from audit logs.
+- Playwright tests pass locally.
+- README is updated.
+- Changes are pushed to GitHub and GitHub Actions passes.
+- Same commit is pushed to Azure DevOps and Azure Pipeline passes.
 
 ---
 
@@ -1008,7 +1085,7 @@ For this local learning project, the database password is simple and local-only.
 From the root folder:
 
 ```powershell
-cd D:\Projects\wonderland
+cd D:\Real Projects Backup\wonderland
 npm start
 ```
 
@@ -4482,6 +4559,7 @@ Expected outcomes:
 Iteration 12 extends the Admin and Manager reporting work from Iteration 11.1.
 
 ### Completed
+
 - Admin booking report now supports:
   - Start date filter
   - End date filter
@@ -4520,42 +4598,268 @@ Iteration 12 extends the Admin and Manager reporting work from Iteration 11.1.
   - Manager can filter reports
   - Normal User remains blocked from Admin/Manager reporting pages
 
+### CSV Export Behaviour
+
+Admin CSV export respects the active report filters.
+
+Example:
+
+    /api/admin/reports/bookings/export.csv?startDate=2026-04-01&endDate=2026-05-12&status=Confirmed
+
+Expected CSV data includes booking report fields such as:
+
+- BookingReference
+- Status
+- VisitDate
+- CreatedAt
+- CustomerName
+- CustomerEmail
+- TotalAmount
+- TotalPointsEarned
+- CancelledAt
+- CancellationReason
+
+### Report Filter Behaviour
+
+The report date filters apply to the booking report date, using:
+
+    COALESCE(Bookings.VisitDate, Bookings.CreatedAt)
+
+In plain English:
+
+- Use `VisitDate` when the booking has one.
+- Use `CreatedAt` as the fallback when `VisitDate` is empty.
+
+The filters do not directly filter the Ride or Accommodation master tables.
+
 ### SQL Server Impact
 
 No new SQL migration is required for Iteration 12.
 
 This iteration reuses:
+
 - dbo.Bookings
 - dbo.BookingItems
 - dbo.Users
 - CDC reporting from dbo.Bookings
-- ContentAuditEvents trigger audit data
+- dbo.ContentAuditEvents trigger audit data
 
 ### Delivery Chain Impact
 
-Area | Impact
---- | ---
-Frontend behaviour | Updated Admin/Manager report pages with filters and CSV download
-Backend APIs | Report endpoints now accept optional filters; Admin CSV export endpoint added
-SQL Server schema/migrations | No schema change required
-Seed data | No seed change required
-Playwright tests | Reporting test updated for filters and CSV download
-GitHub Actions | No workflow change expected
-Azure DevOps Pipeline | No pipeline change expected
-README | Iteration 12 notes added
+| Area | Impact |
+|---|---|
+| Frontend behaviour | Updated Admin/Manager report pages with filters and CSV download |
+| Backend APIs | Report endpoints now accept optional filters; Admin CSV export endpoint added |
+| SQL Server schema/migrations | No schema change required |
+| Seed data | No seed change required |
+| Playwright tests | Reporting tests updated for filters and CSV download |
+| GitHub Actions | No workflow change required |
+| Azure DevOps Pipeline | No pipeline change required |
+| README | Iteration 12 notes and future roadmap updated |
 
 ### Test Status
 
-Record after running locally:
+Current test status after Iteration 12:
 
-    npm run test:e2e
+    Local Playwright tests: Passed
+    GitHub Actions: Passed
+    Azure DevOps Pipeline: Passed
 
-Expected result:
-- Local Playwright tests passing
-- GitHub Actions passing after push
-- Azure DevOps Pipeline passing after pushing same commit
+---
 
-### Next Iteration
+## Future Enterprise Learning Roadmap After Iteration 12
 
-Iteration 13 — Reporting polish / Power BI preparation / Data warehouse planning.
+The next phase will make Wonderland more enterprise-realistic by adding application audit logs, security monitoring/SIEM concepts, data warehouse modelling and Power BI-ready reporting.
 
+### Iteration 13 — Application Audit Logs
+
+Purpose:
+
+    Capture who did what in business terms.
+
+Examples:
+
+- Admin created a Ride
+- Manager approved a Ride
+- Manager rejected Accommodation
+- User completed checkout
+- User cancelled booking
+- Admin downloaded CSV report
+- Normal User attempted restricted Admin/Manager access
+
+Expected additions:
+
+- dbo.ApplicationAuditEvents
+- backend/services/auditLogger.js
+- Audit logging in key API flows
+- Admin Audit Logs page
+- Audit filters/search
+- Playwright tests
+
+Learning value:
+
+- Business audit trail
+- Correlation IDs
+- User/role/action/entity/outcome modelling
+- Future DW/Power BI input
+
+---
+
+### Iteration 14 — Security Events / SIEM Simulator
+
+Purpose:
+
+    Capture security-relevant events and display a local SIEM-style monitoring view.
+
+Examples:
+
+- Failed login
+- Invalid token
+- Access denied
+- Normal User attempts Admin route
+- Admin downloads report CSV
+- Repeated failed login attempts
+- Suspicious repeated access attempts
+
+Expected additions:
+
+- dbo.SecurityEvents
+- backend/services/securityEventLogger.js
+- Admin Security Monitoring page
+- Severity levels: Low, Medium, High, Critical
+- Security summary cards
+- Security event timeline
+- Playwright tests
+
+Learning value:
+
+- Difference between business audit logs and security events
+- SIEM-style event modelling
+- Security monitoring concepts
+- Preparation for Azure Monitor / Microsoft Sentinel learning
+
+---
+
+### Iteration 15 — Data Warehouse Foundation
+
+Purpose:
+
+    Start separating operational app data from reporting/analytics data.
+
+Expected additions:
+
+- WonderlandDW database
+- DimDate
+- DimUser
+- DimRole
+- DimActionType
+- DimEntityType
+- DimOutcome
+- FactApplicationAuditEvent
+- FactSecurityEvent
+- Future FactBooking / FactBookingChange preparation
+- ETL/load stored procedures or scripts
+
+Learning value:
+
+- OLTP vs data warehouse separation
+- Star schema modelling
+- Fact and dimension design
+- Audit/security data as reporting facts
+- Power BI preparation
+
+---
+
+### Iteration 16 — Power BI-ready Reporting Views and Measures
+
+Purpose:
+
+    Prepare clean reporting objects for Power BI visuals.
+
+Expected additions:
+
+- SQL views over DW fact/dimension tables
+- Power BI-ready column names
+- Suggested measures
+- Dashboard requirements document
+- Example DAX measure notes
+- Documentation for report pages
+
+Potential dashboards:
+
+- Booking performance dashboard
+- Booking cancellation dashboard
+- Admin/Manager activity dashboard
+- Application audit dashboard
+- Security events dashboard
+- CSV export monitoring dashboard
+
+Learning value:
+
+- Semantic reporting layer thinking
+- Business-friendly measures
+- Dashboard design
+- Power BI modelling preparation
+
+---
+
+### Iteration 17 — Azure Monitor / Sentinel Learning Integration
+
+Purpose:
+
+    Connect the local security monitoring concepts to real enterprise cloud monitoring patterns.
+
+Expected learning topics:
+
+- Application Insights
+- Azure Monitor
+- Log Analytics Workspace
+- Microsoft Sentinel concepts
+- KQL query examples
+- Alert rule concepts
+- Security incident investigation flow
+
+This should happen later, after Wonderland has enough realistic application audit and security event data to monitor.
+
+---
+
+## Latest Project Status After Iteration 12
+
+Completed:
+
+- Foundation
+- Iteration 1 — Frontend app shell and routing
+- Iteration 1.5 — Playwright smoke test safety net
+- Iteration 2 — Frontend authentication flow
+- Iteration 3 — Clean rides and accommodation pages
+- Iteration 3.5 — Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 — Employee registration status tracking
+- Iteration 3.6 — Profile page
+- Iteration 3.7 — Admin content submission and Manager approval workflow
+- Iteration 4 — Ride and accommodation details pages
+- Iteration 5 — Booking basket
+- Iteration 6 — Checkout and booking confirmation
+- Iteration 7 — Booking history and dashboard/profile integration
+- Iteration 8 — Booking management enhancements
+- Iteration 9 — Booking cancellation workflow
+- Iteration 10 — Admin and Manager booking visibility
+- Iteration 11 — Admin/Manager reporting and audit preparation
+- Iteration 11.1 — CDC booking audit and trigger learning example
+- Iteration 12 — Export and reporting enhancements
+
+Next implementation task:
+
+    Iteration 13 — Application Audit Logs
+
+Development rhythm remains:
+
+1. Implement iteration changes.
+2. Assess impact across frontend, backend APIs, SQL Server, Playwright, GitHub Actions, Azure DevOps Pipeline and README.
+3. Add/update SQL migrations and seed data if needed.
+4. Add/update Playwright tests.
+5. Run local tests.
+6. Commit feature, migrations, tests and README together.
+7. Push to GitHub.
+8. Confirm GitHub Actions passes.
+9. Push same commit to Azure DevOps.
+10. Confirm Azure Pipeline passes.
