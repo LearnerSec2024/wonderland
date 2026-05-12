@@ -1,5 +1,4 @@
-﻿const express = require("express");
-
+const express = require("express");
 const { sql, getPool } = require("../config/db");
 const { requireAuth } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/roleMiddleware");
@@ -9,9 +8,72 @@ const router = express.Router();
 router.use(requireAuth);
 router.use(requireRole("Admin"));
 
+const VALID_BOOKING_STATUSES = new Set(["Confirmed", "Cancelled"]);
+
 function toIsoString(value) {
   if (!value) return null;
   return new Date(value).toISOString();
+}
+
+function toDateOnly(value) {
+  if (!value) return null;
+  return new Date(value).toISOString().slice(0, 10);
+}
+
+function isValidDateOnly(value) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(value);
+}
+
+function normalizeBookingReportFilters(query) {
+  const startDate = query.startDate?.trim() || "";
+  const endDate = query.endDate?.trim() || "";
+  const status = query.status?.trim() || "";
+
+  if (startDate && !isValidDateOnly(startDate)) {
+    return { error: "startDate must use YYYY-MM-DD format" };
+  }
+
+  if (endDate && !isValidDateOnly(endDate)) {
+    return { error: "endDate must use YYYY-MM-DD format" };
+  }
+
+  if (startDate && endDate && startDate > endDate) {
+    return { error: "startDate cannot be after endDate" };
+  }
+
+  if (status && !VALID_BOOKING_STATUSES.has(status)) {
+    return { error: "status must be Confirmed or Cancelled" };
+  }
+
+  return {
+    filters: {
+      startDate,
+      endDate,
+      status,
+    },
+  };
+}
+
+function buildBookingFilterWhere(request, filters, alias = "b") {
+  const clauses = [];
+  const dateExpression = `CAST(COALESCE(${alias}.VisitDate, ${alias}.CreatedAt) AS DATE)`;
+
+  if (filters.startDate) {
+    request.input("StartDate", sql.Date, filters.startDate);
+    clauses.push(`${dateExpression} >= @StartDate`);
+  }
+
+  if (filters.endDate) {
+    request.input("EndDate", sql.Date, filters.endDate);
+    clauses.push(`${dateExpression} <= @EndDate`);
+  }
+
+  if (filters.status) {
+    request.input("Status", sql.NVarChar(50), filters.status);
+    clauses.push(`${alias}.Status = @Status`);
+  }
+
+  return clauses.length ? `WHERE ${clauses.join(" AND ")}` : "";
 }
 
 function mapBookingCdcEvent(row) {
@@ -152,91 +214,226 @@ async function getContentAuditEvents(pool) {
   return result.recordset.map((row) => mapContentAuditEvent(row));
 }
 
+async function getBookingReport(pool, filters) {
+  const summaryRequest = pool.request();
+  const summaryWhere = buildBookingFilterWhere(summaryRequest, filters);
+
+  const summaryResult = await summaryRequest.query(`
+    SELECT
+      COUNT(*) AS TotalBookings,
+      SUM(CASE WHEN b.Status = 'Confirmed' THEN 1 ELSE 0 END) AS ConfirmedBookings,
+      SUM(CASE WHEN b.Status = 'Cancelled' THEN 1 ELSE 0 END) AS CancelledBookings,
+      COALESCE(SUM(b.TotalAmount), 0) AS TotalBookedValue,
+      COALESCE(SUM(CASE WHEN b.Status = 'Confirmed' THEN b.TotalAmount ELSE 0 END), 0) AS ConfirmedValue,
+      COALESCE(SUM(CASE WHEN b.Status = 'Cancelled' THEN b.TotalAmount ELSE 0 END), 0) AS CancelledValue,
+      COALESCE(SUM(b.TotalPointsEarned), 0) AS TotalPointsIssued,
+      COALESCE(AVG(CAST(b.TotalAmount AS DECIMAL(10,2))), 0) AS AverageBookingValue
+    FROM dbo.Bookings b
+    ${summaryWhere};
+  `);
+
+  const statusRequest = pool.request();
+  const statusWhere = buildBookingFilterWhere(statusRequest, filters);
+
+  const statusResult = await statusRequest.query(`
+    SELECT
+      b.Status,
+      COUNT(*) AS BookingCount,
+      COALESCE(SUM(b.TotalAmount), 0) AS TotalAmount
+    FROM dbo.Bookings b
+    ${statusWhere}
+    GROUP BY b.Status
+    ORDER BY b.Status;
+  `);
+
+  const itemTypeRequest = pool.request();
+  const itemTypeWhere = buildBookingFilterWhere(itemTypeRequest, filters);
+
+  const itemTypeResult = await itemTypeRequest.query(`
+    SELECT
+      bi.ItemType,
+      COUNT(*) AS ItemCount,
+      COALESCE(SUM(bi.Subtotal), 0) AS TotalAmount,
+      COALESCE(SUM(bi.PointsEarned), 0) AS PointsEarned
+    FROM dbo.BookingItems bi
+    INNER JOIN dbo.Bookings b ON b.BookingId = bi.BookingId
+    ${itemTypeWhere}
+    GROUP BY bi.ItemType
+    ORDER BY bi.ItemType;
+  `);
+
+  const dailyActivityRequest = pool.request();
+  const dailyActivityWhere = buildBookingFilterWhere(dailyActivityRequest, filters);
+
+  const dailyActivityResult = await dailyActivityRequest.query(`
+    SELECT TOP 14
+      CAST(b.CreatedAt AS DATE) AS ActivityDate,
+      COUNT(*) AS BookingCount,
+      COALESCE(SUM(b.TotalAmount), 0) AS TotalAmount
+    FROM dbo.Bookings b
+    ${dailyActivityWhere}
+    GROUP BY CAST(b.CreatedAt AS DATE)
+    ORDER BY ActivityDate DESC;
+  `);
+
+  const summary = summaryResult.recordset[0];
+  const cdcStatus = await getCdcStatus(pool);
+  const recentBookingChangeEvents = await getBookingCdcEvents(pool);
+  const contentAuditEvents = await getContentAuditEvents(pool);
+
+  return {
+    filters,
+    summary: {
+      totalBookings: summary.TotalBookings || 0,
+      confirmedBookings: summary.ConfirmedBookings || 0,
+      cancelledBookings: summary.CancelledBookings || 0,
+      totalBookedValue: Number(summary.TotalBookedValue || 0),
+      confirmedValue: Number(summary.ConfirmedValue || 0),
+      cancelledValue: Number(summary.CancelledValue || 0),
+      totalPointsIssued: Number(summary.TotalPointsIssued || 0),
+      averageBookingValue: Number(summary.AverageBookingValue || 0),
+    },
+    statusBreakdown: statusResult.recordset.map((row) => ({
+      status: row.Status,
+      bookingCount: row.BookingCount,
+      totalAmount: Number(row.TotalAmount),
+    })),
+    itemTypeBreakdown: itemTypeResult.recordset.map((row) => ({
+      itemType: row.ItemType,
+      itemCount: row.ItemCount,
+      totalAmount: Number(row.TotalAmount),
+      pointsEarned: Number(row.PointsEarned),
+    })),
+    dailyActivity: dailyActivityResult.recordset.map((row) => ({
+      activityDate: toDateOnly(row.ActivityDate),
+      bookingCount: row.BookingCount,
+      totalAmount: Number(row.TotalAmount),
+    })),
+    cdcStatus,
+    recentBookingChangeEvents,
+    contentAuditEvents,
+  };
+}
+
+async function getBookingExportRows(pool, filters) {
+  const request = pool.request();
+  const where = buildBookingFilterWhere(request, filters);
+
+  const result = await request.query(`
+    SELECT TOP 500
+      b.BookingReference,
+      b.Status,
+      b.VisitDate,
+      b.CreatedAt,
+      u.FirstName,
+      u.LastName,
+      u.Email,
+      b.TotalAmount,
+      b.TotalPointsEarned,
+      b.CancelledAt,
+      b.CancellationReason
+    FROM dbo.Bookings b
+    INNER JOIN dbo.Users u ON u.UserId = b.UserId
+    ${where}
+    ORDER BY b.CreatedAt DESC, b.BookingId DESC;
+  `);
+
+  return result.recordset;
+}
+
+function csvValue(value) {
+  if (value === null || value === undefined) return "";
+
+  let text = String(value).replace(/\r?\n/g, " ").trim();
+
+  if (/^[=+\-@]/.test(text)) {
+    text = `'${text}`;
+  }
+
+  if (/[",\n]/.test(text)) {
+    return `"${text.replace(/"/g, '""')}"`;
+  }
+
+  return text;
+}
+
+function buildBookingCsv(rows) {
+  const headers = [
+    "BookingReference",
+    "Status",
+    "VisitDate",
+    "CreatedAt",
+    "CustomerName",
+    "CustomerEmail",
+    "TotalAmount",
+    "TotalPointsEarned",
+    "CancelledAt",
+    "CancellationReason",
+  ];
+
+  const lines = [headers.join(",")];
+
+  for (const row of rows) {
+    const customerName = `${row.FirstName || ""} ${row.LastName || ""}`.trim();
+
+    lines.push(
+      [
+        row.BookingReference,
+        row.Status,
+        toDateOnly(row.VisitDate),
+        toIsoString(row.CreatedAt),
+        customerName,
+        row.Email,
+        Number(row.TotalAmount || 0).toFixed(2),
+        row.TotalPointsEarned || 0,
+        toIsoString(row.CancelledAt),
+        row.CancellationReason || "",
+      ]
+        .map(csvValue)
+        .join(",")
+    );
+  }
+
+  return `\uFEFF${lines.join("\r\n")}\r\n`;
+}
+
 router.get("/reports/bookings", async (req, res, next) => {
   try {
+    const { filters, error } = normalizeBookingReportFilters(req.query);
+
+    if (error) {
+      return res.status(400).json({ message: error });
+    }
+
     const pool = await getPool();
+    const report = await getBookingReport(pool, filters);
 
-    const summaryResult = await pool.request().query(`
-      SELECT
-        COUNT(*) AS TotalBookings,
-        SUM(CASE WHEN Status = 'Confirmed' THEN 1 ELSE 0 END) AS ConfirmedBookings,
-        SUM(CASE WHEN Status = 'Cancelled' THEN 1 ELSE 0 END) AS CancelledBookings,
-        COALESCE(SUM(TotalAmount), 0) AS TotalBookedValue,
-        COALESCE(SUM(CASE WHEN Status = 'Confirmed' THEN TotalAmount ELSE 0 END), 0) AS ConfirmedValue,
-        COALESCE(SUM(CASE WHEN Status = 'Cancelled' THEN TotalAmount ELSE 0 END), 0) AS CancelledValue,
-        COALESCE(SUM(TotalPointsEarned), 0) AS TotalPointsIssued,
-        COALESCE(AVG(CAST(TotalAmount AS DECIMAL(10,2))), 0) AS AverageBookingValue
-      FROM dbo.Bookings;
-    `);
+    res.json(report);
+  } catch (error) {
+    next(error);
+  }
+});
 
-    const statusResult = await pool.request().query(`
-      SELECT
-        Status,
-        COUNT(*) AS BookingCount,
-        COALESCE(SUM(TotalAmount), 0) AS TotalAmount
-      FROM dbo.Bookings
-      GROUP BY Status
-      ORDER BY Status;
-    `);
+router.get("/reports/bookings/export.csv", async (req, res, next) => {
+  try {
+    const { filters, error } = normalizeBookingReportFilters(req.query);
 
-    const itemTypeResult = await pool.request().query(`
-      SELECT
-        ItemType,
-        COUNT(*) AS ItemCount,
-        COALESCE(SUM(Subtotal), 0) AS TotalAmount,
-        COALESCE(SUM(PointsEarned), 0) AS PointsEarned
-      FROM dbo.BookingItems
-      GROUP BY ItemType
-      ORDER BY ItemType;
-    `);
+    if (error) {
+      return res.status(400).json({ message: error });
+    }
 
-    const dailyActivityResult = await pool.request().query(`
-      SELECT TOP 14
-        CAST(CreatedAt AS DATE) AS ActivityDate,
-        COUNT(*) AS BookingCount,
-        COALESCE(SUM(TotalAmount), 0) AS TotalAmount
-      FROM dbo.Bookings
-      GROUP BY CAST(CreatedAt AS DATE)
-      ORDER BY ActivityDate DESC;
-    `);
+    const pool = await getPool();
+    const rows = await getBookingExportRows(pool, filters);
+    const csv = buildBookingCsv(rows);
+    const fileDate = new Date().toISOString().slice(0, 10);
 
-    const summary = summaryResult.recordset[0];
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="wonderland-booking-report-${fileDate}.csv"`
+    );
 
-    const cdcStatus = await getCdcStatus(pool);
-    const recentBookingChangeEvents = await getBookingCdcEvents(pool);
-    const contentAuditEvents = await getContentAuditEvents(pool);
-
-    res.json({
-      summary: {
-        totalBookings: summary.TotalBookings || 0,
-        confirmedBookings: summary.ConfirmedBookings || 0,
-        cancelledBookings: summary.CancelledBookings || 0,
-        totalBookedValue: Number(summary.TotalBookedValue || 0),
-        confirmedValue: Number(summary.ConfirmedValue || 0),
-        cancelledValue: Number(summary.CancelledValue || 0),
-        totalPointsIssued: Number(summary.TotalPointsIssued || 0),
-        averageBookingValue: Number(summary.AverageBookingValue || 0),
-      },
-      statusBreakdown: statusResult.recordset.map((row) => ({
-        status: row.Status,
-        bookingCount: row.BookingCount,
-        totalAmount: Number(row.TotalAmount),
-      })),
-      itemTypeBreakdown: itemTypeResult.recordset.map((row) => ({
-        itemType: row.ItemType,
-        itemCount: row.ItemCount,
-        totalAmount: Number(row.TotalAmount),
-        pointsEarned: Number(row.PointsEarned),
-      })),
-      dailyActivity: dailyActivityResult.recordset.map((row) => ({
-        activityDate: row.ActivityDate ? new Date(row.ActivityDate).toISOString().slice(0, 10) : null,
-        bookingCount: row.BookingCount,
-        totalAmount: Number(row.TotalAmount),
-      })),
-      cdcStatus,
-      recentBookingChangeEvents,
-      contentAuditEvents,
-    });
+    res.send(csv);
   } catch (error) {
     next(error);
   }

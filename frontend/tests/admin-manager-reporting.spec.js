@@ -1,4 +1,5 @@
-﻿import { test, expect } from "@playwright/test";
+import { test, expect } from "@playwright/test";
+import fs from "node:fs/promises";
 
 const API_BASE_URL = "http://localhost:5010/api";
 
@@ -6,15 +7,30 @@ async function clearBasket(page) {
   await page.goto("/");
   await page.evaluate(() => {
     localStorage.removeItem("wonderland_basket");
+    localStorage.removeItem("wonderland_token");
   });
+}
+
+async function setAuthToken(page, token) {
+  await page.goto("/");
+  await page.evaluate((userToken) => {
+    localStorage.setItem("wonderland_token", userToken);
+  }, token);
 }
 
 async function deleteUserByEmail(request, email) {
   await request.delete(`${API_BASE_URL}/test-support/users/by-email?email=${encodeURIComponent(email)}`);
 }
 
-async function createGuestBooking(page, request, shouldCancel = false) {
-  const email = `reporting.user.${Date.now()}@wonderland.local`;
+function makeFutureVisitDate(offsetDays = 0) {
+  const baseOffset = Math.abs(Date.now() % 3000);
+  const date = new Date(Date.UTC(2034, 0, 1 + baseOffset + offsetDays));
+  return date.toISOString().slice(0, 10);
+}
+
+async function createGuestBooking(page, request, options = {}) {
+  const { shouldCancel = false, visitDate = makeFutureVisitDate() } = options;
+  const email = `reporting.user.${Date.now()}.${Math.floor(Math.random() * 10000)}@wonderland.local`;
 
   const registerResponse = await request.post(`${API_BASE_URL}/auth/register`, {
     data: {
@@ -34,17 +50,13 @@ async function createGuestBooking(page, request, shouldCancel = false) {
     `Guest registration failed: ${JSON.stringify(authResult)}`
   ).toBeTruthy();
 
-  await page.addInitScript((token) => {
-    localStorage.setItem("wonderland_token", token);
-  }, authResult.token);
+  await setAuthToken(page, authResult.token);
 
   await page.goto("/rides/1");
   await page.getByTestId("ride-details-add-to-basket").click();
-
   await page.getByTestId("nav-basket").click();
   await page.getByTestId("basket-checkout-link").click();
-
-  await page.getByTestId("checkout-visit-date").fill("2026-12-30");
+  await page.getByTestId("checkout-visit-date").fill(visitDate);
   await page.getByTestId("checkout-notes").fill("Reporting dashboard Playwright test");
   await page.getByTestId("checkout-submit-button").click();
 
@@ -76,6 +88,7 @@ async function createGuestBooking(page, request, shouldCancel = false) {
   return {
     bookingReference,
     customerEmail: email,
+    visitDate,
   };
 }
 
@@ -100,14 +113,13 @@ async function registerRoleUser(page, request, accountType, email, dob) {
     `${accountType} registration failed for ${email}: ${JSON.stringify(authResult)}`
   ).toBeTruthy();
 
-  await page.addInitScript((token) => {
-    localStorage.setItem("wonderland_token", token);
-  }, authResult.token);
+  await setAuthToken(page, authResult.token);
 
   await page.goto("/dashboard");
-
   await expect(page.getByTestId("dashboard-page")).toBeVisible();
   await expect(page.getByTestId("nav-user-greeting")).toContainText("Reporting");
+
+  return authResult;
 }
 
 test.describe("Wonderland Admin and Manager reporting", () => {
@@ -115,8 +127,15 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await clearBasket(page);
   });
 
-  test("Admin can view booking reporting dashboard and audit events", async ({ page, request }) => {
-    const { bookingReference, customerEmail } = await createGuestBooking(page, request, true);
+  test("Admin can view booking reporting dashboard, apply filters and export CSV", async ({
+    page,
+    request,
+  }) => {
+    const visitDate = makeFutureVisitDate(0);
+    const { bookingReference } = await createGuestBooking(page, request, {
+      shouldCancel: true,
+      visitDate,
+    });
 
     await registerRoleUser(
       page,
@@ -135,13 +154,50 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page.getByTestId("admin-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
     await expect(page.getByTestId("admin-report-status-breakdown")).toContainText("Cancelled");
     await expect(page.getByTestId("admin-report-item-type-breakdown")).toContainText("ride");
-    await expect(page.getByTestId("admin-report-cdc-status")).toContainText("Bookings table CDC enabled: Yes");
+    await expect(page.getByTestId("admin-report-cdc-status")).toContainText(
+      "Bookings table CDC enabled"
+    );
     await expect(page.getByTestId("admin-report-booking-cdc-events")).toBeVisible();
-    await expect(page.getByTestId("admin-report-export-prep")).toContainText("Export report coming soon");
+
+    await page.getByTestId("admin-report-start-date").fill(visitDate);
+    await page.getByTestId("admin-report-end-date").fill(visitDate);
+    await page.getByTestId("admin-report-status-filter").selectOption("Cancelled");
+    await page.getByTestId("admin-report-apply-filters").click();
+
+    await expect(page.getByTestId("admin-report-active-filters")).toContainText(visitDate);
+    await expect(page.getByTestId("admin-report-active-filters")).toContainText("Cancelled");
+    await expect(page.getByTestId("admin-report-status-breakdown")).toContainText("Cancelled");
+    await expect(page.getByTestId("admin-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
+
+    const downloadPromise = page.waitForEvent("download");
+    await page.getByTestId("admin-report-download-csv").click();
+
+    const download = await downloadPromise;
+    expect(download.suggestedFilename()).toMatch(
+      /^wonderland-booking-report-\d{4}-\d{2}-\d{2}\.csv$/
+    );
+
+    const downloadPath = await download.path();
+    expect(downloadPath).toBeTruthy();
+
+    const csvContent = await fs.readFile(downloadPath, "utf8");
+
+    expect(csvContent).toContain("BookingReference");
+    expect(csvContent).toContain("Status");
+    expect(csvContent).toContain(bookingReference);
+    expect(csvContent).toContain("Cancelled");
   });
 
-  test("Manager can view operational booking report and recent audit events", async ({ page, request }) => {
-    const { bookingReference, customerEmail } = await createGuestBooking(page, request, false);
+  test("Manager can view operational booking report and apply filters", async ({
+    page,
+    request,
+  }) => {
+    const visitDate = makeFutureVisitDate(50);
+
+    await createGuestBooking(page, request, {
+      shouldCancel: false,
+      visitDate,
+    });
 
     await registerRoleUser(
       page,
@@ -159,8 +215,20 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page.getByTestId("manager-report-summary")).toBeVisible();
     await expect(page.getByTestId("manager-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
     await expect(page.getByTestId("manager-report-status-breakdown")).toContainText("Confirmed");
-    await expect(page.getByTestId("manager-report-cdc-status")).toContainText("Bookings table CDC enabled: Yes");
+    await expect(page.getByTestId("manager-report-cdc-status")).toContainText(
+      "Bookings table CDC enabled"
+    );
     await expect(page.getByTestId("manager-report-booking-cdc-events")).toBeVisible();
+
+    await page.getByTestId("manager-report-start-date").fill(visitDate);
+    await page.getByTestId("manager-report-end-date").fill(visitDate);
+    await page.getByTestId("manager-report-status-filter").selectOption("Confirmed");
+    await page.getByTestId("manager-report-apply-filters").click();
+
+    await expect(page.getByTestId("manager-report-active-filters")).toContainText(visitDate);
+    await expect(page.getByTestId("manager-report-active-filters")).toContainText("Confirmed");
+    await expect(page.getByTestId("manager-report-status-breakdown")).toContainText("Confirmed");
+    await expect(page.getByTestId("manager-report-total-bookings")).toHaveText(/^[1-9]\d*$/);
   });
 
   test("normal User cannot access Admin or Manager reporting pages", async ({ page, request }) => {
@@ -184,12 +252,9 @@ test.describe("Wonderland Admin and Manager reporting", () => {
       `Guest registration failed: ${JSON.stringify(authResult)}`
     ).toBeTruthy();
 
-    await page.addInitScript((token) => {
-      localStorage.setItem("wonderland_token", token);
-    }, authResult.token);
+    await setAuthToken(page, authResult.token);
 
     await page.goto("/dashboard");
-
     await expect(page.getByTestId("dashboard-page")).toBeVisible();
     await expect(page.getByTestId("dashboard-user-role")).toContainText("User");
 
@@ -202,5 +267,3 @@ test.describe("Wonderland Admin and Manager reporting", () => {
     await expect(page.getByTestId("access-denied-page")).toBeVisible();
   });
 });
-
-

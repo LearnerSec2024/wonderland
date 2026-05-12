@@ -1,25 +1,65 @@
-﻿const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5010/api";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5010/api";
+
+function buildQueryString(filters = {}) {
+  const params = new URLSearchParams();
+
+  if (filters.startDate) {
+    params.set("startDate", filters.startDate);
+  }
+
+  if (filters.endDate) {
+    params.set("endDate", filters.endDate);
+  }
+
+  if (filters.status) {
+    params.set("status", filters.status);
+  }
+
+  const queryString = params.toString();
+
+  return queryString ? `?${queryString}` : "";
+}
 
 async function request(path, options = {}) {
+  const { token, headers, ...fetchOptions } = options;
+
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
       "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-      ...(options.headers || {}),
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(headers || {}),
     },
-    ...options,
+    ...fetchOptions,
   });
 
   const contentType = response.headers.get("content-type");
-  const data = contentType?.includes("application/json")
-    ? await response.json()
-    : null;
+  const data = contentType?.includes("application/json") ? await response.json() : null;
 
   if (!response.ok) {
     throw new Error(data?.message || `Request failed with status ${response.status}`);
   }
 
   return data;
+}
+
+async function downloadFile(path, options = {}) {
+  const { token, headers } = options;
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: "GET",
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(headers || {}),
+    },
+  });
+
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type");
+    const data = contentType?.includes("application/json") ? await response.json() : null;
+    throw new Error(data?.message || `Download failed with status ${response.status}`);
+  }
+
+  return response.blob();
 }
 
 export const api = {
@@ -142,15 +182,21 @@ export const api = {
     });
   },
 
-  async getAdminBookingReport(token) {
-    return request("/admin/reports/bookings", {
+  async getAdminBookingReport(token, filters = {}) {
+    return request(`/admin/reports/bookings${buildQueryString(filters)}`, {
       method: "GET",
       token,
     });
   },
 
-  async getManagerBookingReport(token) {
-    return request("/manager/reports/bookings", {
+  async downloadAdminBookingReportCsv(token, filters = {}) {
+    return downloadFile(`/admin/reports/bookings/export.csv${buildQueryString(filters)}`, {
+      token,
+    });
+  },
+
+  async getManagerBookingReport(token, filters = {}) {
+    return request(`/manager/reports/bookings${buildQueryString(filters)}`, {
       method: "GET",
       token,
     });
@@ -206,6 +252,3 @@ export const api = {
     });
   },
 };
-
-
-

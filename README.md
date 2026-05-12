@@ -1,4 +1,4 @@
-# Wonderland Full Stack App
+﻿# Wonderland Full Stack App
 
 Wonderland is a learning-focused full-stack web application for a modern theme park experience.
 
@@ -4476,4 +4476,86 @@ Expected outcomes:
 - Manager report date/status filters
 - Booking report refinement
 - Playwright tests for report filters and export/download flow
+
+## Iteration 12 Completed: Export and Reporting Enhancements
+
+Iteration 12 extends the Admin and Manager reporting work from Iteration 11.1.
+
+### Completed
+- Admin booking report now supports:
+  - Start date filter
+  - End date filter
+  - Booking status filter
+  - Filtered CSV export
+- Manager booking report now supports:
+  - Start date filter
+  - End date filter
+  - Booking status filter
+- New Admin export endpoint added:
+
+    GET /api/admin/reports/bookings/export.csv
+
+- Existing Admin report endpoint now accepts optional query parameters:
+
+    GET /api/admin/reports/bookings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&status=Confirmed
+
+- Existing Manager report endpoint now accepts optional query parameters:
+
+    GET /api/manager/reports/bookings?startDate=YYYY-MM-DD&endDate=YYYY-MM-DD&status=Cancelled
+
+- Admin Reports page now has:
+  - Date filters
+  - Status filter
+  - Apply/reset controls
+  - Active filter summary
+  - Download CSV button
+- Manager Reports page now has:
+  - Date filters
+  - Status filter
+  - Apply/reset controls
+  - Active filter summary
+- Playwright reporting tests now confirm:
+  - Admin can filter reports
+  - Admin can download CSV export
+  - Manager can filter reports
+  - Normal User remains blocked from Admin/Manager reporting pages
+
+### SQL Server Impact
+
+No new SQL migration is required for Iteration 12.
+
+This iteration reuses:
+- dbo.Bookings
+- dbo.BookingItems
+- dbo.Users
+- CDC reporting from dbo.Bookings
+- ContentAuditEvents trigger audit data
+
+### Delivery Chain Impact
+
+Area | Impact
+--- | ---
+Frontend behaviour | Updated Admin/Manager report pages with filters and CSV download
+Backend APIs | Report endpoints now accept optional filters; Admin CSV export endpoint added
+SQL Server schema/migrations | No schema change required
+Seed data | No seed change required
+Playwright tests | Reporting test updated for filters and CSV download
+GitHub Actions | No workflow change expected
+Azure DevOps Pipeline | No pipeline change expected
+README | Iteration 12 notes added
+
+### Test Status
+
+Record after running locally:
+
+    npm run test:e2e
+
+Expected result:
+- Local Playwright tests passing
+- GitHub Actions passing after push
+- Azure DevOps Pipeline passing after pushing same commit
+
+### Next Iteration
+
+Iteration 13 — Reporting polish / Power BI preparation / Data warehouse planning.
 

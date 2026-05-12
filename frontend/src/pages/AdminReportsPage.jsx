@@ -1,6 +1,12 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
+
+const EMPTY_FILTERS = {
+  startDate: "",
+  endDate: "",
+  status: "",
+};
 
 function formatDate(value) {
   if (!value) return "Not set";
@@ -14,127 +20,321 @@ function formatDate(value) {
   });
 }
 
+function formatMoney(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
 function AdminReportsPage() {
   const { token } = useAuth();
-
   const [report, setReport] = useState(null);
+  const [filters, setFilters] = useState(EMPTY_FILTERS);
+  const [appliedFilters, setAppliedFilters] = useState(EMPTY_FILTERS);
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
+  const [exporting, setExporting] = useState(false);
+  const [exportError, setExportError] = useState("");
 
   useEffect(() => {
+    let isActive = true;
+
     const loadReport = async () => {
       try {
         setLoading(true);
         setLoadError("");
-        const result = await api.getAdminBookingReport(token);
-        setReport(result);
+
+        const result = await api.getAdminBookingReport(token, appliedFilters);
+
+        if (isActive) {
+          setReport(result);
+        }
       } catch (error) {
-        setLoadError(error.message || "Failed to load admin reports");
+        if (isActive) {
+          setLoadError(error.message || "Failed to load admin reports");
+        }
       } finally {
-        setLoading(false);
+        if (isActive) {
+          setLoading(false);
+        }
       }
     };
 
     loadReport();
-  }, [token]);
+
+    return () => {
+      isActive = false;
+    };
+  }, [token, appliedFilters.startDate, appliedFilters.endDate, appliedFilters.status]);
+
+  const handleFilterChange = (event) => {
+    const { name, value } = event.target;
+
+    setFilters((current) => ({
+      ...current,
+      [name]: value,
+    }));
+  };
+
+  const handleApplyFilters = (event) => {
+    event.preventDefault();
+    setAppliedFilters({ ...filters });
+  };
+
+  const handleResetFilters = () => {
+    setFilters(EMPTY_FILTERS);
+    setAppliedFilters(EMPTY_FILTERS);
+  };
+
+  const handleDownloadCsv = async () => {
+    try {
+      setExporting(true);
+      setExportError("");
+
+      const blob = await api.downloadAdminBookingReportCsv(token, appliedFilters);
+      const downloadUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      const fileDate = new Date().toISOString().slice(0, 10);
+
+      link.href = downloadUrl;
+      link.download = `wonderland-booking-report-${fileDate}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+
+      window.setTimeout(() => URL.revokeObjectURL(downloadUrl), 0);
+    } catch (error) {
+      setExportError(error.message || "Failed to download CSV report");
+    } finally {
+      setExporting(false);
+    }
+  };
 
   return (
-    <main className="mx-auto min-h-[70vh] max-w-7xl px-6 py-14 lg:px-10" data-testid="admin-reports-page">
-      <section className="rounded-[2rem] bg-gradient-to-br from-purple-600 via-pink-500 to-cyan-500 p-8 shadow-2xl">
-        <p className="font-bold uppercase tracking-[0.25em] text-yellow-100">Admin reports</p>
-        <h1 className="mt-3 text-5xl font-black">Booking reporting dashboard</h1>
-        <p className="mt-4 max-w-3xl text-lg text-white/85">
-          Review booking metrics, CDC booking change events and trigger-based content audit events.
-        </p>
+    <main data-testid="admin-reports-page" className="mx-auto max-w-6xl px-4 py-8">
+      <p className="text-sm font-semibold uppercase tracking-wide text-purple-700">
+        Admin reports
+      </p>
+      <h1 className="mt-2 text-3xl font-bold text-slate-900">
+        Booking reporting dashboard
+      </h1>
+      <p className="mt-3 max-w-3xl text-slate-600">
+        Review booking metrics, CDC booking change events and trigger-based content audit events.
+      </p>
+
+      <section
+        data-testid="admin-report-filters"
+        className="mt-8 rounded-2xl border border-purple-100 bg-white p-5 shadow-sm"
+      >
+        <div className="flex flex-col gap-2 md:flex-row md:items-end md:justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-slate-900">Report filters</h2>
+            <p className="text-sm text-slate-600">
+              Filter by booking visit date/status, then export the same filtered view to CSV.
+            </p>
+          </div>
+          <p data-testid="admin-report-active-filters" className="text-sm text-slate-500">
+            Active filters: {appliedFilters.startDate || "Any start date"} to{" "}
+            {appliedFilters.endDate || "Any end date"} · {appliedFilters.status || "All statuses"}
+          </p>
+        </div>
+
+        <form
+          onSubmit={handleApplyFilters}
+          className="mt-5 grid gap-4 md:grid-cols-[1fr_1fr_1fr_auto_auto]"
+        >
+          <label className="text-sm font-medium text-slate-700">
+            Start date
+            <input
+              data-testid="admin-report-start-date"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              type="date"
+              name="startDate"
+              value={filters.startDate}
+              onChange={handleFilterChange}
+            />
+          </label>
+
+          <label className="text-sm font-medium text-slate-700">
+            End date
+            <input
+              data-testid="admin-report-end-date"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              type="date"
+              name="endDate"
+              value={filters.endDate}
+              onChange={handleFilterChange}
+            />
+          </label>
+
+          <label className="text-sm font-medium text-slate-700">
+            Status
+            <select
+              data-testid="admin-report-status-filter"
+              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2"
+              name="status"
+              value={filters.status}
+              onChange={handleFilterChange}
+            >
+              <option value="">All statuses</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </label>
+
+          <button
+            data-testid="admin-report-apply-filters"
+            className="rounded-lg bg-purple-700 px-4 py-2 font-semibold text-white hover:bg-purple-800 md:self-end"
+            type="submit"
+          >
+            Apply
+          </button>
+
+          <button
+            data-testid="admin-report-reset-filters"
+            className="rounded-lg border border-slate-300 px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 md:self-end"
+            type="button"
+            onClick={handleResetFilters}
+          >
+            Reset
+          </button>
+        </form>
       </section>
 
       {loading && (
-        <section className="mt-8 rounded-[2rem] bg-white/10 p-8 text-white/70" data-testid="admin-reports-loading">
+        <p className="mt-8 rounded-xl bg-purple-50 p-4 text-purple-800">
           Loading admin reports...
-        </section>
+        </p>
       )}
 
       {loadError && (
-        <section className="mt-8 rounded-[2rem] border border-red-300/40 bg-red-500/15 p-8 text-red-100" data-testid="admin-reports-error">
-          {loadError}
-        </section>
+        <p className="mt-8 rounded-xl bg-red-50 p-4 text-red-700">{loadError}</p>
       )}
 
       {!loading && !loadError && report && (
         <>
-          <section className="mt-8 grid gap-6 md:grid-cols-4" data-testid="admin-report-summary">
-            <SummaryCard label="Total bookings" value={report.summary.totalBookings} testId="admin-report-total-bookings" />
-            <SummaryCard label="Confirmed value" value={`$${report.summary.confirmedValue.toFixed(2)}`} testId="admin-report-confirmed-value" />
-            <SummaryCard label="Cancelled value" value={`$${report.summary.cancelledValue.toFixed(2)}`} testId="admin-report-cancelled-value" />
-            <SummaryCard label="Average booking" value={`$${report.summary.averageBookingValue.toFixed(2)}`} testId="admin-report-average-booking" />
+          <section
+            data-testid="admin-report-summary"
+            className="mt-8 grid gap-4 md:grid-cols-4"
+          >
+            <SummaryCard
+              label="Total bookings"
+              value={report.summary.totalBookings}
+              testId="admin-report-total-bookings"
+            />
+            <SummaryCard
+              label="Confirmed"
+              value={report.summary.confirmedBookings}
+              testId="admin-report-confirmed-bookings"
+            />
+            <SummaryCard
+              label="Cancelled"
+              value={report.summary.cancelledBookings}
+              testId="admin-report-cancelled-bookings"
+            />
+            <SummaryCard
+              label="Booked value"
+              value={formatMoney(report.summary.totalBookedValue)}
+              testId="admin-report-total-value"
+            />
+            <SummaryCard
+              label="Confirmed value"
+              value={formatMoney(report.summary.confirmedValue)}
+              testId="admin-report-confirmed-value"
+            />
+            <SummaryCard
+              label="Cancelled value"
+              value={formatMoney(report.summary.cancelledValue)}
+              testId="admin-report-cancelled-value"
+            />
+            <SummaryCard
+              label="Points issued"
+              value={report.summary.totalPointsIssued}
+              testId="admin-report-total-points"
+            />
+            <SummaryCard
+              label="Average booking"
+              value={formatMoney(report.summary.averageBookingValue)}
+              testId="admin-report-average-value"
+            />
           </section>
 
-          <section className="mt-8 rounded-[2rem] border border-cyan-300/40 bg-cyan-400/10 p-6" data-testid="admin-report-cdc-status">
-            <h2 className="text-3xl font-black">CDC status for dbo.Bookings</h2>
-            <p className="mt-3 font-semibold text-white/75">
-              Database CDC enabled: {report.cdcStatus.isDatabaseCdcEnabled ? "Yes" : "No"}
-            </p>
-            <p className="mt-1 font-semibold text-white/75">
-              Bookings table CDC enabled: {report.cdcStatus.isBookingsCdcEnabled ? "Yes" : "No"}
-            </p>
-            <p className="mt-1 font-semibold text-white/75">
-              Capture instance: {report.cdcStatus.captureInstance}
-            </p>
-          </section>
+          <ReportPanel title="CDC status for dbo.Bookings" testId="admin-report-cdc-status">
+            <ReportRow
+              label="Database CDC enabled"
+              value={report.cdcStatus.isDatabaseCdcEnabled ? "Yes" : "No"}
+            />
+            <ReportRow
+              label="Bookings table CDC enabled"
+              value={report.cdcStatus.isBookingsCdcEnabled ? "Yes" : "No"}
+            />
+            <ReportRow label="Capture instance" value={report.cdcStatus.captureInstance} />
+          </ReportPanel>
 
-          <section className="mt-8 grid gap-6 lg:grid-cols-2">
-            <ReportPanel title="Status breakdown" testId="admin-report-status-breakdown">
-              {report.statusBreakdown.map((item) => (
+          <ReportPanel title="Status breakdown" testId="admin-report-status-breakdown">
+            {report.statusBreakdown.length === 0 ? (
+              <p className="text-sm text-slate-600">No bookings match the selected filters.</p>
+            ) : (
+              report.statusBreakdown.map((item) => (
                 <ReportRow
                   key={item.status}
                   label={item.status}
-                  value={`${item.bookingCount} bookings • $${item.totalAmount.toFixed(2)}`}
+                  value={`${item.bookingCount} bookings · ${formatMoney(item.totalAmount)}`}
                 />
-              ))}
-            </ReportPanel>
+              ))
+            )}
+          </ReportPanel>
 
-            <ReportPanel title="Item type breakdown" testId="admin-report-item-type-breakdown">
-              {report.itemTypeBreakdown.map((item) => (
+          <ReportPanel title="Item type breakdown" testId="admin-report-item-type-breakdown">
+            {report.itemTypeBreakdown.length === 0 ? (
+              <p className="text-sm text-slate-600">No booking items match the selected filters.</p>
+            ) : (
+              report.itemTypeBreakdown.map((item) => (
                 <ReportRow
                   key={item.itemType}
                   label={item.itemType}
-                  value={`${item.itemCount} items • $${item.totalAmount.toFixed(2)} • +${item.pointsEarned} pts`}
+                  value={`${item.itemCount} items · ${formatMoney(item.totalAmount)} · ${
+                    item.pointsEarned
+                  } points`}
                 />
-              ))}
-            </ReportPanel>
-          </section>
+              ))
+            )}
+          </ReportPanel>
 
-          <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid="admin-report-daily-activity">
-            <h2 className="text-3xl font-black">Recent daily activity</h2>
-
-            <div className="mt-5 grid gap-3">
-              {report.dailyActivity.map((day) => (
+          <ReportPanel title="Recent daily activity" testId="admin-report-daily-activity">
+            {report.dailyActivity.length === 0 ? (
+              <p className="text-sm text-slate-600">No daily activity for the selected filters.</p>
+            ) : (
+              report.dailyActivity.map((day) => (
                 <ReportRow
                   key={day.activityDate}
                   label={day.activityDate}
-                  value={`${day.bookingCount} bookings • $${day.totalAmount.toFixed(2)}`}
+                  value={`${day.bookingCount} bookings · ${formatMoney(day.totalAmount)}`}
                 />
-              ))}
-            </div>
-          </section>
+              ))
+            )}
+          </ReportPanel>
+
+          <ReportPanel title="CSV export" testId="admin-report-export-prep">
+            <p className="text-sm text-slate-600">
+              Download a CSV copy of the Admin booking report using the active filters above.
+            </p>
+            <button
+              data-testid="admin-report-download-csv"
+              className="mt-4 rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
+              type="button"
+              disabled={exporting}
+              onClick={handleDownloadCsv}
+            >
+              {exporting ? "Preparing CSV..." : "Download CSV"}
+            </button>
+            {exportError && (
+              <p data-testid="admin-report-export-error" className="mt-3 text-sm text-red-700">
+                {exportError}
+              </p>
+            )}
+          </ReportPanel>
 
           <CdcPanel events={report.recentBookingChangeEvents} testId="admin-report-booking-cdc-events" />
           <ContentAuditPanel events={report.contentAuditEvents} testId="admin-report-content-audit-events" />
-
-          <section className="mt-8 rounded-[2rem] border border-yellow-200 bg-yellow-50 p-6 text-yellow-950" data-testid="admin-report-export-prep">
-            <h2 className="text-3xl font-black">Export preparation</h2>
-            <p className="mt-3 font-semibold">
-              Export to CSV/PDF is prepared as a future reporting enhancement.
-            </p>
-            <button
-              type="button"
-              disabled
-              className="mt-5 rounded-2xl bg-yellow-200 px-6 py-3 font-black text-yellow-950"
-              data-testid="admin-report-export-disabled"
-            >
-              Export report coming soon
-            </button>
-          </section>
         </>
       )}
     </main>
@@ -143,9 +343,9 @@ function AdminReportsPage() {
 
 function SummaryCard({ label, value, testId }) {
   return (
-    <article className="rounded-[2rem] bg-white/10 p-5">
-      <p className="text-xs font-bold uppercase tracking-wide text-white/60">{label}</p>
-      <p className="mt-2 text-2xl font-black" data-testid={testId}>
+    <article className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <p className="text-sm text-slate-500">{label}</p>
+      <p data-testid={testId} className="mt-2 text-2xl font-bold text-slate-900">
         {value}
       </p>
     </article>
@@ -154,45 +354,51 @@ function SummaryCard({ label, value, testId }) {
 
 function ReportPanel({ title, testId, children }) {
   return (
-    <section className="rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid={testId}>
-      <h2 className="text-3xl font-black">{title}</h2>
-      <div className="mt-5 grid gap-3">{children}</div>
+    <section
+      data-testid={testId}
+      className="mt-8 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+    >
+      <h2 className="text-xl font-semibold text-slate-900">{title}</h2>
+      <div className="mt-4 space-y-3">{children}</div>
     </section>
   );
 }
 
 function ReportRow({ label, value }) {
   return (
-    <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-slate-100 p-4">
-      <span className="font-black capitalize">{label}</span>
-      <span className="font-bold text-slate-600">{value}</span>
+    <div className="flex flex-col justify-between gap-1 rounded-xl bg-slate-50 px-4 py-3 sm:flex-row">
+      <span className="font-medium text-slate-800">{label}</span>
+      <span className="text-slate-600">{value}</span>
     </div>
   );
 }
 
 function CdcPanel({ events, testId }) {
   return (
-    <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid={testId}>
-      <h2 className="text-3xl font-black">CDC booking change events</h2>
+    <section
+      data-testid={testId}
+      className="mt-8 rounded-2xl border border-blue-100 bg-blue-50 p-5"
+    >
+      <h2 className="text-xl font-semibold text-slate-900">CDC booking change events</h2>
+      <p className="mt-1 text-sm text-slate-600">
+        CDC events show recent database-level booking inserts/updates and are not filtered by the report controls.
+      </p>
 
-      <div className="mt-5 grid gap-4">
+      <div className="mt-4 space-y-3">
         {events.length === 0 ? (
-          <p className="rounded-2xl bg-slate-100 p-4 font-semibold text-slate-600">
+          <p className="text-sm text-slate-600">
             CDC is enabled. No booking change rows have been captured yet.
           </p>
         ) : (
           events.map((event, index) => (
-            <article
-              key={`${event.bookingReference}-${event.operation}-${event.changeTime}-${index}`}
-              className="rounded-2xl bg-slate-100 p-4"
-            >
-              <p className="text-xs font-black uppercase tracking-wide text-purple-600">
+            <article key={`${event.bookingReference}-${index}`} className="rounded-xl bg-white p-4">
+              <span className="rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-800">
                 {event.operation}
-              </p>
-              <h3 className="mt-1 break-all text-xl font-black">{event.bookingReference}</h3>
-              <p className="mt-2 text-sm font-semibold text-slate-600">{event.eventSummary}</p>
-              <p className="mt-2 text-xs font-bold text-slate-500">
-                {event.customerEmail || "Customer pending"} • {formatDate(event.changeTime)}
+              </span>
+              <h3 className="mt-2 font-semibold text-slate-900">{event.bookingReference}</h3>
+              <p className="text-sm text-slate-600">{event.eventSummary}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {event.customerEmail || "Customer pending"} · {formatDate(event.changeTime)}
               </p>
             </article>
           ))
@@ -204,27 +410,25 @@ function CdcPanel({ events, testId }) {
 
 function ContentAuditPanel({ events, testId }) {
   return (
-    <section className="mt-8 rounded-[2rem] bg-white p-6 text-slate-950 shadow-2xl" data-testid={testId}>
-      <h2 className="text-3xl font-black">Trigger-based content audit events</h2>
+    <section
+      data-testid={testId}
+      className="mt-8 rounded-2xl border border-amber-100 bg-amber-50 p-5"
+    >
+      <h2 className="text-xl font-semibold text-slate-900">Trigger-based content audit events</h2>
 
-      <div className="mt-5 grid gap-4">
+      <div className="mt-4 space-y-3">
         {events.length === 0 ? (
-          <p className="rounded-2xl bg-slate-100 p-4 font-semibold text-slate-600">
-            No content approval trigger events yet.
-          </p>
+          <p className="text-sm text-slate-600">No content approval trigger events yet.</p>
         ) : (
           events.map((event) => (
-            <article
-              key={event.contentAuditEventId}
-              className="rounded-2xl bg-slate-100 p-4"
-            >
-              <p className="text-xs font-black uppercase tracking-wide text-purple-600">
+            <article key={event.contentAuditEventId} className="rounded-xl bg-white p-4">
+              <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-semibold text-amber-800">
                 {event.eventType}
-              </p>
-              <h3 className="mt-1 text-xl font-black">{event.entityName}</h3>
-              <p className="mt-2 text-sm font-semibold text-slate-600">{event.eventSummary}</p>
-              <p className="mt-2 text-xs font-bold text-slate-500">
-                {event.entityType} • {formatDate(event.createdAt)}
+              </span>
+              <h3 className="mt-2 font-semibold text-slate-900">{event.entityName}</h3>
+              <p className="text-sm text-slate-600">{event.eventSummary}</p>
+              <p className="mt-1 text-xs text-slate-500">
+                {event.entityType} · {formatDate(event.createdAt)}
               </p>
             </article>
           ))

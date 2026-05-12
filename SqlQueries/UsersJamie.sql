@@ -1,0 +1,2 @@
+SELECT * FROM USERS
+WHERE FirstName LIKE 'Jamie%';
