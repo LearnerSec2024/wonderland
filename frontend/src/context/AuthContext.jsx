@@ -1,5 +1,6 @@
-﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { api } from "../services/api";
+import { clearStoredBasket } from "./BasketContext";
 
 const TOKEN_STORAGE_KEY = "wonderland_token";
 
@@ -23,6 +24,7 @@ export function AuthProvider({ children }) {
         setUser(result.user);
       } catch {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
+        clearStoredBasket();
         setToken(null);
         setUser(null);
       } finally {
@@ -34,6 +36,7 @@ export function AuthProvider({ children }) {
   }, [token]);
 
   const saveSession = (authResult) => {
+    clearStoredBasket();
     localStorage.setItem(TOKEN_STORAGE_KEY, authResult.token);
     setToken(authResult.token);
     setUser(authResult.user);
@@ -53,6 +56,7 @@ export function AuthProvider({ children }) {
 
   const logout = () => {
     localStorage.removeItem(TOKEN_STORAGE_KEY);
+    clearStoredBasket();
     setToken(null);
     setUser(null);
   };

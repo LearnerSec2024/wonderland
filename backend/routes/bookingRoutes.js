@@ -1,6 +1,8 @@
-﻿const express = require('express');
+const express = require('express');
 
 const { sql, getPool } = require('../config/db');
+
+const { writeAuditEvent } = require("../services/auditLogger");
 const { requireAuth } = require('../middleware/authMiddleware');
 
 const router = express.Router();
@@ -303,8 +305,27 @@ router.post('/:bookingReference/cancel', async (req, res, next) => {
 
     await transaction.commit();
 
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "Booking",
+      eventType: "UserCancelledBooking",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: "Booking",
+      targetEntityId: updatedBooking.BookingId,
+      targetEntityReference: updatedBooking.BookingReference,
+      eventSummary: `User cancelled booking ${updatedBooking.BookingReference}`,
+      details: {
+        status: updatedBooking.Status,
+        cancellationReason,
+        totalPointsReversed: existingBooking.TotalPointsEarned,
+      },
+    });
+
     res.json({
-      message: 'Booking cancelled successfully',
+      message: "Booking cancelled successfully",
       booking: mapBookingRow(updatedBooking, items),
     });
   } catch (error) {
@@ -563,8 +584,35 @@ router.post('/checkout', async (req, res, next) => {
 
     await transaction.commit();
 
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "Booking",
+      eventType: "UserCompletedCheckout",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: "Booking",
+      targetEntityId: booking.BookingId,
+      targetEntityReference: booking.BookingReference,
+      eventSummary: `User completed checkout for booking ${booking.BookingReference}`,
+      details: {
+        status: booking.Status,
+        basketItemCount,
+        totalAmount,
+        totalPointsEarned,
+        visitDate,
+        items: normalizedItems.map((item) => ({
+          itemType: item.itemType,
+          itemId: item.itemId,
+          name: item.name,
+          subtotal: item.subtotal,
+        })),
+      },
+    });
+
     res.status(201).json({
-      message: 'Booking confirmed successfully',
+      message: "Booking confirmed successfully",
       booking: mapBookingRow(booking, normalizedItems),
     });
   } catch (error) {

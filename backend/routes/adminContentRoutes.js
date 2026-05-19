@@ -1,9 +1,11 @@
-﻿const express = require("express");
+const express = require("express");
 
 const { sql, getPool } = require("../config/db");
 const { requireAuth } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/roleMiddleware");
 
+
+const { writeAuditEvent } = require("../services/auditLogger");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -128,9 +130,29 @@ router.post("/rides", async (req, res, next) => {
           );
       `);
 
+    const createdRide = result.recordset[0];
+
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "Content",
+      eventType: "AdminCreatedRide",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: "Ride",
+      targetEntityId: createdRide.RideId,
+      targetEntityReference: createdRide.Name,
+      eventSummary: `Admin submitted ride "${createdRide.Name}" for manager approval`,
+      details: {
+        approvalStatus: createdRide.ApprovalStatus,
+        isActive: createdRide.IsActive,
+      },
+    });
+
     res.status(201).json({
       message: "Ride submitted for manager approval",
-      item: result.recordset[0],
+      item: createdRide,
     });
   } catch (error) {
     next(error);
@@ -207,9 +229,29 @@ router.post("/accommodations", async (req, res, next) => {
           );
       `);
 
+    const createdAccommodation = result.recordset[0];
+
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "Content",
+      eventType: "AdminCreatedAccommodation",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: "Accommodation",
+      targetEntityId: createdAccommodation.AccommodationId,
+      targetEntityReference: createdAccommodation.Name,
+      eventSummary: `Admin submitted accommodation "${createdAccommodation.Name}" for manager approval`,
+      details: {
+        approvalStatus: createdAccommodation.ApprovalStatus,
+        isActive: createdAccommodation.IsActive,
+      },
+    });
+
     res.status(201).json({
       message: "Accommodation submitted for manager approval",
-      item: result.recordset[0],
+      item: createdAccommodation,
     });
   } catch (error) {
     next(error);

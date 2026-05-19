@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
@@ -21,6 +21,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminContentPage from "./pages/AdminContentPage";
 import AdminBookingsPage from "./pages/AdminBookingsPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
+import AdminAuditLogsPage from "./pages/AdminAuditLogsPage";
 import ManagerApprovalsPage from "./pages/ManagerApprovalsPage";
 import ManagerBookingActivityPage from "./pages/ManagerBookingActivityPage";
 import ManagerReportsPage from "./pages/ManagerReportsPage";
@@ -119,7 +120,15 @@ function App() {
               }
             />
 
-            <Route
+            
+          <Route
+            path="/admin/audit-logs"
+            element={
+              <RoleProtectedRoute allowedRoles={["Admin"]}>
+                <AdminAuditLogsPage />
+              </RoleProtectedRoute>
+            }
+          /><Route
               path="/manager/approvals"
               element={
                 <ProtectedRoute>

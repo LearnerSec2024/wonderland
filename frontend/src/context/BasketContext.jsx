@@ -1,6 +1,7 @@
-﻿import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 
-const BASKET_STORAGE_KEY = "wonderland_basket";
+export const BASKET_STORAGE_KEY = "wonderland_basket";
+export const BASKET_CLEARED_EVENT = "wonderland:basket-cleared";
 
 const BasketContext = createContext(null);
 
@@ -13,6 +14,15 @@ function readStoredBasket() {
   }
 }
 
+export function clearStoredBasket() {
+  try {
+    localStorage.removeItem(BASKET_STORAGE_KEY);
+    window.dispatchEvent(new Event(BASKET_CLEARED_EVENT));
+  } catch {
+    // Ignore localStorage/window errors so auth flows are never blocked by basket cleanup.
+  }
+}
+
 function makeBasketId(itemType, itemId) {
   return `${itemType}-${itemId}`;
 }
@@ -20,11 +30,11 @@ function makeBasketId(itemType, itemId) {
 export function calculateAccommodationPricing(item) {
   const basePrice = Number(item.unitPrice || 0);
   const guestCount = Number(item.guestCount || 1);
-
   const guestSurchargeRates = [0.5, 0.25, 0.25, 0.1];
 
   const surcharge = guestSurchargeRates.reduce((total, rate, index) => {
     const guestNumber = index + 1;
+
     if (guestCount >= guestNumber) {
       return total + basePrice * rate;
     }
@@ -48,11 +58,23 @@ export function calculateBasketItemSubtotal(item) {
 }
 
 export function BasketProvider({ children }) {
-  const [items, setItems] = useState(readStoredBasket);
+  const [items, setItems] = useState(() => readStoredBasket());
 
   useEffect(() => {
     localStorage.setItem(BASKET_STORAGE_KEY, JSON.stringify(items));
   }, [items]);
+
+  useEffect(() => {
+    const handleBasketCleared = () => {
+      setItems([]);
+    };
+
+    window.addEventListener(BASKET_CLEARED_EVENT, handleBasketCleared);
+
+    return () => {
+      window.removeEventListener(BASKET_CLEARED_EVENT, handleBasketCleared);
+    };
+  }, []);
 
   const addRide = (ride) => {
     setItems((current) => {
@@ -105,7 +127,9 @@ export function BasketProvider({ children }) {
           unitPrice: Number(accommodation.PricePerNight),
           guestCount: 1,
           maxGuests: Number(accommodation.MaxGuests || 1),
-          minimumLeadGuestAgeYears: Number(accommodation.MinimumLeadGuestAgeYears || 18),
+          minimumLeadGuestAgeYears: Number(
+            accommodation.MinimumLeadGuestAgeYears || 18
+          ),
         },
       ];
     });
@@ -184,7 +208,9 @@ export function BasketProvider({ children }) {
     clearBasket,
   };
 
-  return <BasketContext.Provider value={value}>{children}</BasketContext.Provider>;
+  return (
+    <BasketContext.Provider value={value}>{children}</BasketContext.Provider>
+  );
 }
 
 export function useBasket() {

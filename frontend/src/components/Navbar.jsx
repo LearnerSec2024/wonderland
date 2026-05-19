@@ -1,4 +1,4 @@
-﻿import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { NavLink, Link, useNavigate } from "react-router-dom";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
@@ -104,7 +104,14 @@ function Navbar() {
               <NavLink to="/admin/reports" className={linkClass} data-testid="nav-admin-reports">
                 Admin Reports
               </NavLink>
-            </>
+            
+              <NavLink
+                to="/admin/audit-logs"
+                className={linkClass}
+                data-testid="nav-admin-audit-logs"
+              >
+                Audit Logs
+              </NavLink></>
           )}
 
           {user?.role === "Manager" && (

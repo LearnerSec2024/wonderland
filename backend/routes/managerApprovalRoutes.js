@@ -1,9 +1,11 @@
-﻿const express = require('express');
+const express = require('express');
 
 const { sql, getPool } = require('../config/db');
 const { requireAuth } = require('../middleware/authMiddleware');
 const { requireRole } = require('../middleware/roleMiddleware');
 
+
+const { writeAuditEvent } = require("../services/auditLogger");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -189,9 +191,29 @@ router.post('/approvals/:type/:id/approve', async (req, res, next) => {
       });
     }
 
+    const approvedItem = result.recordset[0];
+
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "ContentApproval",
+      eventType: "ManagerApprovedContent",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: type === "ride" ? "Ride" : "Accommodation",
+      targetEntityId: Number(id),
+      targetEntityReference: approvedItem.Name,
+      eventSummary: `Manager approved ${type} "${approvedItem.Name}"`,
+      details: {
+        approvalStatus: approvedItem.ApprovalStatus,
+        isActive: approvedItem.IsActive,
+      },
+    });
+
     res.json({
-      message: 'Content approved successfully',
-      item: result.recordset[0],
+      message: "Content approved successfully",
+      item: approvedItem,
     });
   } catch (error) {
     next(error);
@@ -259,9 +281,30 @@ router.post('/approvals/:type/:id/reject', async (req, res, next) => {
       });
     }
 
+    const rejectedItem = result.recordset[0];
+
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "ContentApproval",
+      eventType: "ManagerRejectedContent",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: type === "ride" ? "Ride" : "Accommodation",
+      targetEntityId: Number(id),
+      targetEntityReference: rejectedItem.Name,
+      eventSummary: `Manager rejected ${type} "${rejectedItem.Name}"`,
+      details: {
+        approvalStatus: rejectedItem.ApprovalStatus,
+        isActive: rejectedItem.IsActive,
+        rejectionReason: rejectedItem.RejectionReason,
+      },
+    });
+
     res.json({
-      message: 'Content rejected successfully',
-      item: result.recordset[0],
+      message: "Content rejected successfully",
+      item: rejectedItem,
     });
   } catch (error) {
     next(error);

@@ -20,6 +20,27 @@ function buildQueryString(filters = {}) {
   return queryString ? `?${queryString}` : "";
 }
 
+
+function buildAuditQueryString(filters = {}) {
+  const params = new URLSearchParams();
+
+  [
+    "startDate",
+    "endDate",
+    "eventCategory",
+    "eventType",
+    "actorRole",
+    "actionStatus",
+    "search",
+  ].forEach((key) => {
+    if (filters[key]) {
+      params.set(key, filters[key]);
+    }
+  });
+
+  const queryString = params.toString();
+  return queryString ? `?${queryString}` : "";
+}
 async function request(path, options = {}) {
   const { token, headers, ...fetchOptions } = options;
 
@@ -195,6 +216,12 @@ export const api = {
     });
   },
 
+  async getAdminAuditEvents(token, filters = {}) {
+    return request(`/admin/audit-events${buildAuditQueryString(filters)}`, {
+      method: "GET",
+      token,
+    });
+  },
   async getManagerBookingReport(token, filters = {}) {
     return request(`/manager/reports/bookings${buildQueryString(filters)}`, {
       method: "GET",

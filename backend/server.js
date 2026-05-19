@@ -1,4 +1,4 @@
-﻿require("dotenv").config();
+require("dotenv").config();
 
 const express = require("express");
 const cors = require("cors");
@@ -11,6 +11,8 @@ const profileRoutes = require("./routes/profileRoutes");
 const adminContentRoutes = require("./routes/adminContentRoutes");
 const adminBookingRoutes = require("./routes/adminBookingRoutes");
 const adminReportRoutes = require("./routes/adminReportRoutes");
+
+const adminAuditRoutes = require("./routes/adminAuditRoutes");
 const managerApprovalRoutes = require("./routes/managerApprovalRoutes");
 const managerBookingRoutes = require("./routes/managerBookingRoutes");
 const managerReportRoutes = require("./routes/managerReportRoutes");
@@ -37,6 +39,8 @@ app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminContentRoutes);
 app.use("/api/admin", adminBookingRoutes);
 app.use("/api/admin", adminReportRoutes);
+
+app.use("/api/admin", adminAuditRoutes);
 app.use("/api/manager", managerApprovalRoutes);
 app.use("/api/manager", managerBookingRoutes);
 app.use("/api/manager", managerReportRoutes);

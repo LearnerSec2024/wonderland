@@ -4,8 +4,8 @@ Wonderland is a learning-focused full-stack web application for a modern theme p
 
 The app is being built for two purposes:
 
-1. **Theme park booking platform** — users can browse rides, browse accommodation, register, log in, book experiences, and earn reward points.
-2. **Playwright JavaScript training app** — the app will include clean, testable pages as well as a dedicated Automation Lab with intentionally tricky locator scenarios.
+1. **Theme park booking platform** â€” users can browse rides, browse accommodation, register, log in, book experiences, and earn reward points.
+2. **Playwright JavaScript training app** â€” the app will include clean, testable pages as well as a dedicated Automation Lab with intentionally tricky locator scenarios.
 
 This project is being built locally on a personal Windows 11 laptop for learning purposes.
 
@@ -24,8 +24,8 @@ This project is being built locally on a personal Windows 11 laptop for learning
 | GitHub repository | Published |
 | GitHub Actions workflow | Passing |
 | Azure DevOps Pipeline | Passing |
-| Latest completed iteration | **Iteration 12 — Export and Reporting Enhancements** |
-| Next iteration | **Iteration 13 — Application Audit Logs** |
+| Latest completed iteration | **Iteration 12 â€” Export and Reporting Enhancements** |
+| Next iteration | **Iteration 13 â€” Application Audit Logs** |
 
 Current local URLs:
 
@@ -128,25 +128,25 @@ Before committing, check whether the change affects any of the following:
 
 ```text
 Implement feature or fix
-↓
+â†“
 Check frontend, backend, DB, tests and CI impact
-↓
+â†“
 Add/update SQL migrations and seed data if needed
-↓
+â†“
 Add/update Playwright tests
-↓
+â†“
 Run full local Playwright suite
-↓
+â†“
 Commit feature, migrations, tests and README together
-↓
+â†“
 Push to GitHub
-↓
+â†“
 Confirm GitHub Actions passes
-↓
+â†“
 Push same commit to Azure DevOps
-↓
+â†“
 Confirm Azure Pipeline passes
-↓
+â†“
 Move to next iteration
 ```
 
@@ -213,38 +213,38 @@ Current project structure:
 
 ```text
 wonderland
-├── .github
-│   └── workflows
-│       └── playwright.yml
-├── backend
-│   ├── config
-│   ├── controllers
-│   ├── middleware
-│   ├── routes
-│   ├── scripts
-│   ├── sql
-│   ├── .env.example
-│   ├── package.json
-│   └── server.js
-├── frontend
-│   ├── src
-│   │   ├── components
-│   │   ├── pages
-│   │   └── services
-│   ├── tests
-│   ├── .env.example
-│   ├── package.json
-│   └── playwright.config.js
-├── docs
-│   ├── local-db-setup.md
-│   └── playwright-training-requirements.md
-├── postman
-│   ├── wonderland-api.postman_collection.json
-│   └── wonderland-local.postman_environment.json
-├── .gitignore
-├── package.json
-├── package-lock.json
-└── README.md
+â”œâ”€â”€ .github
+â”‚   â””â”€â”€ workflows
+â”‚       â””â”€â”€ playwright.yml
+â”œâ”€â”€ backend
+â”‚   â”œâ”€â”€ config
+â”‚   â”œâ”€â”€ controllers
+â”‚   â”œâ”€â”€ middleware
+â”‚   â”œâ”€â”€ routes
+â”‚   â”œâ”€â”€ scripts
+â”‚   â”œâ”€â”€ sql
+â”‚   â”œâ”€â”€ .env.example
+â”‚   â”œâ”€â”€ package.json
+â”‚   â””â”€â”€ server.js
+â”œâ”€â”€ frontend
+â”‚   â”œâ”€â”€ src
+â”‚   â”‚   â”œâ”€â”€ components
+â”‚   â”‚   â”œâ”€â”€ pages
+â”‚   â”‚   â””â”€â”€ services
+â”‚   â”œâ”€â”€ tests
+â”‚   â”œâ”€â”€ .env.example
+â”‚   â”œâ”€â”€ package.json
+â”‚   â””â”€â”€ playwright.config.js
+â”œâ”€â”€ docs
+â”‚   â”œâ”€â”€ local-db-setup.md
+â”‚   â””â”€â”€ playwright-training-requirements.md
+â”œâ”€â”€ postman
+â”‚   â”œâ”€â”€ wonderland-api.postman_collection.json
+â”‚   â””â”€â”€ wonderland-local.postman_environment.json
+â”œâ”€â”€ .gitignore
+â”œâ”€â”€ package.json
+â”œâ”€â”€ package-lock.json
+â””â”€â”€ README.md
 ```
 
 Local secret files such as `backend/.env`, `frontend/.env`, and `backend/sql/create-app-login.local.sql` are intentionally ignored by Git.
@@ -511,8 +511,8 @@ The fix was completed in SQL Server Configuration Manager:
 
 ```text
 SQL Server Network Configuration
-└── Protocols for MSSQLSERVER
-    └── TCP/IP enabled
+â””â”€â”€ Protocols for MSSQLSERVER
+    â””â”€â”€ TCP/IP enabled
 ```
 
 Then under TCP/IP Properties:
@@ -924,7 +924,7 @@ Completed:
 
 ---
 
-## Next Task: Iteration 13 — Application Audit Logs
+## Next Task: Iteration 13 â€” Application Audit Logs
 
 This is the next task to pick up.
 
@@ -1029,11 +1029,11 @@ Future DW flow:
 
 ```text
 WonderlandDB.dbo.ApplicationAuditEvents
-    ↓
+    â†“
 ETL / load procedure
-    ↓
+    â†“
 WonderlandDW.FactApplicationAuditEvent
-    ↓
+    â†“
 Power BI audit dashboard
 ```
 
@@ -1158,7 +1158,7 @@ Current result:
 7 passed
 Next Iteration
 
-Iteration 3 � Clean Rides and Accommodation Pages
+Iteration 3 ï¿½ Clean Rides and Accommodation Pages
 
 Expected outcomes:
 
@@ -1232,14 +1232,14 @@ Expected result:
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
 
 ### Next Iteration
 
-Iteration 4 � Ride and Accommodation Details Pages
+Iteration 4 ï¿½ Ride and Accommodation Details Pages
 
 Expected outcomes:
 
@@ -1259,13 +1259,13 @@ After completing Iteration 3, the next step has been refined before moving to It
 
 ### New Next Iteration
 
-Iteration 3.5 � Role-Based Registration, DOB and Age Eligibility
+Iteration 3.5 ï¿½ Role-Based Registration, DOB and Age Eligibility
 
 This iteration strengthens the authentication and business rules foundation before adding ride/accommodation detail pages and booking workflows.
 
 ---
 
-## Iteration 3.5 � Role-Based Registration, DOB and Age Eligibility
+## Iteration 3.5 ï¿½ Role-Based Registration, DOB and Age Eligibility
 
 ### Purpose
 
@@ -1554,7 +1554,7 @@ The Playwright test suite should be extended to cover:
 
 The following items are intentionally not part of Iteration 3.5 and will be handled later.
 
-### Iteration 4 � Ride and Accommodation Details Pages
+### Iteration 4 ï¿½ Ride and Accommodation Details Pages
 
 Planned features:
 
@@ -1567,7 +1567,7 @@ Planned features:
 
 ---
 
-### Iteration 5 � Booking Basket
+### Iteration 5 ï¿½ Booking Basket
 
 Planned features:
 
@@ -1581,7 +1581,7 @@ Planned features:
 
 ---
 
-### Iteration 6 � Checkout, Booking Guests and Eligibility Enforcement
+### Iteration 6 ï¿½ Checkout, Booking Guests and Eligibility Enforcement
 
 Planned features:
 
@@ -1605,7 +1605,7 @@ Account holder DOB alone is not enough for ride eligibility because a parent may
 
 ---
 
-### Iteration 7 � User Dashboard Enhancements
+### Iteration 7 ï¿½ User Dashboard Enhancements
 
 Planned features:
 
@@ -1618,7 +1618,7 @@ Planned features:
 
 ---
 
-### Iteration 8 � Admin and Manager Dashboards
+### Iteration 8 ï¿½ Admin and Manager Dashboards
 
 Planned features:
 
@@ -1636,7 +1636,7 @@ Planned features:
 
 ---
 
-### Later Iterations � Reporting and Automation Lab
+### Later Iterations ï¿½ Reporting and Automation Lab
 
 Planned features:
 
@@ -1657,10 +1657,10 @@ Planned features:
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
 
 Current test status:
 
@@ -1669,7 +1669,7 @@ Current test status:
 
 Next implementation task:
 
-- Iteration 3.5 � Role-Based Registration, DOB and Age Eligibility
+- Iteration 3.5 ï¿½ Role-Based Registration, DOB and Age Eligibility
 
 Development rhythm remains:
 
@@ -1749,7 +1749,7 @@ The next few iterations will strengthen employee lifecycle, profile pages, and a
 
 ---
 
-## Iteration 3.5.1 � Employee Registration Status Tracking
+## Iteration 3.5.1 ï¿½ Employee Registration Status Tracking
 
 ### Purpose
 
@@ -1803,7 +1803,7 @@ Expected error:
 
 ---
 
-## Iteration 3.6 � Profile Page
+## Iteration 3.6 ï¿½ Profile Page
 
 ### Purpose
 
@@ -1857,7 +1857,7 @@ Salary data is mock/demo data for future enterprise and reporting scenarios, but
 
 ---
 
-## Iteration 3.7 � Admin Content Submission and Manager Approval Workflow
+## Iteration 3.7 ï¿½ Admin Content Submission and Manager Approval Workflow
 
 ### Purpose
 
@@ -1966,7 +1966,7 @@ Manager APIs:
 
 ---
 
-## Iteration 4 � Ride and Accommodation Details Pages
+## Iteration 4 ï¿½ Ride and Accommodation Details Pages
 
 Iteration 4 will now happen after Iterations 3.5.1, 3.6 and 3.7.
 
@@ -1997,15 +1997,15 @@ This means details pages can later show only approved public content and can res
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
 
 Next implementation task:
 
-    Iteration 3.5.1 � Employee Registration Status Tracking
+    Iteration 3.5.1 ï¿½ Employee Registration Status Tracking
 
 Development rhythm remains:
 
@@ -2103,16 +2103,16 @@ The tests now include coverage for:
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
 
 ### Next Iteration
 
-Iteration 3.6 � Profile Page
+Iteration 3.6 ï¿½ Profile Page
 
 Expected outcomes:
 
@@ -2184,17 +2184,17 @@ Salary visibility should remain restricted to future Admin/Manager reporting fea
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
 
 ### Next Iteration
 
-Iteration 3.7 � Admin Content Submission and Manager Approval Workflow
+Iteration 3.7 ï¿½ Admin Content Submission and Manager Approval Workflow
 
 Expected outcomes:
 
@@ -2401,18 +2401,18 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
 
 ### Next Iteration
 
-Iteration 4 � Ride and Accommodation Details Pages
+Iteration 4 ï¿½ Ride and Accommodation Details Pages
 
 Expected outcomes:
 
@@ -2590,13 +2590,13 @@ Existing listing and app shell tests were also adjusted to better support dynami
 
 Some tests were updated to use more precise locators.
 
-For example, accommodation page heading checks now target the page-level H1 instead of matching any heading that contains the word �Accommodation�.
+For example, accommodation page heading checks now target the page-level H1 instead of matching any heading that contains the word ï¿½Accommodationï¿½.
 
 Improved pattern:
 
     page.getByRole("heading", { name: "Accommodation", level: 1, exact: true })
 
-This prevents strict-mode failures when approved accommodation content contains �Accommodation� in item titles.
+This prevents strict-mode failures when approved accommodation content contains ï¿½Accommodationï¿½ in item titles.
 
 ---
 
@@ -2615,21 +2615,21 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
 
 ---
 
 ### Next Iteration
 
-Iteration 5 � Booking Basket
+Iteration 5 ï¿½ Booking Basket
 
 Expected outcomes:
 
@@ -2735,7 +2735,7 @@ Ride items include:
 
 Ride subtotal is calculated as:
 
-    Unit price � Quantity
+    Unit price ï¿½ Quantity
 
 Users can increase or decrease ride quantity.
 
@@ -2859,22 +2859,22 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
 
 ---
 
 ### Next Iteration
 
-Iteration 6 � Checkout and Booking Confirmation
+Iteration 6 ï¿½ Checkout and Booking Confirmation
 
 Expected outcomes:
 
@@ -3091,7 +3091,7 @@ Expected user journey:
 
 Ride pricing:
 
-    Ride unit price � quantity
+    Ride unit price ï¿½ quantity
 
 Accommodation pricing continues to use the guest surcharge rule introduced in Iteration 5:
 
@@ -3179,23 +3179,23 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
 
 ---
 
 ### Next Iteration
 
-Iteration 7 � Booking History and Dashboard/Profile Integration
+Iteration 7 ï¿½ Booking History and Dashboard/Profile Integration
 
 Expected outcomes:
 
@@ -3384,24 +3384,24 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
-- Iteration 7 � Booking history and dashboard/profile integration
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
+- Iteration 7 ï¿½ Booking history and dashboard/profile integration
 
 ---
 
 ### Next Iteration
 
-Iteration 8 � Booking Management Enhancements
+Iteration 8 ï¿½ Booking Management Enhancements
 
 Expected outcomes:
 
@@ -3518,7 +3518,7 @@ The booking history page now displays summary cards:
 - Total spend
 - WonderPoints earned
 
-These are calculated from the logged-in user�s booking history.
+These are calculated from the logged-in userï¿½s booking history.
 
 ---
 
@@ -3630,25 +3630,25 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
-- Iteration 7 � Booking history and dashboard/profile integration
-- Iteration 8 � Booking management enhancements
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
+- Iteration 7 ï¿½ Booking history and dashboard/profile integration
+- Iteration 8 ï¿½ Booking management enhancements
 
 ---
 
 ### Next Iteration
 
-Iteration 9 � Booking Cancellation Workflow
+Iteration 9 ï¿½ Booking Cancellation Workflow
 
 Expected outcomes:
 
@@ -3797,7 +3797,7 @@ When a confirmed booking is cancelled:
 
 - The booking remains in history
 - The booking status changes to Cancelled
-- The user�s earned WonderPoints from that booking are reversed
+- The userï¿½s earned WonderPoints from that booking are reversed
 - TotalPoints is protected from going below zero
 
 This keeps the reward balance aligned with booking status.
@@ -3868,26 +3868,26 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
-- Iteration 7 � Booking history and dashboard/profile integration
-- Iteration 8 � Booking management enhancements
-- Iteration 9 � Booking cancellation workflow
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
+- Iteration 7 ï¿½ Booking history and dashboard/profile integration
+- Iteration 8 ï¿½ Booking management enhancements
+- Iteration 9 ï¿½ Booking cancellation workflow
 
 ---
 
 ### Next Iteration
 
-Iteration 10 � Admin and Manager Booking Visibility
+Iteration 10 ï¿½ Admin and Manager Booking Visibility
 
 Expected outcomes:
 
@@ -4160,27 +4160,27 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
-- Iteration 7 � Booking history and dashboard/profile integration
-- Iteration 8 � Booking management enhancements
-- Iteration 9 � Booking cancellation workflow
-- Iteration 10 � Admin and Manager booking visibility
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
+- Iteration 7 ï¿½ Booking history and dashboard/profile integration
+- Iteration 8 ï¿½ Booking management enhancements
+- Iteration 9 ï¿½ Booking cancellation workflow
+- Iteration 10 ï¿½ Admin and Manager booking visibility
 
 ---
 
 ### Next Iteration
 
-Iteration 11 � Admin/Manager Reporting and Audit Preparation
+Iteration 11 ï¿½ Admin/Manager Reporting and Audit Preparation
 
 Expected outcomes:
 
@@ -4520,29 +4520,29 @@ GitHub Actions should be checked after pushing this iteration.
 Completed:
 
 - Foundation
-- Iteration 1 � Frontend app shell and routing
-- Iteration 1.5 � Playwright smoke test safety net
-- Iteration 2 � Frontend authentication flow
-- Iteration 3 � Clean rides and accommodation pages
-- Iteration 3.5 � Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 � Employee registration status tracking
-- Iteration 3.6 � Profile page
-- Iteration 3.7 � Admin content submission and Manager approval workflow
-- Iteration 4 � Ride and accommodation details pages
-- Iteration 5 � Booking basket
-- Iteration 6 � Checkout and booking confirmation
-- Iteration 7 � Booking history and dashboard/profile integration
-- Iteration 8 � Booking management enhancements
-- Iteration 9 � Booking cancellation workflow
-- Iteration 10 � Admin and Manager booking visibility
-- Iteration 11 � Admin/Manager reporting and audit preparation
-- Iteration 11.1 � CDC booking audit and trigger learning example
+- Iteration 1 ï¿½ Frontend app shell and routing
+- Iteration 1.5 ï¿½ Playwright smoke test safety net
+- Iteration 2 ï¿½ Frontend authentication flow
+- Iteration 3 ï¿½ Clean rides and accommodation pages
+- Iteration 3.5 ï¿½ Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 ï¿½ Employee registration status tracking
+- Iteration 3.6 ï¿½ Profile page
+- Iteration 3.7 ï¿½ Admin content submission and Manager approval workflow
+- Iteration 4 ï¿½ Ride and accommodation details pages
+- Iteration 5 ï¿½ Booking basket
+- Iteration 6 ï¿½ Checkout and booking confirmation
+- Iteration 7 ï¿½ Booking history and dashboard/profile integration
+- Iteration 8 ï¿½ Booking management enhancements
+- Iteration 9 ï¿½ Booking cancellation workflow
+- Iteration 10 ï¿½ Admin and Manager booking visibility
+- Iteration 11 ï¿½ Admin/Manager reporting and audit preparation
+- Iteration 11.1 ï¿½ CDC booking audit and trigger learning example
 
 ---
 
 ### Next Iteration
 
-Iteration 12 � Export and Reporting Enhancements
+Iteration 12 ï¿½ Export and Reporting Enhancements
 
 Expected outcomes:
 
@@ -4671,7 +4671,7 @@ Current test status after Iteration 12:
 
 The next phase will make Wonderland more enterprise-realistic by adding application audit logs, security monitoring/SIEM concepts, data warehouse modelling and Power BI-ready reporting.
 
-### Iteration 13 — Application Audit Logs
+### Iteration 13 â€” Application Audit Logs
 
 Purpose:
 
@@ -4705,7 +4705,7 @@ Learning value:
 
 ---
 
-### Iteration 14 — Security Events / SIEM Simulator
+### Iteration 14 â€” Security Events / SIEM Simulator
 
 Purpose:
 
@@ -4740,7 +4740,7 @@ Learning value:
 
 ---
 
-### Iteration 15 — Data Warehouse Foundation
+### Iteration 15 â€” Data Warehouse Foundation
 
 Purpose:
 
@@ -4770,7 +4770,7 @@ Learning value:
 
 ---
 
-### Iteration 16 — Power BI-ready Reporting Views and Measures
+### Iteration 16 â€” Power BI-ready Reporting Views and Measures
 
 Purpose:
 
@@ -4803,7 +4803,7 @@ Learning value:
 
 ---
 
-### Iteration 17 — Azure Monitor / Sentinel Learning Integration
+### Iteration 17 â€” Azure Monitor / Sentinel Learning Integration
 
 Purpose:
 
@@ -4828,28 +4828,28 @@ This should happen later, after Wonderland has enough realistic application audi
 Completed:
 
 - Foundation
-- Iteration 1 — Frontend app shell and routing
-- Iteration 1.5 — Playwright smoke test safety net
-- Iteration 2 — Frontend authentication flow
-- Iteration 3 — Clean rides and accommodation pages
-- Iteration 3.5 — Role-based registration, DOB and age eligibility
-- Iteration 3.5.1 — Employee registration status tracking
-- Iteration 3.6 — Profile page
-- Iteration 3.7 — Admin content submission and Manager approval workflow
-- Iteration 4 — Ride and accommodation details pages
-- Iteration 5 — Booking basket
-- Iteration 6 — Checkout and booking confirmation
-- Iteration 7 — Booking history and dashboard/profile integration
-- Iteration 8 — Booking management enhancements
-- Iteration 9 — Booking cancellation workflow
-- Iteration 10 — Admin and Manager booking visibility
-- Iteration 11 — Admin/Manager reporting and audit preparation
-- Iteration 11.1 — CDC booking audit and trigger learning example
-- Iteration 12 — Export and reporting enhancements
+- Iteration 1 â€” Frontend app shell and routing
+- Iteration 1.5 â€” Playwright smoke test safety net
+- Iteration 2 â€” Frontend authentication flow
+- Iteration 3 â€” Clean rides and accommodation pages
+- Iteration 3.5 â€” Role-based registration, DOB and age eligibility
+- Iteration 3.5.1 â€” Employee registration status tracking
+- Iteration 3.6 â€” Profile page
+- Iteration 3.7 â€” Admin content submission and Manager approval workflow
+- Iteration 4 â€” Ride and accommodation details pages
+- Iteration 5 â€” Booking basket
+- Iteration 6 â€” Checkout and booking confirmation
+- Iteration 7 â€” Booking history and dashboard/profile integration
+- Iteration 8 â€” Booking management enhancements
+- Iteration 9 â€” Booking cancellation workflow
+- Iteration 10 â€” Admin and Manager booking visibility
+- Iteration 11 â€” Admin/Manager reporting and audit preparation
+- Iteration 11.1 â€” CDC booking audit and trigger learning example
+- Iteration 12 â€” Export and reporting enhancements
 
 Next implementation task:
 
-    Iteration 13 — Application Audit Logs
+    Iteration 13 â€” Application Audit Logs
 
 Development rhythm remains:
 
@@ -4863,3 +4863,70 @@ Development rhythm remains:
 8. Confirm GitHub Actions passes.
 9. Push same commit to Azure DevOps.
 10. Confirm Azure Pipeline passes.
+
+---
+
+## Iteration 13 — Application Audit Logs
+
+Status: In progress / local validation.
+
+### Goal
+
+Add application-level audit logs that capture who did what in business terms.
+
+This complements the existing SQL Server learning features:
+
+- CDC on `dbo.Bookings` for database-level booking change capture.
+- Content approval triggers on `dbo.Rides` and `dbo.Accommodations`.
+- Trigger audit records in `dbo.ContentAuditEvents`.
+
+### Backend and SQL changes
+
+- Added `dbo.ApplicationAuditEvents`.
+- Added backend audit logger service: `backend/services/auditLogger.js`.
+- Added Admin audit logs API: `GET /api/admin/audit-events`.
+- Added audit event writes for:
+  - Admin creates Ride.
+  - Admin creates Accommodation.
+  - Manager approves/rejects Ride/Accommodation.
+  - User completes checkout.
+  - User cancels booking.
+  - Admin downloads filtered CSV booking report.
+  - Restricted access denied attempts where the backend is reached.
+
+### Frontend changes
+
+- Added Admin Audit Logs page:
+  - `/admin/audit-logs`
+- Added Admin navigation link:
+  - `Audit Logs`
+- Added filters/search:
+  - Start date
+  - End date
+  - Event category
+  - Actor role
+  - Action status
+  - Search text
+
+### Testing changes
+
+- Added Playwright coverage for Admin audit logs.
+- Added basket/session isolation regression coverage after manual testing found that browser-local basket data could leak between users on the same browser session.
+
+### Important learning distinction
+
+Application audit logs are different from CDC and SQL triggers:
+
+- CDC records database-level data changes.
+- SQL triggers record database-side events when specific table actions occur.
+- Application audit logs record business-level user actions such as who downloaded a report or who cancelled a booking.
+
+### Safe delivery checklist
+
+Before this iteration is complete:
+
+1. Run local Playwright tests.
+2. Confirm GitHub Actions passes.
+3. Push same commit to Azure DevOps.
+4. Confirm Azure Pipeline passes.
+5. Confirm README reflects the delivered state.

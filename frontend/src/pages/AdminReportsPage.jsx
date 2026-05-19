@@ -2,6 +2,15 @@ import { useEffect, useState } from "react";
 import { api } from "../services/api";
 import { useAuth } from "../context/AuthContext";
 
+function getLocalDateStamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
 const EMPTY_FILTERS = {
   startDate: "",
   endDate: "",
@@ -92,7 +101,7 @@ function AdminReportsPage() {
       const blob = await api.downloadAdminBookingReportCsv(token, appliedFilters);
       const downloadUrl = URL.createObjectURL(blob);
       const link = document.createElement("a");
-      const fileDate = new Date().toISOString().slice(0, 10);
+      const fileDate = getLocalDateStamp();
 
       link.href = downloadUrl;
       link.download = `wonderland-booking-report-${fileDate}.csv`;
@@ -133,7 +142,7 @@ function AdminReportsPage() {
           </div>
           <p data-testid="admin-report-active-filters" className="text-sm text-slate-500">
             Active filters: {appliedFilters.startDate || "Any start date"} to{" "}
-            {appliedFilters.endDate || "Any end date"} · {appliedFilters.status || "All statuses"}
+            {appliedFilters.endDate || "Any end date"} Â· {appliedFilters.status || "All statuses"}
           </p>
         </div>
 
@@ -277,7 +286,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={item.status}
                   label={item.status}
-                  value={`${item.bookingCount} bookings · ${formatMoney(item.totalAmount)}`}
+                  value={`${item.bookingCount} bookings Â· ${formatMoney(item.totalAmount)}`}
                 />
               ))
             )}
@@ -291,7 +300,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={item.itemType}
                   label={item.itemType}
-                  value={`${item.itemCount} items · ${formatMoney(item.totalAmount)} · ${
+                  value={`${item.itemCount} items Â· ${formatMoney(item.totalAmount)} Â· ${
                     item.pointsEarned
                   } points`}
                 />
@@ -307,7 +316,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={day.activityDate}
                   label={day.activityDate}
-                  value={`${day.bookingCount} bookings · ${formatMoney(day.totalAmount)}`}
+                  value={`${day.bookingCount} bookings Â· ${formatMoney(day.totalAmount)}`}
                 />
               ))
             )}
@@ -398,7 +407,7 @@ function CdcPanel({ events, testId }) {
               <h3 className="mt-2 font-semibold text-slate-900">{event.bookingReference}</h3>
               <p className="text-sm text-slate-600">{event.eventSummary}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {event.customerEmail || "Customer pending"} · {formatDate(event.changeTime)}
+                {event.customerEmail || "Customer pending"} Â· {formatDate(event.changeTime)}
               </p>
             </article>
           ))
@@ -428,7 +437,7 @@ function ContentAuditPanel({ events, testId }) {
               <h3 className="mt-2 font-semibold text-slate-900">{event.entityName}</h3>
               <p className="text-sm text-slate-600">{event.eventSummary}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {event.entityType} · {formatDate(event.createdAt)}
+                {event.entityType} Â· {formatDate(event.createdAt)}
               </p>
             </article>
           ))

@@ -3,6 +3,17 @@ const { sql, getPool } = require("../config/db");
 const { requireAuth } = require("../middleware/authMiddleware");
 const { requireRole } = require("../middleware/roleMiddleware");
 
+function getLocalDateStamp() {
+  const now = new Date();
+  const year = now.getFullYear();
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const day = String(now.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
+
+
+const { writeAuditEvent } = require("../services/auditLogger");
 const router = express.Router();
 
 router.use(requireAuth);
@@ -424,8 +435,25 @@ router.get("/reports/bookings/export.csv", async (req, res, next) => {
 
     const pool = await getPool();
     const rows = await getBookingExportRows(pool, filters);
+
+    await writeAuditEvent({
+      poolOrTransaction: pool,
+      req,
+      eventCategory: "Report",
+      eventType: "AdminDownloadedBookingCsvReport",
+      actorUserId: req.user.userId,
+      actorRole: req.user.role,
+      actorEmail: req.user.email,
+      targetEntityType: "BookingReport",
+      targetEntityReference: "wonderland-booking-report.csv",
+      eventSummary: "Admin downloaded filtered booking CSV report",
+      details: {
+        filters,
+        exportedRowCount: rows.length,
+      },
+    });
     const csv = buildBookingCsv(rows);
-    const fileDate = new Date().toISOString().slice(0, 10);
+    const fileDate = getLocalDateStamp();
 
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader(
