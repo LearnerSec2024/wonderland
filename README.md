@@ -25,8 +25,8 @@ This project is being built locally on a personal Windows 11 laptop for enterpri
 | GitHub repository | Published |
 | GitHub Actions workflow | Passing |
 | Azure DevOps Pipeline | Passing |
-| Latest completed iteration | **Iteration 14 — Security Events / SIEM Simulator** |
-| Current / next iteration | **Iteration 15 — Data Warehouse Foundation** |
+| Latest completed iteration | **Iteration 14 Ã¢â‚¬â€ Security Events / SIEM Simulator** |
+| Current completed iteration | **Iteration 15 — Data Warehouse Foundation** |
 
 Current local URLs:
 
@@ -612,8 +612,8 @@ The suite currently covers:
 | Iteration 12 | Export and reporting enhancements | Complete | Admin/Manager report filters and Admin CSV export |
 | Iteration 13 | Application audit logs | Complete | Capture who did what in business terms |
 | Iteration 14 | Security events / SIEM simulator | **Completed** | Capture security-relevant events and show monitoring dashboard |
-| Iteration 15 | Data warehouse foundation | **Next** | Create WonderlandDW star schema foundation for reporting |
-| Iteration 16 | Power BI-ready reporting views and measures | Planned | Prepare SQL views/measures for Power BI dashboards |
+| Iteration 15 | Data warehouse foundation | **Completed** | Created WonderlandDW star schema foundation for reporting |
+| Iteration 16 | Power BI-ready reporting views and measures | **Next** | Prepare SQL views/measures for Power BI dashboards |
 | Iteration 17 | Azure Monitor / Sentinel learning integration | Later | Connect security monitoring concepts to cloud logging/SIEM patterns |
 | Later | Playwright Automation Lab expansion | Planned | Beginner and tricky locator training pages |
 
@@ -870,7 +870,7 @@ Current test status after Iteration 14:
     GitHub Actions: To be confirmed after push
     Azure DevOps Pipeline: To be confirmed after push
 
-## Next Task: Iteration 15 — Data Warehouse Foundation
+## Completed Task: Iteration 15 — Data Warehouse Foundation
 
 This is the next task to pick up.
 
@@ -878,7 +878,7 @@ This is the next task to pick up.
 
 Start separating operational application data from reporting and analytics data by creating the first Wonderland data warehouse foundation.
 
-Iteration 15 should introduce a dedicated reporting database:
+Iteration 15 introduced a dedicated reporting database:
 
     WonderlandDW
 
@@ -930,7 +930,7 @@ Initial source tables:
 
 ### Planned Learning Outcomes
 
-Iteration 15 should teach:
+Iteration 15 teaches:
 
 - Difference between OLTP and data warehouse design
 - Star schema foundations
@@ -1022,3 +1022,58 @@ Current next item:
 ```text
 Iteration 14 - Security Events / SIEM Simulator
 ```
+
+## Iteration 15 Completed — Data Warehouse Foundation
+
+Iteration 15 starts the separation of operational application data from reporting and analytics data.
+
+### What was added
+
+- Created a new `WonderlandDW` SQL Server database.
+- Added the first Wonderland star schema foundation.
+- Added dimension tables:
+  - `dbo.DimDate`
+  - `dbo.DimUser`
+  - `dbo.DimRole`
+  - `dbo.DimActionType`
+  - `dbo.DimEntityType`
+  - `dbo.DimOutcome`
+  - `dbo.DimSecuritySeverity`
+  - `dbo.DimSecurityCategory`
+- Added fact tables:
+  - `dbo.FactApplicationAuditEvent`
+  - `dbo.FactSecurityEvent`
+- Added repeatable DW load stored procedure:
+  - `dbo.uspLoadWonderlandDw`
+- Added validation view:
+  - `dbo.vwDwLoadValidation`
+- Loaded source data from:
+  - `WonderlandDB.dbo.Users`
+  - `WonderlandDB.dbo.ApplicationAuditEvents`
+  - `WonderlandDB.dbo.SecurityEvents`
+- Added source-to-DW row count validation.
+- Updated GitHub Actions to run the Iteration 15 DW SQL script.
+
+### Local validation completed
+
+- `WonderlandDW` created successfully.
+- Source-to-DW validation passed:
+  - `ApplicationAuditEvents`: source count matched DW fact count.
+  - `SecurityEvents`: source count matched DW fact count.
+  - `Users`: source count matched DW dimension count.
+- Repeatable SQL load script confirmed.
+- Local Playwright suite passed:
+  - `52 passed`
+
+### Learning outcome
+
+Iteration 15 introduces the OLTP-to-DW separation pattern:
+
+- `WonderlandDB` is the operational application database.
+- `WonderlandDW` is the analytics and reporting database.
+
+This prepares Wonderland for future reporting layers such as Power BI-ready views, measures, dashboards, and trend analysis.
+
+### Next planned iteration
+
+Iteration 16 — Power BI-ready reporting views and measures.
