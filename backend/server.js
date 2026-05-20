@@ -1,3 +1,4 @@
+const { securityEventCaptureMiddleware } = require("./middleware/securityEventCaptureMiddleware");
 require("dotenv").config();
 
 const express = require("express");
@@ -10,7 +11,7 @@ const authRoutes = require("./routes/authRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const adminContentRoutes = require("./routes/adminContentRoutes");
 const adminBookingRoutes = require("./routes/adminBookingRoutes");
-const adminReportRoutes = require("./routes/adminReportRoutes");
+const adminReportRoutes = require("./routes/adminReportRoutes"); const adminSecurityEventRoutes = require("./routes/adminSecurityEventRoutes");
 
 const adminAuditRoutes = require("./routes/adminAuditRoutes");
 const managerApprovalRoutes = require("./routes/managerApprovalRoutes");
@@ -31,14 +32,14 @@ app.use(
     credentials: true,
   })
 );
-app.use(express.json());
+app.use(express.json()); app.use(securityEventCaptureMiddleware);
 app.use(morgan("dev"));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/admin", adminContentRoutes);
 app.use("/api/admin", adminBookingRoutes);
-app.use("/api/admin", adminReportRoutes);
+app.use("/api/admin", adminReportRoutes); app.use("/api/admin", adminSecurityEventRoutes);
 
 app.use("/api/admin", adminAuditRoutes);
 app.use("/api/manager", managerApprovalRoutes);
@@ -241,6 +242,3 @@ app.use((error, req, res, next) => {
 app.listen(PORT, () => {
   console.log(`Wonderland backend running on http://localhost:${PORT}`);
 });
-
-
-

@@ -57,7 +57,7 @@ function Navbar() {
       >
         <Link to="/" className="flex items-center gap-3" data-testid="brand-link">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-cyan-400 text-2xl shadow-lg">
-            🎡
+            ðŸŽ¡
           </span>
           <div>
             <p className="text-xl font-black leading-none text-white">Wonderland</p>
@@ -111,6 +111,13 @@ function Navbar() {
                 data-testid="nav-admin-audit-logs"
               >
                 Audit Logs
+              </NavLink>
+              <NavLink
+                to="/admin/security-events"
+                data-testid="nav-admin-security-events"
+                className={linkClass}
+              >
+                Security Events
               </NavLink></>
           )}
 
@@ -180,5 +187,3 @@ function Navbar() {
 }
 
 export default Navbar;
-
-

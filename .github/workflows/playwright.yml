@@ -1,4 +1,4 @@
-﻿name: Playwright Smoke Tests
+name: Playwright Smoke Tests
 
 on:
   push:
@@ -94,7 +94,8 @@ jobs:
           docker cp backend/sql/iteration-10-booking-visibility-test-employees.sql "$SQL_CONTAINER":/tmp/iteration-10-booking-visibility-test-employees.sql
           docker cp backend/sql/iteration-11-reporting-audit-prep.sql "$SQL_CONTAINER":/tmp/iteration-11-reporting-audit-prep.sql
           docker cp backend/sql/iteration-11-1-cdc-booking-audit-content-trigger.sql "$SQL_CONTAINER":/tmp/iteration-11-1-cdc-booking-audit-content-trigger.sql
-
+          docker cp backend/sql/iteration-13-application-audit-events.sql "$SQL_CONTAINER":/tmp/iteration-13-application-audit-events.sql
+          docker cp backend/sql/iteration-14-security-events.sql "$SQL_CONTAINER":/tmp/iteration-14-security-events.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-5-role-dob-eligibility.sql
@@ -106,6 +107,8 @@ jobs:
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-10-booking-visibility-test-employees.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-11-reporting-audit-prep.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-11-1-cdc-booking-audit-content-trigger.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-13-application-audit-events.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-14-security-events.sql
 
       - name: Run Playwright tests
         run: npm run test:e2e
@@ -117,5 +120,3 @@ jobs:
           name: playwright-report
           path: frontend/playwright-report/
           retention-days: 30
-
-

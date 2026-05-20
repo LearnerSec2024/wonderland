@@ -21,7 +21,7 @@ import ProfilePage from "./pages/ProfilePage";
 import AdminContentPage from "./pages/AdminContentPage";
 import AdminBookingsPage from "./pages/AdminBookingsPage";
 import AdminReportsPage from "./pages/AdminReportsPage";
-import AdminAuditLogsPage from "./pages/AdminAuditLogsPage";
+import AdminAuditLogsPage from "./pages/AdminAuditLogsPage"; import AdminSecurityEventsPage from "./pages/AdminSecurityEventsPage";
 import ManagerApprovalsPage from "./pages/ManagerApprovalsPage";
 import ManagerBookingActivityPage from "./pages/ManagerBookingActivityPage";
 import ManagerReportsPage from "./pages/ManagerReportsPage";
@@ -126,6 +126,14 @@ function App() {
             element={
               <RoleProtectedRoute allowedRoles={["Admin"]}>
                 <AdminAuditLogsPage />
+              </RoleProtectedRoute>
+            }
+          />
+          <Route
+            path="/admin/security-events"
+            element={
+              <RoleProtectedRoute allowedRoles={["Admin"]}>
+                <AdminSecurityEventsPage />
               </RoleProtectedRoute>
             }
           /><Route
