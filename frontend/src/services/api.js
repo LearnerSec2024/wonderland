@@ -250,6 +250,15 @@ export const api = {
       token,
     });
   },
+
+  async reportAccessDenied(token, deniedRoute) {
+    return request("/security-events/access-denied", {
+      method: "POST",
+      token,
+      body: JSON.stringify(deniedRoute),
+    });
+  },
+
   async getManagerBookingReport(token, filters = {}) {
     return request(`/manager/reports/bookings${buildQueryString(filters)}`, {
       method: "GET",

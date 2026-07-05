@@ -46,7 +46,10 @@ async function registerRoleUser(request, accountType, email, dob) {
     `${accountType} registration failed for ${email}: ${JSON.stringify(authResult)}`
   ).toBeTruthy();
 
-  return authResult;
+  return {
+    ...authResult,
+    email,
+  };
 }
 
 async function registerGuestUser(request) {
@@ -74,7 +77,10 @@ async function registerGuestUser(request) {
     `Guest registration failed: ${JSON.stringify(authResult)}`
   ).toBeTruthy();
 
-  return authResult;
+  return {
+    ...authResult,
+    email,
+  };
 }
 
 async function createFailedLoginEvent(request) {
@@ -168,5 +174,42 @@ test.describe("Wonderland Admin security events", () => {
 
     await expect(page).toHaveURL(/\/admin\/security-events$/);
     await expect(page.getByTestId("access-denied-page")).toBeVisible();
+
+    await page.goto("/manager/approvals", { waitUntil: "domcontentloaded" });
+
+    await expect(page).toHaveURL(/\/manager\/approvals$/);
+    await expect(page.getByTestId("access-denied-page")).toBeVisible();
+
+    const adminAuth = await registerRoleUser(
+      request,
+      "Admin",
+      "reporting.admin@wonderland.local",
+      "1985-05-05"
+    );
+
+    await expect
+      .poll(async () => {
+        const response = await request.get(
+          `${API_BASE_URL}/admin/security-events?actionStatus=Denied&actorRole=User&search=${encodeURIComponent(
+            userAuth.email
+          )}`,
+          {
+            headers: {
+              Authorization: `Bearer ${adminAuth.token}`,
+            },
+          }
+        );
+
+        if (!response.ok()) {
+          return [];
+        }
+
+        const result = await response.json();
+        return result.events
+          .filter((event) => event.eventType === "AccessDenied")
+          .map((event) => event.requestPath)
+          .sort();
+      })
+      .toEqual(["/admin/security-events", "/manager/approvals"]);
   });
 });

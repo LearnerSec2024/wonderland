@@ -12,6 +12,8 @@ function getRequestIp(req) {
 async function writeSecurityEvent({
   poolOrTransaction = null,
   req = null,
+  requestMethod = null,
+  requestPath = null,
   eventCategory,
   eventType,
   severity = "Low",
@@ -39,8 +41,8 @@ async function writeSecurityEvent({
       .input("ActionStatus", sql.NVarChar(50), actionStatus)
       .input("EventSummary", sql.NVarChar(1000), eventSummary)
       .input("DetailsJson", sql.NVarChar(sql.MAX), safeDetailsJson)
-      .input("RequestMethod", sql.NVarChar(20), req?.method || null)
-      .input("RequestPath", sql.NVarChar(500), req?.originalUrl || null)
+      .input("RequestMethod", sql.NVarChar(20), requestMethod || req?.method || null)
+      .input("RequestPath", sql.NVarChar(500), requestPath || req?.originalUrl || null)
       .input("IpAddress", sql.NVarChar(100), req ? getRequestIp(req) : null)
       .input("UserAgent", sql.NVarChar(1000), req?.headers?.["user-agent"] || null)
       .input("SourceApplicationAuditEventId", sql.Int, sourceApplicationAuditEventId)

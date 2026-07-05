@@ -14,6 +14,7 @@ const adminBookingRoutes = require("./routes/adminBookingRoutes");
 const adminReportRoutes = require("./routes/adminReportRoutes"); const adminSecurityEventRoutes = require("./routes/adminSecurityEventRoutes");
 
 const adminAuditRoutes = require("./routes/adminAuditRoutes");
+const securityEventRoutes = require("./routes/securityEventRoutes");
 const managerApprovalRoutes = require("./routes/managerApprovalRoutes");
 const managerBookingRoutes = require("./routes/managerBookingRoutes");
 const managerReportRoutes = require("./routes/managerReportRoutes");
@@ -42,6 +43,7 @@ app.use("/api/admin", adminBookingRoutes);
 app.use("/api/admin", adminReportRoutes); app.use("/api/admin", adminSecurityEventRoutes);
 
 app.use("/api/admin", adminAuditRoutes);
+app.use("/api/security-events", securityEventRoutes);
 app.use("/api/manager", managerApprovalRoutes);
 app.use("/api/manager", managerBookingRoutes);
 app.use("/api/manager", managerReportRoutes);

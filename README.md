@@ -795,10 +795,15 @@ This iteration builds on Iteration 13 application audit logs by separating norma
 
     GET /api/admin/security-events
 
+- Added authenticated client-side access-denied reporting endpoint:
+
+    POST /api/security-events/access-denied
+
 - Added automatic security event capture for:
   - Failed login attempts
   - Invalid or rejected authentication token attempts
   - Restricted API access denied responses
+  - Client-side role guard denials for restricted Admin and Manager routes
   - Admin booking report CSV downloads
   - Admin application audit log viewing
   - Admin security event dashboard viewing
@@ -833,6 +838,7 @@ This iteration builds on Iteration 13 application audit logs by separating norma
   - Failed login appears as a security event
   - Admin can filter/search security events
   - Normal User cannot access Admin Security Events page
+  - Normal User Admin and Manager route attempts create AccessDenied security events
 
 - Updated GitHub Actions SQL setup to run:
   - iteration-13-application-audit-events.sql
@@ -850,6 +856,21 @@ Wonderland now captures security-focused events such as:
 - AdminBookingReportCsvDownloaded
 - ApplicationAuditLogsViewed
 - SecurityEventsViewed
+
+When a logged-in normal User navigates directly to restricted React routes such as `/admin/security-events` or `/manager/approvals`, the frontend role guard still shows the access denied page immediately. The guard also reports the denied route to the backend so `dbo.SecurityEvents` receives an `AccessDenied` row with the attempted route in `RequestPath`.
+
+Latest local verification confirmed:
+
+- Direct frontend route attempts by a normal User create `AccessDenied` rows in `dbo.SecurityEvents`.
+- Direct backend API attempts by a normal User return `403` and create:
+  - `dbo.ApplicationAuditEvents` row with `RestrictedAccessDenied`
+  - `dbo.SecurityEvents` row with `AccessDenied`
+- Verified security event examples in source and DW:
+  - `AccessDenied`
+  - `AdminBookingReportCsvDownloaded`
+  - `ApplicationAuditLogsViewed`
+  - `FailedLogin`
+  - `SecurityEventsViewed`
 
 ### Learning Value
 

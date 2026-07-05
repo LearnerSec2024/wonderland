@@ -1,10 +1,40 @@
-﻿import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { api } from "../services/api";
 
 function RoleProtectedRoute({ allowedRoles, children }) {
-  const { user } = useAuth();
+  const { token, user } = useAuth();
+  const location = useLocation();
+  const isAccessDenied = !user || !allowedRoles.includes(user.role);
 
-  if (!user || !allowedRoles.includes(user.role)) {
+  useEffect(() => {
+    if (!token || !user || !isAccessDenied) {
+      return;
+    }
+
+    const deniedPath = `${location.pathname}${location.search}`;
+    const storageKey = `wonderland_access_denied_logged:${user.userId}:${deniedPath}:${allowedRoles.join(
+      ","
+    )}`;
+
+    if (sessionStorage.getItem(storageKey)) {
+      return;
+    }
+
+    sessionStorage.setItem(storageKey, "true");
+
+    api
+      .reportAccessDenied(token, {
+        path: deniedPath,
+        allowedRoles,
+      })
+      .catch(() => {
+        sessionStorage.removeItem(storageKey);
+      });
+  }, [allowedRoles, isAccessDenied, location.pathname, location.search, token, user]);
+
+  if (isAccessDenied) {
     return (
       <main
         className="mx-auto min-h-[70vh] max-w-7xl px-6 py-14 lg:px-10"
