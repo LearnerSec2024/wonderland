@@ -38,3 +38,6 @@ Thumbs.db
 # Local SQL scripts that may contain passwords
 backend/sql/create-app-login.sql
 backend/sql/create-app-login.local.sql
+
+# Local Power BI Desktop reports
+docs/powerbi/*.pbix

@@ -21,12 +21,12 @@ This project is being built locally on a personal Windows 11 laptop for enterpri
 | Backend authentication APIs | Working |
 | React frontend | Complete foundation with role-based User, Admin and Manager flows |
 | Playwright test suite | Passing locally |
-| Local Playwright result after Iteration 13 | 50 tests passed |
+| Local Playwright result after Iteration 16 | 52 tests passed |
 | GitHub repository | Published |
 | GitHub Actions workflow | Passing |
 | Azure DevOps Pipeline | Passing |
-| Latest completed iteration | **Iteration 14 Ã¢â‚¬â€ Security Events / SIEM Simulator** |
-| Current completed iteration | **Iteration 15 — Data Warehouse Foundation** |
+| Latest completed iteration | **Iteration 16 - Power BI-ready Reporting Views and Measures** |
+| Current completed iteration | **Iteration 16 - Power BI-ready Reporting Views and Measures** |
 
 Current local URLs:
 
@@ -1083,6 +1083,22 @@ Iteration 15 starts the separation of operational application data from reportin
   - `SecurityEvents`: source count matched DW fact count.
   - `Users`: source count matched DW dimension count.
 - Repeatable SQL load script confirmed.
+- Repeat validation after E2E activity confirmed application audit and security event fact loads continued to reconcile with their OLTP sources.
+- Missing application audit or security event fact rows after the DW load: `0`.
+- Verified audited event types cascade from `WonderlandDB.dbo.ApplicationAuditEvents` to `WonderlandDW.dbo.FactApplicationAuditEvent`:
+  - `AdminCreatedRide`
+  - `AdminDownloadedBookingCsvReport`
+  - `ManagerApprovedContent`
+  - `RestrictedAccessDenied`
+  - `UserCancelledBooking`
+  - `UserCompletedCheckout`
+- Verified security event types cascade from `WonderlandDB.dbo.SecurityEvents` to `WonderlandDW.dbo.FactSecurityEvent`:
+  - `AccessDenied`
+  - `AdminBookingReportCsvDownloaded`
+  - `ApplicationAuditLogsViewed`
+  - `FailedLogin`
+  - `SecurityEventsViewed`
+- Note: `Users` validation can show extra DW rows when test users have been deleted from the OLTP database after earlier loads. This is a dimension history/staleness check, not an audit/security event cascade failure.
 - Local Playwright suite passed:
   - `52 passed`
 
@@ -1095,6 +1111,89 @@ Iteration 15 introduces the OLTP-to-DW separation pattern:
 
 This prepares Wonderland for future reporting layers such as Power BI-ready views, measures, dashboards, and trend analysis.
 
-### Next planned iteration
+---
 
-Iteration 16 — Power BI-ready reporting views and measures.
+## Iteration 16 - Power BI-ready Reporting Views and Measures
+
+Iteration 16 builds on the WonderlandDW foundation by exposing business-friendly SQL reporting views and documenting reusable Power BI measures for application audit, security monitoring, and user activity analysis.
+
+### SQL Reporting Views
+
+Added `backend/sql/iteration-16-power-bi-reporting-views.sql`.
+
+The script reloads the warehouse through `dbo.uspLoadWonderlandDw` and creates or replaces:
+
+- `dbo.vPowerBIApplicationAuditEvents`
+- `dbo.vPowerBISecurityEvents`
+- `dbo.vPowerBIUserActivitySummary`
+- `dbo.vPowerBISecuritySeverityTrend`
+- `dbo.vPowerBIAuditActionSummary`
+- `dbo.vPowerBISecurityCategorySummary`
+- `dbo.vPowerBIReportingValidation`
+
+The reporting views expose Power BI-friendly fields including date, year, quarter, month, year-month, actor user and role, action type, entity type, outcome, security severity, security category, event counts, and reporting flags.
+
+Security reporting flags include:
+
+- `IsHighSeverity` for High and Critical security events.
+- `IsFailedOrDenied` for failed or denied security activity.
+
+### Power BI Measures and Report Pages
+
+Added `docs/powerbi/wonderland-power-bi-measures.md` to document reusable DAX measures and the report design.
+
+The local Power BI learning report contains four pages:
+
+1. Executive Overview
+2. Security Monitoring
+3. Application Audit
+4. User Activity
+
+Documented measures include total application audit events, recent application audit activity, total security events, high severity security events, failed or denied security events, recent security activity, and user activity totals.
+
+An exact Top 10 active users calculated table is used to produce ten deterministic rows when multiple users are tied at the Power BI Top N cutoff.
+
+Power BI Desktop `.pbix` files are retained locally under `docs/powerbi` and ignored by Git. The reusable SQL and DAX documentation remain version controlled.
+
+### DW Refresh and Power BI Refresh Workflow
+
+Power BI uses Import mode against `WonderlandDW`.
+
+To refresh the reporting data:
+
+1. Run the warehouse load and reporting validation:
+
+    sqlcmd -S localhost -d WonderlandDW -E -C -i ".\SqlQueries\Iteration16DwRefresh.sql"
+
+2. Confirm `dbo.vPowerBIReportingValidation` shows a difference of `0` for both application audit and security reporting views.
+3. Open the Power BI Desktop report.
+4. Select `Home -> Refresh`.
+5. Save the refreshed local `.pbix` file.
+
+For consolidated SQL validation, run:
+
+    sqlcmd -S localhost -d WonderlandDW -E -C -i ".\SqlQueries\Iteration16PowerBIValidation.sql"
+
+The validation covers reporting row reconciliation, overall event totals, security measures, user activity totals, and the deterministic Top 10 active users query.
+
+### CI and Validation
+
+- GitHub Actions now copies and executes `iteration-16-power-bi-reporting-views.sql` after the Iteration 15 data warehouse foundation script.
+- Iteration 16 SQL reporting views were validated against the DW fact tables.
+- Application audit reporting view difference: `0`.
+- Security event reporting view difference: `0`.
+- User activity totals reconcile to application audit activity plus security activity.
+- Full Playwright regression passed with `52 passed`.
+- A single Admin profile registration timing failure was observed once during a two-worker run, did not reproduce in a serial run, and did not reproduce in a subsequent two-worker full regression.
+
+### Learning Value
+
+Iteration 16 demonstrates the reporting boundary between operational data, a data warehouse, SQL semantic/reporting views, and Power BI calculations:
+
+`WonderlandDB -> WonderlandDW -> Power BI reporting views -> DAX measures -> report visuals`
+
+It also demonstrates why reporting validation should reconcile base fact rows to reporting views before dashboard values are trusted.
+
+### Iteration 16 Status
+
+`Iteration 16 - Power BI-ready Reporting Views and Measures` is complete locally and ready for repository delivery validation.
