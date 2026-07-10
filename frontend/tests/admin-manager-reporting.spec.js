@@ -124,6 +124,13 @@ async function registerRoleUser(page, request, accountType, email, dob) {
   return authResult;
 }
 
+async function navigateWithinSpa(page, targetPath) {
+  await page.evaluate((path) => {
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }, targetPath);
+}
+
 test.describe('Wonderland Admin and Manager reporting', () => {
   test.beforeEach(async ({ page }) => {
     await clearBasket(page);
@@ -233,11 +240,11 @@ test.describe('Wonderland Admin and Manager reporting', () => {
     await expect(page.getByTestId('dashboard-page')).toBeVisible();
     await expect(page.getByTestId('dashboard-user-role')).toContainText('User');
 
-    await page.goto('/admin/reports');
+    await navigateWithinSpa(page, '/admin/reports');
     await expect(page).toHaveURL(/\/admin\/reports$/);
     await expect(page.getByTestId('access-denied-page')).toBeVisible();
 
-    await page.goto('/manager/reports');
+    await navigateWithinSpa(page, '/manager/reports');
     await expect(page).toHaveURL(/\/manager\/reports$/);
     await expect(page.getByTestId('access-denied-page')).toBeVisible();
   });
