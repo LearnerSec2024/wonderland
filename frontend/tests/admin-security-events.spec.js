@@ -25,6 +25,13 @@ async function setAuthToken(page, token) {
   });
 }
 
+async function navigateWithinSpa(page, targetPath) {
+  await page.evaluate((path) => {
+    window.history.pushState({}, "", path);
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  }, targetPath);
+}
+
 async function registerRoleUser(request, accountType, email, dob) {
   await deleteUserByEmail(request, email);
 
@@ -170,12 +177,12 @@ test.describe("Wonderland Admin security events", () => {
 
     await setAuthToken(page, userAuth.token);
 
-    await page.goto("/admin/security-events", { waitUntil: "domcontentloaded" });
+    await navigateWithinSpa(page, "/admin/security-events");
 
     await expect(page).toHaveURL(/\/admin\/security-events$/);
     await expect(page.getByTestId("access-denied-page")).toBeVisible();
 
-    await page.goto("/manager/approvals", { waitUntil: "domcontentloaded" });
+    await navigateWithinSpa(page, "/manager/approvals");
 
     await expect(page).toHaveURL(/\/manager\/approvals$/);
     await expect(page.getByTestId("access-denied-page")).toBeVisible();

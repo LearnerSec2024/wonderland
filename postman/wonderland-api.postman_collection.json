@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Wonderland API",
-    "description": "Auto-generated Postman collection from Express routes. Regenerate after adding or changing backend routes.",
+    "description": "Auto-generated Postman collection from mounted Express routes. Regenerate after adding or changing backend routes.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
@@ -28,7 +28,410 @@
                 "accommodations"
               ]
             },
-            "description": "Generated from: server.js"
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /accommodations/:accommodationId",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/accommodations/{{accommodationId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "accommodations",
+                "{{accommodationId}}"
+              ]
+            },
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "GET /admin/audit-events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/audit-events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "audit-events"
+              ]
+            },
+            "description": "Generated from: routes\\adminAuditRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings"
+              ]
+            },
+            "description": "Generated from: routes\\adminBookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/bookings/:bookingReference",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings/{{bookingReference}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings",
+                "{{bookingReference}}"
+              ]
+            },
+            "description": "Generated from: routes\\adminBookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/bookings/summary",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/bookings/summary",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "bookings",
+                "summary"
+              ]
+            },
+            "description": "Generated from: routes\\adminBookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/reports/bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "bookings"
+              ]
+            },
+            "description": "Generated from: routes\\adminReportRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/reports/bookings/export.csv",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/reports/bookings/export.csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "reports",
+                "bookings",
+                "export.csv"
+              ]
+            },
+            "description": "Generated from: routes\\adminReportRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/security-events",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/security-events",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "security-events"
+              ]
+            },
+            "description": "Generated from: routes\\adminSecurityEventRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /admin/submissions",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/submissions",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "submissions"
+              ]
+            },
+            "description": "Generated from: routes\\adminContentRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/accommodations",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/accommodations",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "accommodations"
+              ]
+            },
+            "description": "Generated from: routes\\adminContentRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Lodge\",\n  \"description\": \"Generated sample accommodation request body\",\n  \"type\": \"Lodge\",\n  \"pricePerNight\": 150,\n  \"maxGuests\": 4,\n  \"minimumLeadGuestAgeYears\": 18,\n  \"isFamilyFriendly\": true,\n  \"imageUrl\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /admin/rides",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin/rides",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin",
+                "rides"
+              ]
+            },
+            "description": "Generated from: routes\\adminContentRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Postman Test Ride\",\n  \"description\": \"Generated sample ride request body\",\n  \"category\": \"Family\",\n  \"thrillLevel\": \"Medium\",\n  \"minimumHeightCm\": 100,\n  \"minimumAgeYears\": 8,\n  \"requiresAdultSupervision\": false,\n  \"price\": 25,\n  \"pointsEarned\": 10,\n  \"imageUrl\": \"\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": []
         }
@@ -58,7 +461,7 @@
                 "me"
               ]
             },
-            "description": "Generated from: routes\\authRoutes.js",
+            "description": "Generated from: routes\\authRoutes.js\nAuth: Bearer token required",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -93,7 +496,7 @@
                 "login"
               ]
             },
-            "description": "Generated from: routes\\authRoutes.js",
+            "description": "Generated from: routes\\authRoutes.js\nAuth: Bearer token required",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -137,7 +540,7 @@
                 "register"
               ]
             },
-            "description": "Generated from: routes\\authRoutes.js",
+            "description": "Generated from: routes\\authRoutes.js\nAuth: Bearer token required",
             "auth": {
               "type": "bearer",
               "bearer": [
@@ -150,7 +553,171 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"Password123!\"\n}",
+              "raw": "{\n  \"accountType\": \"Guest\",\n  \"firstName\": \"Test\",\n  \"lastName\": \"User\",\n  \"email\": \"user@example.com\",\n  \"dateOfBirth\": \"1990-01-01\",\n  \"password\": \"Password123!\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Bookings",
+      "item": [
+        {
+          "name": "GET /bookings/:bookingReference",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingReference}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{bookingReference}}"
+              ]
+            },
+            "description": "Generated from: routes\\bookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /bookings/my",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/my",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "my"
+              ]
+            },
+            "description": "Generated from: routes\\bookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /bookings/:bookingReference/cancel",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/{{bookingReference}}/cancel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "{{bookingReference}}",
+                "cancel"
+              ]
+            },
+            "description": "Generated from: routes\\bookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"cancellationReason\": \"Cancelled from Postman test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /bookings/checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/bookings/checkout",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "bookings",
+                "checkout"
+              ]
+            },
+            "description": "Generated from: routes\\bookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"visitDate\": \"2026-08-01\",\n  \"customerNotes\": \"Generated Postman example\",\n  \"items\": [\n    {\n      \"itemType\": \"ride\",\n      \"itemId\": 1,\n      \"quantity\": 1\n    }\n  ]\n}",
               "options": {
                 "raw": {
                   "language": "json"
@@ -185,17 +752,17 @@
                 "health"
               ]
             },
-            "description": "Generated from: server.js"
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
           },
           "response": []
         }
       ]
     },
     {
-      "name": "Path",
+      "name": "Manager",
       "item": [
         {
-          "name": "GET /path",
+          "name": "GET /manager/approvals",
           "request": {
             "method": "GET",
             "header": [
@@ -205,20 +772,212 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/path",
+              "raw": "{{baseUrl}}/api/manager/approvals",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "path"
+                "api",
+                "manager",
+                "approvals"
               ]
             },
-            "description": "Generated from: scripts\\generate-postman-collection.js"
+            "description": "Generated from: routes\\managerApprovalRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
           },
           "response": []
         },
         {
-          "name": "POST /path",
+          "name": "GET /manager/approvals/count",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/approvals/count",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "approvals",
+                "count"
+              ]
+            },
+            "description": "Generated from: routes\\managerApprovalRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /manager/approvals/history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/approvals/history",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "approvals",
+                "history"
+              ]
+            },
+            "description": "Generated from: routes\\managerApprovalRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /manager/bookings/:bookingReference",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/bookings/{{bookingReference}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "bookings",
+                "{{bookingReference}}"
+              ]
+            },
+            "description": "Generated from: routes\\managerBookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /manager/bookings/activity",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/bookings/activity",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "bookings",
+                "activity"
+              ]
+            },
+            "description": "Generated from: routes\\managerBookingRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "GET /manager/reports/bookings",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/reports/bookings",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "reports",
+                "bookings"
+              ]
+            },
+            "description": "Generated from: routes\\managerReportRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /manager/approvals/:type/:id/approve",
           "request": {
             "method": "POST",
             "header": [
@@ -228,15 +987,30 @@
               }
             ],
             "url": {
-              "raw": "{{baseUrl}}/path",
+              "raw": "{{baseUrl}}/api/manager/approvals/{{type}}/{{id}}/approve",
               "host": [
                 "{{baseUrl}}"
               ],
               "path": [
-                "path"
+                "api",
+                "manager",
+                "approvals",
+                "{{type}}",
+                "{{id}}",
+                "approve"
               ]
             },
-            "description": "Generated from: scripts\\generate-postman-collection.js",
+            "description": "Generated from: routes\\managerApprovalRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
             "body": {
               "mode": "raw",
               "raw": "{\n  \"example\": \"Update this body for your endpoint\"\n}",
@@ -245,6 +1019,93 @@
                   "language": "json"
                 }
               }
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "POST /manager/approvals/:type/:id/reject",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/manager/approvals/{{type}}/{{id}}/reject",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "manager",
+                "approvals",
+                "{{type}}",
+                "{{id}}",
+                "reject"
+              ]
+            },
+            "description": "Generated from: routes\\managerApprovalRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"rejectionReason\": \"Rejected from Postman test\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "GET /profile/me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/profile/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "profile",
+                "me"
+              ]
+            },
+            "description": "Generated from: routes\\profileRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
             }
           },
           "response": []
@@ -274,7 +1135,81 @@
                 "rides"
               ]
             },
-            "description": "Generated from: server.js"
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        },
+        {
+          "name": "GET /rides/:rideId",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/rides/{{rideId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "rides",
+                "{{rideId}}"
+              ]
+            },
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Security-events",
+      "item": [
+        {
+          "name": "POST /security-events/access-denied",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/security-events/access-denied",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "security-events",
+                "access-denied"
+              ]
+            },
+            "description": "Generated from: routes\\securityEventRoutes.js\nAuth: Bearer token required",
+            "auth": {
+              "type": "bearer",
+              "bearer": [
+                {
+                  "key": "token",
+                  "value": "{{token}}",
+                  "type": "string"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"path\": \"/admin/security-events\",\n  \"allowedRoles\": [\n    \"Admin\"\n  ]\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
           },
           "response": []
         }
@@ -303,7 +1238,64 @@
                 "test-db"
               ]
             },
-            "description": "Generated from: server.js"
+            "description": "Generated from: server.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Test-support",
+      "item": [
+        {
+          "name": "DELETE /test-support/content/by-name",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/test-support/content/by-name",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "test-support",
+                "content",
+                "by-name"
+              ]
+            },
+            "description": "Generated from: routes\\testSupportRoutes.js\nAuth: Public or route-level validation"
+          },
+          "response": []
+        },
+        {
+          "name": "DELETE /test-support/users/by-email",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/test-support/users/by-email",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "test-support",
+                "users",
+                "by-email"
+              ]
+            },
+            "description": "Generated from: routes\\testSupportRoutes.js\nAuth: Public or route-level validation"
           },
           "response": []
         }
@@ -318,6 +1310,26 @@
     {
       "key": "token",
       "value": ""
+    },
+    {
+      "key": "rideId",
+      "value": "1"
+    },
+    {
+      "key": "accommodationId",
+      "value": "1"
+    },
+    {
+      "key": "bookingReference",
+      "value": "WB-CHANGE-ME"
+    },
+    {
+      "key": "type",
+      "value": "ride"
+    },
+    {
+      "key": "id",
+      "value": "1"
     }
   ]
 }

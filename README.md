@@ -21,7 +21,7 @@ This project is being built locally on a personal Windows 11 laptop for enterpri
 | Backend authentication APIs | Working |
 | React frontend | Complete foundation with role-based User, Admin and Manager flows |
 | Playwright test suite | Passing locally |
-| Local Playwright result after Iteration 16 | 52 tests passed |
+| Local Playwright result after Iteration 16 API collection validation | 57 tests passed |
 | GitHub repository | Published |
 | GitHub Actions workflow | Passing |
 | Azure DevOps Pipeline | Passing |
@@ -131,6 +131,7 @@ A Wonderland change is only done when:
 |---|---|
 | Frontend | Did routes, forms, UI text, selectors, state, or page behaviour change? |
 | Backend API | Did request/response fields, endpoints, auth, roles, middleware, or validation change? |
+| Postman/API Collection | If backend APIs changed, regenerate the Postman collection and run standalone API collection tests before commit. |
 | SQL Server | Does the change need a migration, seed update, CDC change, trigger update, audit table update, or reporting object update? |
 | Playwright | Do tests need new setup data, updated assertions, better waits, or more stable auth setup? |
 | GitHub Actions | Does the GitHub workflow need new SQL scripts, env vars, services, or setup steps? |
@@ -258,6 +259,12 @@ Generate the Postman collection:
 
 ```powershell
 npm run postman:generate
+```
+
+Validate the generated Postman collection and standalone APIs:
+
+```powershell
+npm run postman:check
 ```
 
 Run Playwright tests:
@@ -550,6 +557,40 @@ npm run postman:generate
 ```
 
 ---
+
+
+### End-of-Iteration API Checklist
+
+When an iteration changes backend APIs:
+
+1. Regenerate the Postman collection.
+
+```powershell
+npm run postman:generate
+```
+
+2. Run standalone API collection validation.
+
+```powershell
+npm run postman:check
+```
+
+3. Run the full Playwright regression suite.
+
+```powershell
+npm run test:e2e
+```
+
+4. Commit the regenerated Postman collection and local Postman environment with the API changes.
+
+End-of-Iteration-16 validation:
+
+```text
+35 generated API requests
+5 standalone API collection tests passed
+57 full Playwright tests passed
+```
+
 
 ## Playwright Testing
 

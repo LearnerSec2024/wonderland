@@ -1,132 +1,118 @@
-const fs = require('fs');
-const path = require('path');
+﻿const fs = require("fs");
+const path = require("path");
 
-const PROJECT_NAME = 'Wonderland API';
-const BACKEND_ROOT = process.cwd();
-const OUTPUT_DIR = path.join(BACKEND_ROOT, '..', 'postman');
+const PROJECT_NAME = "Wonderland API";
+const BACKEND_ROOT = path.resolve(__dirname, "..");
+const SERVER_FILE = path.join(BACKEND_ROOT, "server.js");
+const ROUTES_DIR = path.join(BACKEND_ROOT, "routes");
+const OUTPUT_DIR = path.join(BACKEND_ROOT, "..", "postman");
+const DEFAULT_BASE_URL =
+  process.env.POSTMAN_BASE_URL ||
+  process.env.BACKEND_URL ||
+  "http://localhost:5010";
 
-const DEFAULT_BASE_URL = process.env.POSTMAN_BASE_URL || process.env.BACKEND_URL || 'http://localhost:5010';
-
-const HTTP_METHODS = ['get', 'post', 'put', 'patch', 'delete'];
-
-function walkFiles(dir, files = []) {
-  if (!fs.existsSync(dir)) return files;
-
-  for (const entry of fs.readdirSync(dir)) {
-    const fullPath = path.join(dir, entry);
-    const stat = fs.statSync(fullPath);
-
-    if (entry === 'node_modules' || entry === '.git' || entry === 'dist' || entry === 'build' || entry === 'coverage') {
-      continue;
-    }
-
-    if (stat.isDirectory()) {
-      walkFiles(fullPath, files);
-    } else if (entry.endsWith('.js') || entry.endsWith('.mjs') || entry.endsWith('.cjs')) {
-      files.push(fullPath);
-    }
-  }
-
-  return files;
-}
+const HTTP_METHODS = ["get", "post", "put", "patch", "delete"];
 
 function read(filePath) {
-  return fs.readFileSync(filePath, 'utf8');
+  return fs.readFileSync(filePath, "utf8");
 }
 
 function cleanPath(value) {
-  if (!value) return '';
-
-  return value.replace(/[`'"]/g, '').replace(/\/+/g, '/').replace(/\/$/, '') || '/';
+  if (!value) return "";
+  return value.replace(/[`'"]/g, "").replace(/\/+/g, "/").replace(/\/$/, "") || "/";
 }
 
 function joinPaths(base, child) {
   const left = cleanPath(base);
   const right = cleanPath(child);
 
-  if (left === '/' && right === '/') return '/';
-  if (left === '/') return right;
-  if (right === '/') return left;
+  if (left === "/" && right === "/") return "/";
+  if (left === "/") return right;
+  if (right === "/") return left;
 
   return cleanPath(`${left}/${right}`);
 }
 
 function toPostmanPath(expressPath) {
-  return expressPath.replace(/:([A-Za-z0-9_]+)/g, '{{$1}}');
+  return expressPath.replace(/:([A-Za-z0-9_]+)/g, "{{$1}}");
+}
+
+function getRouteFiles() {
+  const files = [SERVER_FILE];
+
+  if (fs.existsSync(ROUTES_DIR)) {
+    for (const entry of fs.readdirSync(ROUTES_DIR)) {
+      if (entry.endsWith(".js") || entry.endsWith(".mjs") || entry.endsWith(".cjs")) {
+        files.push(path.join(ROUTES_DIR, entry));
+      }
+    }
+  }
+
+  return files;
 }
 
 function extractImports(content, filePath) {
   const imports = {};
+  const requireRegex =
+    /(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*require\(["'](.+?)["']\)/g;
 
-  const requireRegex = /(?:const|let|var)\s+([A-Za-z0-9_]+)\s*=\s*require\(["'](.+?)["']\)/g;
+  let match;
 
-  const importRegex = /import\s+([A-Za-z0-9_]+)\s+from\s+["'](.+?)["']/g;
+  while ((match = requireRegex.exec(content)) !== null) {
+    const variableName = match[1];
+    const importPath = match[2];
 
-  for (const regex of [requireRegex, importRegex]) {
-    let match;
+    if (!importPath.startsWith(".")) continue;
 
-    while ((match = regex.exec(content)) !== null) {
-      const variableName = match[1];
-      const importPath = match[2];
+    const resolved = path.resolve(path.dirname(filePath), importPath);
+    const candidates = [
+      resolved,
+      `${resolved}.js`,
+      `${resolved}.mjs`,
+      `${resolved}.cjs`,
+      path.join(resolved, "index.js"),
+    ];
 
-      if (!importPath.startsWith('.')) continue;
+    const found = candidates.find((candidate) => fs.existsSync(candidate));
 
-      let resolved = path.resolve(path.dirname(filePath), importPath);
-
-      const candidates = [
-        resolved,
-        `${resolved}.js`,
-        `${resolved}.mjs`,
-        `${resolved}.cjs`,
-        path.join(resolved, 'index.js'),
-      ];
-
-      const found = candidates.find((candidate) => fs.existsSync(candidate));
-
-      if (found) {
-        imports[variableName] = found;
-      }
+    if (found) {
+      imports[variableName] = found;
     }
   }
 
   return imports;
 }
 
-function findRouteMounts(files) {
+function findRouteMounts(serverContent) {
   const mounts = new Map();
+  const imports = extractImports(serverContent, SERVER_FILE);
+  const appUseRegex = /app\.use\(\s*["'`]([^"'`]+)["'`]\s*,\s*([A-Za-z0-9_]+)/g;
 
-  for (const file of files) {
-    const content = read(file);
-    const imports = extractImports(content, file);
+  let match;
 
-    const appUseRegex = /app\.use\(\s*["'`]([^"'`]+)["'`]\s*,\s*([A-Za-z0-9_]+)/g;
+  while ((match = appUseRegex.exec(serverContent)) !== null) {
+    const basePath = cleanPath(match[1]);
+    const routeVariable = match[2];
+    const routeFile = imports[routeVariable];
 
-    let match;
-
-    while ((match = appUseRegex.exec(content)) !== null) {
-      const basePath = cleanPath(match[1]);
-      const routeVariable = match[2];
-      const routeFile = imports[routeVariable];
-
-      if (routeFile) {
-        mounts.set(routeFile, basePath);
-      }
+    if (routeFile) {
+      mounts.set(routeFile, basePath);
     }
   }
 
   return mounts;
 }
 
-function detectAuthHint(routeLine) {
-  const lower = routeLine.toLowerCase();
+function detectAuthHint(routeLine, fileContent) {
+  const combined = `${routeLine || ""}\n${fileContent || ""}`.toLowerCase();
 
   return (
-    lower.includes('protect') ||
-    lower.includes('auth') ||
-    lower.includes('verifytoken') ||
-    lower.includes('requireauth') ||
-    lower.includes('isadmin') ||
-    lower.includes('admin')
+    combined.includes("requireauth") ||
+    combined.includes("requireauth") ||
+    combined.includes("requirerole") ||
+    combined.includes("protect") ||
+    combined.includes("verifytoken") ||
+    combined.includes("authmiddleware")
   );
 }
 
@@ -134,22 +120,29 @@ function extractDirectRoutes(content, basePath, sourceFile) {
   const routes = [];
 
   for (const method of HTTP_METHODS) {
-    const routerRegex = new RegExp(`router\\.${method}\\(\\s*["'\`]([^"'\`]+)["'\`]([\\s\\S]*?)\\)`, 'g');
+    const routerRegex = new RegExp(
+      `router\\.${method}\\(\\s*["'\`]([^"'\`]+)["'\`]([\\s\\S]*?)\\);?`,
+      "g"
+    );
 
-    const appRegex = new RegExp(`app\\.${method}\\(\\s*["'\`]([^"'\`]+)["'\`]([\\s\\S]*?)\\)`, 'g');
+    const appRegex = new RegExp(
+      `app\\.${method}\\(\\s*["'\`]([^"'\`]+)["'\`]([\\s\\S]*?)\\);?`,
+      "g"
+    );
 
     for (const regex of [routerRegex, appRegex]) {
       let match;
 
       while ((match = regex.exec(content)) !== null) {
         const routePath = cleanPath(match[1]);
-        const restOfLine = match[2] || '';
-        const fullPath = regex === appRegex ? routePath : joinPaths(basePath, routePath);
+        const restOfLine = match[2] || "";
+        const isAppRoute = regex === appRegex;
+        const fullPath = isAppRoute ? routePath : joinPaths(basePath, routePath);
 
         routes.push({
           method: method.toUpperCase(),
           path: fullPath,
-          authRequired: detectAuthHint(restOfLine),
+          authRequired: detectAuthHint(restOfLine, isAppRoute ? "" : content),
           sourceFile,
         });
       }
@@ -161,7 +154,6 @@ function extractDirectRoutes(content, basePath, sourceFile) {
 
 function extractChainedRoutes(content, basePath, sourceFile) {
   const routes = [];
-
   const chainedRegex =
     /router\.route\(\s*["'`]([^"'`]+)["'`]\s*\)((?:\s*\.\s*(get|post|put|patch|delete)\([\s\S]*?\))+)/g;
 
@@ -171,15 +163,15 @@ function extractChainedRoutes(content, basePath, sourceFile) {
     const routePath = cleanPath(match[1]);
     const chain = match[2];
     const fullPath = joinPaths(basePath, routePath);
-
     const methodRegex = /\.(get|post|put|patch|delete)\(/g;
+
     let methodMatch;
 
     while ((methodMatch = methodRegex.exec(chain)) !== null) {
       routes.push({
         method: methodMatch[1].toUpperCase(),
         path: fullPath,
-        authRequired: detectAuthHint(chain),
+        authRequired: detectAuthHint(chain, content),
         sourceFile,
       });
     }
@@ -193,16 +185,20 @@ function dedupeRoutes(routes) {
 
   return routes.filter((route) => {
     const key = `${route.method} ${route.path}`;
-    if (seen.has(key)) return false;
+
+    if (seen.has(key)) {
+      return false;
+    }
+
     seen.add(key);
     return true;
   });
 }
 
 function getGroupName(route) {
-  const parts = route.path.split('/').filter(Boolean);
+  const parts = route.path.split("/").filter(Boolean);
 
-  if (parts[0] === 'api' && parts[1]) {
+  if (parts[0] === "api" && parts[1]) {
     return parts[1];
   }
 
@@ -210,79 +206,118 @@ function getGroupName(route) {
     return parts[0];
   }
 
-  return 'general';
+  return "general";
 }
 
 function createRequestName(route) {
   const clean = route.path
-    .replace(/^\/api\//, '')
-    .replace(/^\//, '')
-    .replace(/\{\{(.+?)\}\}/g, ':$1');
+    .replace(/^\/api\//, "")
+    .replace(/^\//, "")
+    .replace(/\{\{(.+?)\}\}/g, ":$1");
 
   return `${route.method} /${clean}`;
 }
 
 function createExampleBody(route) {
-  if (!['POST', 'PUT', 'PATCH'].includes(route.method)) {
+  if (!["POST", "PUT", "PATCH"].includes(route.method)) {
     return undefined;
   }
 
   const lowerPath = route.path.toLowerCase();
 
-  if (lowerPath.includes('login')) {
+  if (lowerPath.includes("/auth/login")) {
     return {
-      email: 'user@example.com',
-      password: 'Password123!',
+      email: "user@example.com",
+      password: "Password123!",
     };
   }
 
-  if (lowerPath.includes('register')) {
+  if (lowerPath.includes("/auth/register")) {
     return {
-      firstName: 'Test',
-      lastName: 'User',
-      email: 'user@example.com',
-      password: 'Password123!',
+      accountType: "Guest",
+      firstName: "Test",
+      lastName: "User",
+      email: "user@example.com",
+      dateOfBirth: "1990-01-01",
+      password: "Password123!",
     };
   }
 
-  if (lowerPath.includes('product')) {
+  if (lowerPath.includes("/bookings/checkout")) {
     return {
-      name: 'Sample Product',
-      description: 'Generated sample request body',
-      price: 99.99,
-      category: 'General',
-      stock: 10,
+      visitDate: "2026-08-01",
+      customerNotes: "Generated Postman example",
+      items: [
+        {
+          itemType: "ride",
+          itemId: 1,
+          quantity: 1,
+        },
+      ],
     };
   }
 
-  if (lowerPath.includes('booking')) {
+  if (lowerPath.includes("/cancel")) {
     return {
-      attractionId: '{{attractionId}}',
-      date: '2026-06-01',
-      guests: 2,
+      cancellationReason: "Cancelled from Postman test",
     };
   }
 
-  if (lowerPath.includes('order')) {
+  if (lowerPath.includes("/admin/rides")) {
     return {
-      items: [],
-      total: 0,
+      name: "Postman Test Ride",
+      description: "Generated sample ride request body",
+      category: "Family",
+      thrillLevel: "Medium",
+      minimumHeightCm: 100,
+      minimumAgeYears: 8,
+      requiresAdultSupervision: false,
+      price: 25,
+      pointsEarned: 10,
+      imageUrl: "",
+    };
+  }
+
+  if (lowerPath.includes("/admin/accommodations")) {
+    return {
+      name: "Postman Test Lodge",
+      description: "Generated sample accommodation request body",
+      type: "Lodge",
+      pricePerNight: 150,
+      maxGuests: 4,
+      minimumLeadGuestAgeYears: 18,
+      isFamilyFriendly: true,
+      imageUrl: "",
+    };
+  }
+
+  if (lowerPath.includes("/reject")) {
+    return {
+      rejectionReason: "Rejected from Postman test",
+    };
+  }
+
+  if (lowerPath.includes("/security-events/access-denied")) {
+    return {
+      path: "/admin/security-events",
+      allowedRoles: ["Admin"],
     };
   }
 
   return {
-    example: 'Update this body for your endpoint',
+    example: "Update this body for your endpoint",
   };
 }
 
 function createPostmanItem(route) {
-  const url = `{{baseUrl}}${toPostmanPath(route.path)}`;
+  const postmanPath = toPostmanPath(route.path);
+  const url = `{{baseUrl}}${postmanPath}`;
   const body = createExampleBody(route);
 
   const headers = [
     {
-      key: 'Content-Type',
-      value: 'application/json',
+      key: "Content-Type",
+      value: "application/json",
     },
   ];
 
@@ -291,20 +326,23 @@ function createPostmanItem(route) {
     header: headers,
     url: {
       raw: url,
-      host: ['{{baseUrl}}'],
-      path: toPostmanPath(route.path).split('/').filter(Boolean),
+      host: ["{{baseUrl}}"],
+      path: postmanPath.split("/").filter(Boolean),
     },
-    description: `Generated from: ${path.relative(BACKEND_ROOT, route.sourceFile)}`,
+    description: [
+      `Generated from: ${path.relative(BACKEND_ROOT, route.sourceFile)}`,
+      route.authRequired ? "Auth: Bearer token required" : "Auth: Public or route-level validation",
+    ].join("\n"),
   };
 
   if (route.authRequired) {
     request.auth = {
-      type: 'bearer',
+      type: "bearer",
       bearer: [
         {
-          key: 'token',
-          value: '{{token}}',
-          type: 'string',
+          key: "token",
+          value: "{{token}}",
+          type: "string",
         },
       ],
     };
@@ -312,11 +350,11 @@ function createPostmanItem(route) {
 
   if (body) {
     request.body = {
-      mode: 'raw',
+      mode: "raw",
       raw: JSON.stringify(body, null, 2),
       options: {
         raw: {
-          language: 'json',
+          language: "json",
         },
       },
     };
@@ -353,18 +391,38 @@ function buildCollection(routes) {
     info: {
       name: PROJECT_NAME,
       description:
-        'Auto-generated Postman collection from Express routes. Regenerate after adding or changing backend routes.',
-      schema: 'https://schema.getpostman.com/json/collection/v2.1.0/collection.json',
+        "Auto-generated Postman collection from mounted Express routes. Regenerate after adding or changing backend routes.",
+      schema: "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     },
     item: items,
     variable: [
       {
-        key: 'baseUrl',
+        key: "baseUrl",
         value: DEFAULT_BASE_URL,
       },
       {
-        key: 'token',
-        value: '',
+        key: "token",
+        value: "",
+      },
+      {
+        key: "rideId",
+        value: "1",
+      },
+      {
+        key: "accommodationId",
+        value: "1",
+      },
+      {
+        key: "bookingReference",
+        value: "WB-CHANGE-ME",
+      },
+      {
+        key: "type",
+        value: "ride",
+      },
+      {
+        key: "id",
+        value: "1",
       },
     ],
   };
@@ -372,71 +430,66 @@ function buildCollection(routes) {
 
 function buildEnvironment() {
   return {
-    name: 'Wonderland Local',
+    name: "Wonderland Local",
     values: [
       {
-        key: 'baseUrl',
+        key: "baseUrl",
         value: DEFAULT_BASE_URL,
-        type: 'default',
+        type: "default",
         enabled: true,
       },
       {
-        key: 'token',
-        value: '',
-        type: 'secret',
+        key: "token",
+        value: "",
+        type: "secret",
         enabled: true,
       },
       {
-        key: 'id',
-        value: '1',
-        type: 'default',
+        key: "rideId",
+        value: "1",
+        type: "default",
         enabled: true,
       },
       {
-        key: 'userId',
-        value: '1',
-        type: 'default',
+        key: "accommodationId",
+        value: "1",
+        type: "default",
         enabled: true,
       },
       {
-        key: 'productId',
-        value: '1',
-        type: 'default',
+        key: "bookingReference",
+        value: "WB-CHANGE-ME",
+        type: "default",
         enabled: true,
       },
       {
-        key: 'bookingId',
-        value: '1',
-        type: 'default',
+        key: "type",
+        value: "ride",
+        type: "default",
         enabled: true,
       },
       {
-        key: 'orderId',
-        value: '1',
-        type: 'default',
-        enabled: true,
-      },
-      {
-        key: 'attractionId',
-        value: '1',
-        type: 'default',
+        key: "id",
+        value: "1",
+        type: "default",
         enabled: true,
       },
     ],
-    _postman_variable_scope: 'environment',
-    _postman_exported_using: 'Wonderland local generator',
+    _postman_variable_scope: "environment",
+    _postman_exported_using: "Wonderland local generator",
   };
 }
 
 function main() {
-  const files = walkFiles(BACKEND_ROOT);
-  const mounts = findRouteMounts(files);
+  const files = getRouteFiles();
+  const serverContent = read(SERVER_FILE);
+  const mounts = findRouteMounts(serverContent);
 
   let routes = [];
 
   for (const file of files) {
     const content = read(file);
-    const mountedBasePath = mounts.get(file) || '';
+    const mountedBasePath = mounts.get(file) || "";
 
     routes.push(...extractDirectRoutes(content, mountedBasePath, file));
     routes.push(...extractChainedRoutes(content, mountedBasePath, file));
@@ -455,26 +508,27 @@ function main() {
   const collection = buildCollection(routes);
   const environment = buildEnvironment();
 
-  const collectionPath = path.join(OUTPUT_DIR, 'wonderland-api.postman_collection.json');
-
-  const environmentPath = path.join(OUTPUT_DIR, 'wonderland-local.postman_environment.json');
+  const collectionPath = path.join(OUTPUT_DIR, "wonderland-api.postman_collection.json");
+  const environmentPath = path.join(OUTPUT_DIR, "wonderland-local.postman_environment.json");
 
   fs.writeFileSync(collectionPath, JSON.stringify(collection, null, 2));
   fs.writeFileSync(environmentPath, JSON.stringify(environment, null, 2));
 
-  console.log('');
-  console.log('Postman collection generated successfully.');
+  console.log("");
+  console.log("Postman collection generated successfully.");
   console.log(`Routes found: ${routes.length}`);
   console.log(`Collection: ${collectionPath}`);
   console.log(`Environment: ${environmentPath}`);
-  console.log('');
+  console.log("");
+
+  for (const route of routes) {
+    console.log(`${route.method.padEnd(6)} ${route.path}`);
+  }
+
+  console.log("");
 
   if (routes.length === 0) {
-    console.log('No routes found.');
-    console.log('Check that your backend uses Express patterns like:');
-    console.log("router.get('/path', handler)");
-    console.log("router.post('/path', handler)");
-    console.log("app.use('/api/example', exampleRoutes)");
+    process.exitCode = 1;
   }
 }
 
