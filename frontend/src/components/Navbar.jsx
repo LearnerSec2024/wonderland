@@ -57,7 +57,7 @@ function Navbar() {
       >
         <Link to="/" className="flex items-center gap-3" data-testid="brand-link">
           <span className="grid h-11 w-11 place-items-center rounded-2xl bg-gradient-to-br from-pink-400 via-purple-500 to-cyan-400 text-2xl shadow-lg">
-            ðŸŽ¡
+            {"\u{1F3A1}"}
           </span>
           <div>
             <p className="text-xl font-black leading-none text-white">Wonderland</p>

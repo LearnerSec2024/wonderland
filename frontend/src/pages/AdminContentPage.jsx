@@ -67,6 +67,8 @@ function AdminContentPage() {
 
   useEffect(() => {
     loadSubmissions();
+    // loadSubmissions is deliberately recreated with the current auth token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const updateRide = (event) => {

@@ -96,16 +96,7 @@ function AdminAuditLogsPage() {
     return () => {
       isActive = false;
     };
-  }, [
-    token,
-    appliedFilters.startDate,
-    appliedFilters.endDate,
-    appliedFilters.eventCategory,
-    appliedFilters.eventType,
-    appliedFilters.actorRole,
-    appliedFilters.actionStatus,
-    appliedFilters.search,
-  ]);
+  }, [token, appliedFilters]);
 
   const summary = useMemo(() => {
     const byCategory = events.reduce((totals, event) => {

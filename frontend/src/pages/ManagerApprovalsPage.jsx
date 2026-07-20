@@ -59,6 +59,8 @@ function ManagerApprovalsPage() {
 
   useEffect(() => {
     refreshAll();
+    // The loaders intentionally close over the current auth token.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token]);
 
   const approve = async (item) => {

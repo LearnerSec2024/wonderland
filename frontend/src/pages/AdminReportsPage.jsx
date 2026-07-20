@@ -72,7 +72,7 @@ function AdminReportsPage() {
     return () => {
       isActive = false;
     };
-  }, [token, appliedFilters.startDate, appliedFilters.endDate, appliedFilters.status]);
+  }, [token, appliedFilters]);
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;
@@ -142,7 +142,7 @@ function AdminReportsPage() {
           </div>
           <p data-testid="admin-report-active-filters" className="text-sm text-slate-500">
             Active filters: {appliedFilters.startDate || "Any start date"} to{" "}
-            {appliedFilters.endDate || "Any end date"} Â· {appliedFilters.status || "All statuses"}
+            {appliedFilters.endDate || "Any end date"} {"\u00B7"} {appliedFilters.status || "All statuses"}
           </p>
         </div>
 
@@ -286,7 +286,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={item.status}
                   label={item.status}
-                  value={`${item.bookingCount} bookings Â· ${formatMoney(item.totalAmount)}`}
+                  value={`${item.bookingCount} bookings \u00B7 ${formatMoney(item.totalAmount)}`}
                 />
               ))
             )}
@@ -300,7 +300,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={item.itemType}
                   label={item.itemType}
-                  value={`${item.itemCount} items Â· ${formatMoney(item.totalAmount)} Â· ${
+                  value={`${item.itemCount} items \u00B7 ${formatMoney(item.totalAmount)} \u00B7 ${
                     item.pointsEarned
                   } points`}
                 />
@@ -316,7 +316,7 @@ function AdminReportsPage() {
                 <ReportRow
                   key={day.activityDate}
                   label={day.activityDate}
-                  value={`${day.bookingCount} bookings Â· ${formatMoney(day.totalAmount)}`}
+                  value={`${day.bookingCount} bookings \u00B7 ${formatMoney(day.totalAmount)}`}
                 />
               ))
             )}
@@ -407,7 +407,7 @@ function CdcPanel({ events, testId }) {
               <h3 className="mt-2 font-semibold text-slate-900">{event.bookingReference}</h3>
               <p className="text-sm text-slate-600">{event.eventSummary}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {event.customerEmail || "Customer pending"} Â· {formatDate(event.changeTime)}
+                {event.customerEmail || "Customer pending"} {"\u00B7"} {formatDate(event.changeTime)}
               </p>
             </article>
           ))
@@ -437,7 +437,7 @@ function ContentAuditPanel({ events, testId }) {
               <h3 className="mt-2 font-semibold text-slate-900">{event.entityName}</h3>
               <p className="text-sm text-slate-600">{event.eventSummary}</p>
               <p className="mt-1 text-xs text-slate-500">
-                {event.entityType} Â· {formatDate(event.createdAt)}
+                {event.entityType} {"\u00B7"} {formatDate(event.createdAt)}
               </p>
             </article>
           ))

@@ -191,7 +191,7 @@ function RidesPage() {
           className="mt-8 rounded-[2rem] border border-red-300/40 bg-red-500/15 p-6 text-red-100"
           data-testid="rides-error"
         >
-          {loadError}. Make sure the backend is running on http://localhost:5010.
+          {loadError}
         </section>
       )}
 

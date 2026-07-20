@@ -65,14 +65,22 @@ function buildSecurityQueryString(filters = {}) {
 async function request(path, options = {}) {
   const { token, headers, ...fetchOptions } = options;
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(headers || {}),
-    },
-    ...fetchOptions,
-  });
+  let response;
+
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        ...(headers || {}),
+      },
+      ...fetchOptions,
+    });
+  } catch {
+    throw new Error(
+      "Unable to reach the backend. Make sure it is running on http://localhost:5010"
+    );
+  }
 
   const contentType = response.headers.get("content-type");
   const data = contentType?.includes("application/json") ? await response.json() : null;

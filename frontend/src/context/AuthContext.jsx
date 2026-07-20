@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { api } from "../services/api";
 import { clearStoredBasket } from "./BasketContext";
 
@@ -61,18 +61,15 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const value = useMemo(
-    () => ({
-      token,
-      user,
-      isAuthenticated: Boolean(user && token),
-      isAuthLoading,
-      register,
-      login,
-      logout,
-    }),
-    [token, user, isAuthLoading]
-  );
+  const value = {
+    token,
+    user,
+    isAuthenticated: Boolean(user && token),
+    isAuthLoading,
+    register,
+    login,
+    logout,
+  };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

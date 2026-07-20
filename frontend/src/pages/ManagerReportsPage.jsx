@@ -61,7 +61,7 @@ function ManagerReportsPage() {
     return () => {
       isActive = false;
     };
-  }, [token, appliedFilters.startDate, appliedFilters.endDate, appliedFilters.status]);
+  }, [token, appliedFilters]);
 
   const handleFilterChange = (event) => {
     const { name, value } = event.target;

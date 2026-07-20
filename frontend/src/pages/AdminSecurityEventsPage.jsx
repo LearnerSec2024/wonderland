@@ -117,16 +117,7 @@ function AdminSecurityEventsPage() {
     return () => {
       isActive = false;
     };
-  }, [
-    token,
-    appliedFilters.startDate,
-    appliedFilters.endDate,
-    appliedFilters.severity,
-    appliedFilters.eventCategory,
-    appliedFilters.actorRole,
-    appliedFilters.actionStatus,
-    appliedFilters.search,
-  ]);
+  }, [token, appliedFilters]);
 
   const localSummary = useMemo(() => {
     const highRiskCount = events.filter(

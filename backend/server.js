@@ -235,8 +235,15 @@ app.use((req, res) => {
 app.use((error, req, res, next) => {
   console.error(error);
 
-  res.status(500).json({
-    message: "Something went wrong on the server",
+  const isDatabaseUnavailable =
+    /failed to connect|could not connect|connection.*(closed|lost)|econnrefused/i.test(
+      error.message || ""
+    );
+
+  res.status(isDatabaseUnavailable ? 503 : 500).json({
+    message: isDatabaseUnavailable
+      ? "The database is unavailable. Start the local SQL Server service and try again."
+      : "Something went wrong on the server",
     error: process.env.NODE_ENV === "development" ? error.message : undefined,
   });
 });

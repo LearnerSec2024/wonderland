@@ -77,10 +77,10 @@ function HomePage() {
           </div>
 
           <div className="grid flex-1 gap-5 sm:grid-cols-2">
-            <FeatureCard emoji="??" title="Thrill Rides" text="From dragon coasters to galaxy spinners, pick your perfect adventure." />
-            <FeatureCard emoji="??" title="Magical Stays" text="Stay near the castle, jungle, pirate cove or galaxy resort." />
-            <FeatureCard emoji="?" title="WonderPoints" text="Earn points on rides and accommodation bookings." />
-            <FeatureCard emoji="??" title="Automation Lab" text="Later we will add Playwright training pages with realistic test scenarios." />
+            <FeatureCard emoji={"\u{1F3A2}"} title="Thrill Rides" text="From dragon coasters to galaxy spinners, pick your perfect adventure." />
+            <FeatureCard emoji={"\u{1F3E8}"} title="Magical Stays" text="Stay near the castle, jungle, pirate cove or galaxy resort." />
+            <FeatureCard emoji={"\u2B50"} title="WonderPoints" text="Earn points on rides and accommodation bookings." />
+            <FeatureCard emoji={"\u{1F9EA}"} title="Automation Lab" text="Later we will add Playwright training pages with realistic test scenarios." />
           </div>
         </div>
       </section>
@@ -94,7 +94,7 @@ function HomePage() {
 
         {loadError && (
           <div className="rounded-3xl border border-red-300/40 bg-red-500/15 p-6 text-red-100" data-testid="home-error">
-            {loadError}. Make sure the backend is running on http://localhost:5010.
+            {loadError}
           </div>
         )}
 
@@ -168,7 +168,7 @@ function RideCard({ ride }) {
     >
       <div className="h-36 bg-gradient-to-br from-pink-400 via-purple-500 to-cyan-400 p-5">
         <div className="flex h-full items-end justify-between">
-          <span className="text-5xl">??</span>
+          <span className="text-5xl">{"\u{1F3A2}"}</span>
           <span className="rounded-full bg-white/85 px-3 py-1 text-sm font-bold">
             {ride.ThrillLevel}
           </span>
@@ -201,7 +201,7 @@ function AccommodationCard({ stay }) {
     >
       <div className="h-36 bg-gradient-to-br from-emerald-300 via-cyan-400 to-blue-500 p-5">
         <div className="flex h-full items-end justify-between">
-          <span className="text-5xl">??</span>
+          <span className="text-5xl">{"\u{1F3E8}"}</span>
           <span className="rounded-full bg-white/85 px-3 py-1 text-sm font-bold">
             {stay.Type}
           </span>
