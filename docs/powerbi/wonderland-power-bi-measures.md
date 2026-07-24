@@ -1,6 +1,6 @@
-﻿# Wonderland Power BI Measures
+# Wonderland Power BI Measures and Semantic Model
 
-This document contains suggested DAX measures for the Wonderland Power BI learning dashboard.
+This document contains suggested DAX measures and semantic model notes for the Wonderland Power BI learning dashboard.
 
 These measures are designed for the Iteration 16 reporting views in `WonderlandDW`.
 
@@ -35,8 +35,8 @@ Application Audit Events Last 7 Days =
 CALCULATE(
     [Total Application Audit Events],
     DATESINPERIOD(
-        'vPowerBIApplicationAuditEvents'[EventDate],
-        MAX('vPowerBIApplicationAuditEvents'[EventDate]),
+        'vPowerBIDate'[Date],
+        MAX('vPowerBIDate'[Date]),
         -7,
         DAY
     )
@@ -73,8 +73,8 @@ Security Events Last 7 Days =
 CALCULATE(
     [Total Security Events],
     DATESINPERIOD(
-        'vPowerBISecurityEvents'[EventDate],
-        MAX('vPowerBISecurityEvents'[EventDate]),
+        'vPowerBIDate'[Date],
+        MAX('vPowerBIDate'[Date]),
         -7,
         DAY
     )
@@ -142,3 +142,51 @@ Suggested visuals:
 - Application audit events by user
 - Security events by user
 - User activity over time
+
+---
+
+## Iteration 17 Semantic Model Notes
+
+Iteration 17 extends the report from separate imported reporting views into a relationship-based Power BI semantic model.
+
+### Shared dimension views
+
+- dbo.vPowerBIDate
+- dbo.vPowerBIUser
+- dbo.vPowerBIRole
+- dbo.vPowerBISemanticModelValidation
+
+### Relationship pattern
+
+Use one-to-many, single-direction, active relationships.
+
+- vPowerBIDate DateKey filters reporting views by DateKey
+- vPowerBIUser UserKey filters audit, security and user activity views by ActorUserKey
+- vPowerBIRole RoleKey filters audit, security and user activity views by ActorRoleKey
+
+Avoid fact-to-fact relationships and avoid a direct vPowerBIUser to vPowerBIRole relationship.
+
+### Date table setup
+
+Mark vPowerBIDate as the Power BI date table using the Date column.
+
+Sort MonthName by MonthNumber.
+
+Sort YearMonth by YearMonthSort.
+
+### Interactive report features
+
+- Synced Date slicer using vPowerBIDate Date
+- Synced Role slicer using vPowerBIRole RoleName
+- User Activity Details drill-through page using vPowerBIUser Email
+- Security Tooltip report page for the Security Events by Category visual
+
+### Validation
+
+Run the Iteration 17 semantic validation helper before refreshing Power BI:
+
+    sqlcmd -S localhost -d WonderlandDW -E -C -i .\SqlQueries\Iteration17PowerBISemanticModelValidation.sql
+
+The validation checks semantic view reconciliation, date continuity, sentinel date exclusion, exposed relationship keys and semantic dimension availability.
+
+Local PBIX files remain ignored by Git. SQL scripts and documentation are version controlled.

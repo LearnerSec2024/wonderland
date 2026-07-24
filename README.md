@@ -25,8 +25,8 @@ This project is being built locally on a personal Windows 11 laptop for enterpri
 | GitHub repository | Published |
 | GitHub Actions workflow | Passing |
 | Azure DevOps Pipeline | Passing |
-| Latest completed iteration | **Iteration 16 - Power BI-ready Reporting Views and Measures** |
-| Current completed iteration | **Iteration 16 - Power BI-ready Reporting Views and Measures** |
+| Latest completed iteration | **Iteration 17 - Power BI Semantic Model and Interactive Reporting** |
+| Current completed iteration | **Iteration 17 - Power BI Semantic Model and Interactive Reporting** |
 
 Current local URLs:
 
@@ -654,8 +654,10 @@ The suite currently covers:
 | Iteration 13 | Application audit logs | Complete | Capture who did what in business terms |
 | Iteration 14 | Security events / SIEM simulator | **Completed** | Capture security-relevant events and show monitoring dashboard |
 | Iteration 15 | Data warehouse foundation | **Completed** | Created WonderlandDW star schema foundation for reporting |
-| Iteration 16 | Power BI-ready reporting views and measures | **Next** | Prepare SQL views/measures for Power BI dashboards |
-| Iteration 17 | Azure Monitor / Sentinel learning integration | Later | Connect security monitoring concepts to cloud logging/SIEM patterns |
+| Iteration 16 | Power BI-ready reporting views and measures | **Completed** | Prepared SQL views/measures for Power BI dashboards |
+| Post-Iteration 16 | API Collection Update and Stabilisation | **Completed** | Regenerated Postman collection, added standalone API validation and stabilised API/frontend error handling |
+| Iteration 17 | Power BI semantic model and interactive reporting | **Completed** | Added shared Date/User/Role dimensions, relationships, synced slicers, drill-through and report tooltip learning |
+| Iteration 18 | Azure Monitor / Sentinel learning integration | Later | Connect security monitoring concepts to cloud logging/SIEM patterns |
 | Later | Playwright Automation Lab expansion | Planned | Beginner and tricky locator training pages |
 
 ---
@@ -932,7 +934,7 @@ Current test status after Iteration 14:
     GitHub Actions: To be confirmed after push
     Azure DevOps Pipeline: To be confirmed after push
 
-## Completed Task: Iteration 15 — Data Warehouse Foundation
+## Completed Task: Iteration 15 ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â Data Warehouse Foundation
 
 This is the next task to pick up.
 
@@ -1085,7 +1087,7 @@ Current next item:
 Iteration 14 - Security Events / SIEM Simulator
 ```
 
-## Iteration 15 Completed — Data Warehouse Foundation
+## Iteration 15 Completed ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€šÃ‚Â Data Warehouse Foundation
 
 Iteration 15 starts the separation of operational application data from reporting and analytics data.
 
@@ -1238,3 +1240,142 @@ It also demonstrates why reporting validation should reconcile base fact rows to
 ### Iteration 16 Status
 
 `Iteration 16 - Power BI-ready Reporting Views and Measures` is complete locally and ready for repository delivery validation.
+
+---
+
+## Post-Iteration 16 - API Collection Update and Stabilisation
+
+After Iteration 16, Wonderland completed a small API collection and stabilisation bridge before starting Iteration 17.
+
+### Purpose
+
+This bridge step made the backend API surface easier to inspect, validate and use from Postman before continuing into Power BI semantic modelling.
+
+### Completed
+
+- Regenerated the Postman collection from backend Express routes.
+- Confirmed the generated collection contained 35 API requests.
+- Added standalone API collection validation.
+- Confirmed public APIs, authentication APIs and protected API rejection behaviour.
+- Confirmed normal User tokens cannot access Admin or Manager standalone APIs.
+- Stabilised reporting role-protection testing.
+- Cleaned up API and frontend error handling.
+- Aligned root package-lock.json metadata.
+
+### Validation
+
+End-of-bridge validation confirmed:
+
+- 35 generated API requests
+- 5 standalone API collection tests passed
+- 57 full Playwright tests passed
+
+This bridge did not replace Iteration 17. It prepared the project for the next learning iteration.
+
+### Status
+
+Post-Iteration 16 - API Collection Update and Stabilisation is complete.
+
+---
+
+## Iteration 17 - Power BI Semantic Model and Interactive Reporting
+
+Iteration 17 evolves the Iteration 16 Power BI reporting layer from separate imported SQL views into a clearer analytical model with shared dimensions, active relationships, synced slicers and interactive report behaviours.
+
+### SQL Semantic Model Views
+
+Added backend/sql/iteration-17-power-bi-semantic-model-views.sql.
+
+The script reloads the warehouse through dbo.uspLoadWonderlandDw and creates or replaces:
+
+- dbo.vPowerBIDate
+- dbo.vPowerBIUser
+- dbo.vPowerBIRole
+- dbo.vPowerBISemanticModelValidation
+
+It also updates existing Power BI reporting views to expose relationship keys:
+
+- DateKey
+- ActorUserKey
+- ActorRoleKey
+
+### Power BI Semantic Model
+
+The local Iteration 17 PBIX file is docs/powerbi/Wonderland-Iteration-17-PowerBI-Semantic-Model.pbix.
+
+Power BI Desktop .pbix files remain ignored by Git.
+
+The Iteration 17 model uses these shared dimensions:
+
+- vPowerBIDate
+- vPowerBIUser
+- vPowerBIRole
+
+vPowerBIDate excludes the technical unknown/sentinel row DateKey = 19000101 and is marked as the Power BI date table using the Date column.
+
+The model uses one-to-many, single-direction relationships from dimensions to reporting/fact-style tables.
+
+Expected relationship pattern:
+
+- vPowerBIDate DateKey filters reporting views by DateKey
+- vPowerBIUser UserKey filters user/activity views by ActorUserKey
+- vPowerBIRole RoleKey filters audit/security/activity views by ActorRoleKey
+
+The model deliberately avoids fact-to-fact relationships and avoids a direct vPowerBIUser to vPowerBIRole relationship to prevent ambiguous filter paths.
+
+### Interactive Reporting Added
+
+The Iteration 17 Power BI learning report includes:
+
+- Shared Date slicer using vPowerBIDate Date
+- Shared Role slicer using vPowerBIRole RoleName
+- Synced slicers across Executive Overview, Security Monitoring, Application Audit and User Activity
+- User Activity Details drill-through page using vPowerBIUser Email
+- Security Tooltip report page attached to the Security Events by Category visual
+
+### Validation Helper
+
+Added SqlQueries/Iteration17PowerBISemanticModelValidation.sql.
+
+This helper validates:
+
+- semantic validation differences are 0
+- vPowerBIDate is contiguous
+- the unknown/sentinel date is excluded from vPowerBIDate
+- relationship keys are exposed to Power BI
+- semantic dimension views exist
+
+Run it with:
+
+    sqlcmd -S localhost -d WonderlandDW -E -C -i .\SqlQueries\Iteration17PowerBISemanticModelValidation.sql
+
+### CI and Validation
+
+GitHub Actions now copies and executes backend/sql/iteration-17-power-bi-semantic-model-views.sql after the Iteration 16 Power BI reporting views script.
+
+Azure DevOps copies the full backend/sql folder and runs SQL scripts in version sort order, so the Iteration 17 SQL script is picked up automatically after Iteration 16.
+
+Local SQL validation confirmed:
+
+- application audit reporting view difference: 0
+- security event reporting view difference: 0
+- Power BI date dimension difference: 0
+- Power BI user dimension difference: 0
+- Power BI role dimension difference: 0
+- date/user/role relationship orphan checks: 0
+- vPowerBIDate missing date count: 0
+- sentinel rows in vPowerBIDate: 0
+
+### Learning Value
+
+Iteration 17 demonstrates the difference between flat imported reporting views and a Power BI semantic model.
+
+Learning flow:
+
+    WonderlandDB -> WonderlandDW -> Power BI semantic views -> relationships -> shared slicers -> interactive reporting
+
+It also demonstrates why shared dimensions, active relationships, single filter direction, drill-through, synced slicers and report-page tooltips make a Power BI report easier to reason about and validate.
+
+### Iteration 17 Status
+
+Iteration 17 - Power BI Semantic Model and Interactive Reporting is complete locally and ready for repository delivery validation.

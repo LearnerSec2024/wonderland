@@ -98,6 +98,7 @@ jobs:
           docker cp backend/sql/iteration-14-security-events.sql "$SQL_CONTAINER":/tmp/iteration-14-security-events.sql
           docker cp backend/sql/iteration-15-data-warehouse-foundation.sql "$SQL_CONTAINER":/tmp/iteration-15-data-warehouse-foundation.sql
           docker cp backend/sql/iteration-16-power-bi-reporting-views.sql "$SQL_CONTAINER":/tmp/iteration-16-power-bi-reporting-views.sql
+          docker cp backend/sql/iteration-17-power-bi-semantic-model-views.sql "$SQL_CONTAINER":/tmp/iteration-17-power-bi-semantic-model-views.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/schema.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/seed.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-3-5-role-dob-eligibility.sql
@@ -113,6 +114,7 @@ jobs:
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -d WonderlandDB -i /tmp/iteration-14-security-events.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -i /tmp/iteration-15-data-warehouse-foundation.sql
           docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -i /tmp/iteration-16-power-bi-reporting-views.sql
+          docker exec "$SQL_CONTAINER" "$SQLCMD" -S localhost -U sa -P "$DB_PASSWORD" -C -i /tmp/iteration-17-power-bi-semantic-model-views.sql
 
       - name: Run Playwright tests
         run: npm run test:e2e
