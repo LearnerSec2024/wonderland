@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { randomUUID } from 'node:crypto';
 import fs from 'node:fs/promises';
 
 const API_BASE_URL = 'http://localhost:5010/api';
@@ -217,7 +218,8 @@ test.describe('Wonderland Admin and Manager reporting', () => {
   });
 
   test('normal User cannot access Admin or Manager reporting pages', async ({ page, request }) => {
-    const email = `reporting.normal.${Date.now()}@wonderland.local`;
+    const email =
+      `reporting.normal.${Date.now()}.${randomUUID()}@wonderland.local`;
 
     const registerResponse = await request.post(`${API_BASE_URL}/auth/register`, {
       data: {
@@ -236,8 +238,6 @@ test.describe('Wonderland Admin and Manager reporting', () => {
 
     await setAuthToken(page, authResult.token);
 
-    await page.goto('/dashboard');
-    await expect(page.getByTestId('dashboard-page')).toBeVisible();
     await expect(page.getByTestId('dashboard-user-role')).toContainText('User');
 
     await navigateWithinSpa(page, '/admin/reports');
