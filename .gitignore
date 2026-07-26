@@ -41,3 +41,6 @@ backend/sql/create-app-login.local.sql
 
 # Local Power BI Desktop reports
 docs/powerbi/*.pbix
+
+# Generated Iteration 18 monitoring exports
+backend/exports/monitoring/

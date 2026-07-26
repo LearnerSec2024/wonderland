@@ -657,7 +657,7 @@ The suite currently covers:
 | Iteration 16 | Power BI-ready reporting views and measures | **Completed** | Prepared SQL views/measures for Power BI dashboards |
 | Post-Iteration 16 | API Collection Update and Stabilisation | **Completed** | Regenerated Postman collection, added standalone API validation and stabilised API/frontend error handling |
 | Iteration 17 | Power BI semantic model and interactive reporting | **Completed** | Added shared Date/User/Role dimensions, relationships, synced slicers, drill-through and report tooltip learning |
-| Iteration 18 | Azure Monitor / Sentinel learning integration | Later | Connect security monitoring concepts to cloud logging/SIEM patterns |
+| Iteration 18 | Azure Monitor / Sentinel learning integration | **In Progress** | Local Phase A complete: read-only export, detection simulation, validation and KQL guide; controlled Azure phase remains later |
 | Later | Playwright Automation Lab expansion | Planned | Beginner and tricky locator training pages |
 
 ---
@@ -1379,3 +1379,182 @@ It also demonstrates why shared dimensions, active relationships, single filter 
 ### Iteration 17 Status
 
 Iteration 17 - Power BI Semantic Model and Interactive Reporting is complete locally and ready for repository delivery validation.
+
+---
+
+## Iteration 18 In Progress: Azure Monitor / Sentinel Learning Integration
+
+Iteration 18 extends Wonderland's existing application-audit and
+security-event capabilities into Azure Monitor, Log Analytics, KQL and
+Microsoft Sentinel learning patterns.
+
+The iteration is divided into two phases:
+
+- Local Phase A: safe monitoring export, detection and KQL learning
+- Controlled Phase B: future Azure ingestion and Sentinel exercise
+
+Local Phase A is complete and validated. Controlled Azure Phase B has
+not yet started.
+
+### Local Phase A Completed
+
+Added a common monitoring-event mapper:
+
+```text
+backend/services/monitoringEventMapper.js
+```
+
+Added a read-only SQL-to-JSON exporter:
+
+```text
+backend/scripts/export-monitoring-events.js
+```
+
+Added local Sentinel-style detection rules:
+
+```text
+backend/services/monitoringDetectionRules.js
+```
+
+Added a local detection runner:
+
+```text
+backend/scripts/run-monitoring-detections.js
+```
+
+Added an automated workflow validator:
+
+```text
+backend/scripts/validate-monitoring-workflow.js
+```
+
+Generated monitoring output is written under:
+
+```text
+backend/exports/monitoring/
+```
+
+The generated folder is excluded from Git.
+
+### Local Monitoring Flow
+
+```text
+WonderlandDB
+    |
+    | Read-only SELECT queries
+    v
+Monitoring event mapper
+    |
+    v
+Local JSON monitoring export
+    |
+    v
+Sentinel-style detection rules
+    |
+    v
+detections.json
+    |
+    v
+Workflow validation
+```
+
+The source tables remain unchanged:
+
+```text
+WonderlandDB.dbo.SecurityEvents
+WonderlandDB.dbo.ApplicationAuditEvents
+```
+
+### Monitoring Commands
+
+Run from the project root:
+
+```powershell
+npm --prefix backend run monitor:export -- 25
+npm --prefix backend run monitor:detect
+npm --prefix backend run monitor:validate
+```
+
+The commands:
+
+1. export recent source events to local JSON;
+2. evaluate the latest security-event export;
+3. create local detection results; and
+4. validate manifest, export and detection consistency.
+
+### Local Detection Rules
+
+| Rule ID   | Detection                                           |
+| --------- | --------------------------------------------------- |
+| `WDL-001` | Repeated failed logins                              |
+| `WDL-002` | Repeated restricted access attempts                 |
+| `WDL-003` | High or Critical security event                     |
+| `WDL-004` | Security event linked to an application-audit event |
+
+The local repeated-activity rules currently evaluate all supplied
+events. The KQL learning examples demonstrate explicit lookback periods
+and time buckets.
+
+### Latest Local Validation
+
+The latest completed local simulation validated:
+
+```text
+Security events exported: 25
+Application audit events exported: 25
+Local detections created: 15
+```
+
+Triggered results included:
+
+```text
+WDL-002: 5 repeated restricted-access detections
+WDL-003: 10 high-severity event detections
+```
+
+The workflow validator confirmed:
+
+- export counts matched the manifest;
+- detection totals matched the detailed results;
+- rule-summary counts matched the detections;
+- only recognised Wonderland rule IDs were present; and
+- Azure and Sentinel safety notes were present.
+
+The exact detection results can change as new Wonderland security events
+are generated.
+
+### Monitoring Documentation
+
+Added:
+
+- [Wonderland Monitoring Learning Guide](docs/monitoring/wonderland-monitoring-learning-guide.md)
+- [Wonderland KQL Learning Pack](docs/monitoring/wonderland-kql-learning-pack.md)
+
+The KQL guide uses planned future custom-table names:
+
+```text
+WonderlandSecurityEvents_CL
+WonderlandApplicationAuditEvents_CL
+```
+
+These Azure tables do not currently exist.
+
+### Current Safety Boundary
+
+The completed local phase:
+
+- performs read-only SQL queries;
+- does not insert, update or delete source data;
+- writes only to the ignored local export folder;
+- contains no Azure credentials;
+- has not created Azure Monitor or Log Analytics resources;
+- has not ingested records into Azure;
+- has not created Microsoft Sentinel alerts; and
+- has not created Sentinel analytics rules.
+
+### Iteration 18 Current Status
+
+Local Phase A is complete and validated.
+
+Iteration 18 remains **In Progress** until the controlled Azure Phase B
+exercise and final repository delivery validation are completed.

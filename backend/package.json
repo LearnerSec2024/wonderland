@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "postman:generate": "node scripts/generate-postman-collection.js"
+    "postman:generate": "node scripts/generate-postman-collection.js",
+    "monitor:export": "node scripts/export-monitoring-events.js",
+    "monitor:detect": "node scripts/run-monitoring-detections.js",
+    "monitor:validate": "node scripts/validate-monitoring-workflow.js"
   },
   "keywords": [],
   "author": "",
