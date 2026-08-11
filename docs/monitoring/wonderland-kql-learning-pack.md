@@ -5,20 +5,21 @@
 This guide translates Wonderland's local monitoring schema into
 Kusto Query Language learning examples.
 
-The queries use these planned future Azure Monitor custom-table names:
+The queries use the validated Azure Monitor custom-table names:
 
 ```text
 WonderlandSecurityEvents_CL
 WonderlandApplicationAuditEvents_CL
 ```
 
-These tables do not currently exist. No Wonderland data has been sent
-to Azure, and these queries have not yet been executed in a Log
-Analytics workspace or Microsoft Sentinel.
+Both tables now exist in the controlled Wonderland learning workspace.
+Sanitised test records were ingested and the KQL patterns were executed
+in Log Analytics. A controlled correlation query was also used by a
+Microsoft Sentinel scheduled analytics rule.
 
 ## Expected Security-Event Columns
 
-The planned security-event table is based on the local
+The security-event table is based on the local
 `security-events.json` structure:
 
 ```text
@@ -386,10 +387,89 @@ WonderlandSecurityEvents_CL
 | where FailureCount >= FailedLoginThreshold
 ```
 
-This query is a learning candidate for a future scheduled Microsoft
-Sentinel analytics rule.
+This failed-login query remains a learning candidate for a future
+scheduled Microsoft Sentinel analytics rule.
 
-No analytics rule has currently been created.
+Iteration 18B created a separate controlled correlation analytics rule
+to validate the end-to-end Sentinel workflow.
+
+## Controlled Sentinel Correlation Query
+
+Iteration 18B validated a controlled Security/Application Audit
+correlation and then used the same detection logic in a scheduled
+Microsoft Sentinel analytics rule.
+
+```kusto
+WonderlandSecurityEvents_CL
+| where EventType == "AzureCorrelationSecurityTest"
+| extend
+    SecurityCorrelationKey = tolong(SourceApplicationAuditEventId),
+    SecurityTestRunId = tostring(Details.TestRunId)
+| project
+    SecurityTimeGenerated = TimeGenerated,
+    SecurityEventType = EventType,
+    SecuritySeverity = Severity,
+    SecurityCorrelationKey,
+    SecurityTestRunId,
+    SecurityActorEmail = ActorEmail,
+    SecurityRequestPath = RequestPath
+| join kind=inner (
+    WonderlandApplicationAuditEvents_CL
+    | where EventType == "AzureCorrelationAuditTest"
+    | extend
+        AuditCorrelationKey = tolong(SourceEventId),
+        AuditTestRunId = tostring(Details.TestRunId)
+    | project
+        AuditTimeGenerated = TimeGenerated,
+        AuditEventType = EventType,
+        AuditActionStatus = ActionStatus,
+        AuditCorrelationKey,
+        AuditTestRunId,
+        AuditActorEmail = ActorEmail,
+        AuditRequestPath = RequestPath,
+        TargetEntityType,
+        TargetEntityId,
+        TargetEntityReference
+) on $left.SecurityCorrelationKey == $right.AuditCorrelationKey
+| extend
+    TestRunIdMatch = SecurityTestRunId == AuditTestRunId,
+    TimeDeltaSeconds = datetime_diff(
+        'second',
+        SecurityTimeGenerated,
+        AuditTimeGenerated
+    )
+| where TestRunIdMatch == true
+| where abs(TimeDeltaSeconds) <= 30
+| extend
+    TimeGenerated = SecurityTimeGenerated,
+    CorrelationKey = SecurityCorrelationKey
+| project
+    TimeGenerated,
+    CorrelationKey,
+    TimeDeltaSeconds,
+    TestRunIdMatch,
+    SecurityEventType,
+    AuditEventType,
+    SecuritySeverity,
+    AuditActionStatus,
+    SecurityActorEmail,
+    AuditActorEmail,
+    SecurityRequestPath,
+    AuditRequestPath,
+    TargetEntityType,
+    TargetEntityId,
+    TargetEntityReference
+```
+
+The controlled result confirmed:
+
+```text
+CorrelationKey: 920001
+TestRunIdMatch: true
+TimeDeltaSeconds: 2
+SecurityEventType: AzureCorrelationSecurityTest
+AuditEventType: AzureCorrelationAuditTest
+```
 
 ## Local Rules and KQL Mapping
 
@@ -419,27 +499,31 @@ A fixed ten-minute bucket is not identical to a continuously sliding
 ten-minute window. Sliding-window behaviour can be explored in a later
 advanced exercise.
 
-## Future Validation Requirements
+## Controlled Azure Validation Results
 
-Before using these queries with real Azure data:
+Controlled Phase B completed the validation sequence:
 
-1. create and review the Log Analytics table schemas;
-2. confirm every column name and data type;
-3. ingest only a small approved test dataset;
-4. run the basic inspection queries first;
-5. compare Azure record counts with the local manifest;
-6. validate KQL detection results against known events;
-7. review retention and ingestion costs;
-8. confirm that no credentials are committed; and
-9. obtain approval before creating Sentinel analytics rules.
+1. created and reviewed both Log Analytics custom-table schemas;
+2. confirmed the required column names and data types;
+3. ingested only controlled sanitised test records;
+4. ran inspection and validation queries in Log Analytics;
+5. validated both Wonderland event tables independently;
+6. validated the Security/Application Audit correlation;
+7. confirmed that no credential or access-token value was committed;
+8. created one controlled scheduled Sentinel analytics rule;
+9. generated one controlled Informational alert and one incident; and
+10. disabled the analytics rule after successful testing.
 
 ## Current Safety Status
 
-At the end of the local learning phase:
+At the end of Controlled Phase B:
 
-- no Log Analytics custom tables have been created;
-- no Data Collection Rule has been created;
-- no Azure credentials have been added;
-- no records have been ingested into Azure;
-- no Microsoft Sentinel analytics rule has been created; and
-- all generated monitoring output remains local and excluded from Git.
+- both Wonderland custom tables exist in the learning workspace;
+- separate DCRs route Security and Application Audit events;
+- only sanitised learning records were ingested;
+- no production monitoring data was sent to Azure;
+- generated monitoring and Azure test payloads remain excluded from Git;
+- no Azure secret or access-token value is committed to the repository;
+- the client secret is protected outside the repository with Windows DPAPI;
+- the controlled Sentinel analytics rule is disabled; and
+- the controlled incident is resolved as security-testing activity.

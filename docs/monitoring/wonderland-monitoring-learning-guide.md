@@ -6,18 +6,22 @@ Iteration 18 connects Wonderland's existing application-audit and
 security-event capabilities to cloud monitoring and SIEM learning
 concepts.
 
-The current phase is deliberately local and safe. It demonstrates how
-Wonderland events can be:
+Iteration 18 now contains two validated learning phases. Wonderland events
+can be:
 
 1. read from SQL Server without modifying source data;
 2. converted into a common monitoring-event structure;
 3. exported into local JSON files;
-4. evaluated by local security detection rules; and
-5. validated before future Azure integration.
+4. evaluated by local security detection rules;
+5. mapped into Azure Monitor custom-table schemas;
+6. ingested as controlled sanitised test records;
+7. queried and correlated in Log Analytics with KQL; and
+8. detected by a controlled Microsoft Sentinel analytics rule.
 
-No data is currently sent to Azure.
+Only sanitised learning records were sent to Azure. No production data
+was included in the controlled Azure validation.
 
-## Current Local Architecture
+## Local Architecture
 
 ```text
 WonderlandDB
@@ -43,6 +47,43 @@ detections.json
           v
 validate-monitoring-workflow.js
 ```
+
+## Controlled Azure Architecture
+
+```text
+Sanitised local test payloads
+        |
+        v
+Microsoft Entra application authentication
+        |
+        v
+Azure Monitor Logs Ingestion API
+        |
+        v
+dce-wonderland-monitoring-lab
+        |
+        +-------------------------------+
+        |                               |
+        v                               v
+Security DCR                       Application Audit DCR
+        |                               |
+        v                               v
+WonderlandSecurityEvents_CL        WonderlandApplicationAuditEvents_CL
+        |                               |
+        +---------------+---------------+
+                        |
+                        v
+                 Log Analytics KQL
+                        |
+                        v
+              Microsoft Sentinel rule
+                        |
+                        v
+               Alert -> Incident
+```
+
+The controlled Sentinel rule was disabled after validation, and the
+resulting incident was resolved as security-testing activity.
 
 ## Local Monitoring Components
 
@@ -131,7 +172,7 @@ They do not yet apply a rolling time condition such as:
 Three failed logins within ten minutes
 ```
 
-Time-window behaviour will be demonstrated later using KQL examples.
+Time-window behaviour is demonstrated in the KQL learning pack and was validated in Log Analytics during Controlled Phase B.
 
 ## Validated Local Example
 
@@ -150,27 +191,30 @@ Results may change when new Wonderland events are generated.
 
 ## Safety Boundary
 
-The current implementation:
+The completed implementation:
 
-- performs read-only SQL queries;
-- does not insert, update or delete source records;
-- writes only into the ignored local export folder;
-- does not create Microsoft Sentinel alerts;
-- does not send records to Azure;
-- does not store Azure credentials; and
-- does not create Azure resources.
+- performs read-only SQL queries against the Wonderland monitoring sources;
+- does not insert, update or delete source audit or security records;
+- writes generated local monitoring and test payloads only under the ignored export folder;
+- sends only controlled sanitised learning records to Azure;
+- sends no production monitoring data to Azure;
+- stores no Azure secret or access-token value in Git;
+- protects the client secret outside the repository with Windows DPAPI; and
+- leaves the controlled Sentinel analytics rule disabled after testing.
 
-## Future Controlled Azure Phase
+## Controlled Azure Phase Completed
 
-A later phase may connect the monitoring structure to Azure Monitor,
-Log Analytics and Microsoft Sentinel.
+Controlled Phase B validated:
 
-That phase must include:
-
-- review before creating Azure resources;
-- secure authentication;
-- controlled ingestion of a small test dataset;
-- KQL query validation;
-- cost and retention review;
-- confirmation that no secrets are committed; and
-- explicit approval before resources are created or changed.
+- Azure Monitor custom-table creation and schema review;
+- dedicated DCE and DCR routing for both Wonderland event types;
+- secure Microsoft Entra application authentication;
+- successful Logs Ingestion API requests returning HTTP 204;
+- KQL inspection and cross-table correlation;
+- correlation key `920001` across Security and Application Audit records;
+- `TestRunIdMatch = true`;
+- `TimeDeltaSeconds = 2`;
+- one controlled Microsoft Sentinel Informational alert;
+- one controlled Sentinel/Defender incident;
+- resolution of the incident as expected security-testing activity; and
+- disabling of the learning analytics rule after validation.

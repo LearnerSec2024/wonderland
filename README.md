@@ -657,7 +657,7 @@ The suite currently covers:
 | Iteration 16 | Power BI-ready reporting views and measures | **Completed** | Prepared SQL views/measures for Power BI dashboards |
 | Post-Iteration 16 | API Collection Update and Stabilisation | **Completed** | Regenerated Postman collection, added standalone API validation and stabilised API/frontend error handling |
 | Iteration 17 | Power BI semantic model and interactive reporting | **Completed** | Added shared Date/User/Role dimensions, relationships, synced slicers, drill-through and report tooltip learning |
-| Iteration 18 | Azure Monitor / Sentinel learning integration | **In Progress** | Local Phase A complete: read-only export, detection simulation, validation and KQL guide; controlled Azure phase remains later |
+| Iteration 18 | Azure Monitor / Sentinel learning integration | **Completed** | Local monitoring, controlled Azure ingestion, KQL correlation and Microsoft Sentinel validation completed |
 | Later | Playwright Automation Lab expansion | Planned | Beginner and tricky locator training pages |
 
 ---
@@ -1382,7 +1382,7 @@ Iteration 17 - Power BI Semantic Model and Interactive Reporting is complete loc
 
 ---
 
-## Iteration 18 In Progress: Azure Monitor / Sentinel Learning Integration
+## Completed Iteration 18 - Azure Monitor / Sentinel Learning Integration
 
 Iteration 18 extends Wonderland's existing application-audit and
 security-event capabilities into Azure Monitor, Log Analytics, KQL and
@@ -1390,11 +1390,11 @@ Microsoft Sentinel learning patterns.
 
 The iteration is divided into two phases:
 
-- Local Phase A: safe monitoring export, detection and KQL learning
-- Controlled Phase B: future Azure ingestion and Sentinel exercise
+- Local Phase A: safe monitoring export, detection and KQL learning - complete
+- Controlled Phase B: controlled Azure ingestion and Sentinel exercise - complete
 
-Local Phase A is complete and validated. Controlled Azure Phase B has
-not yet started.
+Both phases are complete and validated. Final repository delivery
+validation remains before Iteration 18 is marked complete.
 
 ### Local Phase A Completed
 
@@ -1523,6 +1523,49 @@ The workflow validator confirmed:
 The exact detection results can change as new Wonderland security events
 are generated.
 
+### Controlled Phase B Completed
+
+The controlled Azure learning phase extended the local monitoring model
+into Azure Monitor, Log Analytics and Microsoft Sentinel.
+
+The learning environment used:
+
+- Log Analytics workspace `law-wonderland-monitoring-lab`;
+- Data Collection Endpoint `dce-wonderland-monitoring-lab`;
+- DCR `dcr-wonderland-security-events-lab`;
+- DCR `dcr-wonderland-application-audit-events-lab`;
+- custom table `WonderlandSecurityEvents_CL`; and
+- custom table `WonderlandApplicationAuditEvents_CL`.
+
+Controlled sanitised test records were submitted through the Azure
+Monitor Logs Ingestion API and accepted with HTTP 204 responses.
+
+The cross-table validation proved the relationship:
+
+```text
+WonderlandSecurityEvents_CL.SourceApplicationAuditEventId
+    =
+WonderlandApplicationAuditEvents_CL.SourceEventId
+```
+
+The controlled correlated pair validated:
+
+```text
+CorrelationKey: 920001
+TestRunIdMatch: true
+TimeDeltaSeconds: 2
+```
+
+A scheduled Microsoft Sentinel analytics rule named
+`Wonderland - Correlated Security and Audit Validation` produced one
+controlled Informational alert and one incident. After successful
+validation, the analytics rule was disabled and the incident was
+resolved as expected security-testing activity.
+
+Authentication used a dedicated Microsoft Entra application. The client
+secret was protected outside the repository with Windows DPAPI, and no
+credential or access-token value was committed to Git.
+
 ### Monitoring Documentation
 
 Added:
@@ -1530,31 +1573,46 @@ Added:
 - [Wonderland Monitoring Learning Guide](docs/monitoring/wonderland-monitoring-learning-guide.md)
 - [Wonderland KQL Learning Pack](docs/monitoring/wonderland-kql-learning-pack.md)
 
-The KQL guide uses planned future custom-table names:
+The KQL guide uses the validated Azure Monitor custom-table names:
 
 ```text
 WonderlandSecurityEvents_CL
 WonderlandApplicationAuditEvents_CL
 ```
 
-These Azure tables do not currently exist.
+Both custom tables now exist in the controlled learning workspace and
+were validated with sanitised test records.
 
 ### Current Safety Boundary
 
-The completed local phase:
+Iteration 18 preserves the following controls:
 
-- performs read-only SQL queries;
-- does not insert, update or delete source data;
-- writes only to the ignored local export folder;
-- contains no Azure credentials;
-- has not created Azure Monitor or Log Analytics resources;
-- has not ingested records into Azure;
-- has not created Microsoft Sentinel alerts; and
-- has not created Sentinel analytics rules.
+- WonderlandDB source access remains read-only for monitoring export;
+- source audit and security records are not modified by the monitoring workflow;
+- generated monitoring and Azure test payloads remain under the Git-ignored export folder;
+- Azure ingestion was limited to controlled sanitised learning records;
+- no production monitoring data was sent to Azure;
+- no Azure credential or access-token value is stored in the repository;
+- the client secret is protected outside the repository using Windows DPAPI;
+- the controlled Sentinel analytics rule is retained but disabled; and
+- the controlled Sentinel incident is resolved as security-testing activity.
 
-### Iteration 18 Current Status
+### Iteration 18 Status
 
-Local Phase A is complete and validated.
+Iteration 18 is **Completed locally**.
 
-Iteration 18 remains **In Progress** until the controlled Azure Phase B
-exercise and final repository delivery validation are completed.
+Validated completion evidence includes:
+
+- Local Phase A monitoring workflow validation passed;
+- Controlled Azure Phase B validation passed;
+- Azure Monitor ingestion and both custom tables were validated;
+- cross-table KQL correlation was validated;
+- the controlled Microsoft Sentinel alert and incident workflow was validated;
+- the controlled Sentinel analytics rule was disabled after testing;
+- the controlled incident was resolved as security-testing activity;
+- no production monitoring data was sent to Azure;
+- no Azure credential or access-token value is committed to Git; and
+- the full Wonderland Playwright suite passed with 57 tests.
+
+The completion commit will now proceed through the standard Wonderland
+GitHub Actions and Azure DevOps delivery validation process.
