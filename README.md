@@ -1572,6 +1572,7 @@ Added:
 
 - [Wonderland Monitoring Learning Guide](docs/monitoring/wonderland-monitoring-learning-guide.md)
 - [Wonderland KQL Learning Pack](docs/monitoring/wonderland-kql-learning-pack.md)
+- [Iteration 18 Architecture and Component Guide](docs/monitoring/iteration-18-architecture-and-component-guide.md)
 
 The KQL guide uses the validated Azure Monitor custom-table names:
 
