@@ -28,16 +28,44 @@ async function getLatestExportFolder() {
     .sort()
     .reverse();
 
-  if (exportFolders.length === 0) {
-    throw new Error(
-      "No monitoring export folders were found. " +
-      "Run monitor:export first."
+  for (const folderName of exportFolders) {
+    const folderPath = path.join(
+      MONITORING_EXPORT_ROOT,
+      folderName
     );
+
+    const requiredFiles = [
+      "manifest.json",
+      "security-events.json",
+      "application-audit-events.json",
+    ];
+
+    const requiredFileResults = await Promise.all(
+      requiredFiles.map(async (fileName) => {
+        try {
+          await fs.access(
+            path.join(folderPath, fileName)
+          );
+
+          return true;
+        } catch {
+          return false;
+        }
+      })
+    );
+
+    if (
+      requiredFileResults.every(
+        (fileExists) => fileExists
+      )
+    ) {
+      return folderPath;
+    }
   }
 
-  return path.join(
-    MONITORING_EXPORT_ROOT,
-    exportFolders[0]
+  throw new Error(
+    "No valid monitoring export folder was found. " +
+    "Run monitor:export first."
   );
 }
 
