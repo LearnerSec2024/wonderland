@@ -1566,6 +1566,97 @@ Authentication used a dedicated Microsoft Entra application. The client
 secret was protected outside the repository with Windows DPAPI, and no
 credential or access-token value was committed to Git.
 
+### Azure SDK Ingestion Continuation
+
+A follow-on learning exercise extended the controlled Azure ingestion
+workflow to use the official Azure SDK packages:
+
+```text
+@azure/identity
+@azure/monitor-ingestion
+```
+
+The backend now includes:
+
+```text
+backend/services/azureLogIngestionService.js
+backend/scripts/ingest-monitoring-export.js
+```
+
+The Azure ingestion service:
+
+- reads Azure identity and monitoring configuration from environment variables;
+- creates ClientSecretCredential;
+- creates LogsIngestionClient;
+- routes Security records to the Security DCR and stream;
+- routes Application Audit records to the Audit DCR and stream; and
+- supports injected fake clients for local validation without Azure requests.
+
+The monitoring ingestion runner:
+
+- loads an existing monitoring export folder;
+- validates the manifest and both JSON record arrays;
+- validates the Wonderland source-table identity and required monitoring fields;
+- supports --dry-run for no-network routing validation;
+- requires --confirm-azure-send before real Azure ingestion; and
+- rejects combining --dry-run with --confirm-azure-send.
+
+The SDK implementation expects these environment-variable names:
+
+```text
+AZURE_TENANT_ID
+AZURE_CLIENT_ID
+AZURE_CLIENT_SECRET
+AZURE_MONITOR_INGESTION_ENDPOINT
+AZURE_MONITOR_SECURITY_DCR_IMMUTABLE_ID
+AZURE_MONITOR_SECURITY_STREAM_NAME
+AZURE_MONITOR_AUDIT_DCR_IMMUTABLE_ID
+AZURE_MONITOR_AUDIT_STREAM_NAME
+```
+
+Only configuration names are documented. Credential values and
+environment-specific identity, endpoint and immutable DCR identifiers
+are intentionally excluded.
+
+The existing client secret remains protected outside the repository
+using Windows DPAPI and is recovered only into process memory for
+controlled validation.
+
+The SDK runner was validated end-to-end with controlled synthetic
+learning records only:
+
+```text
+Security records: 1
+Application Audit records: 1
+TestRunId: API3C8B-20260816T005145977Z
+```
+
+KQL confirmed the Security record in WonderlandSecurityEvents_CL:
+
+```text
+SourceEventId: 991001
+EventType: AzureSdkRunnerSecurityTest
+ActionStatus: Observed
+```
+
+KQL confirmed the Application Audit record in
+WonderlandApplicationAuditEvents_CL:
+
+```text
+SourceEventId: 991002
+EventType: AzureSdkRunnerAuditTest
+ActionStatus: Succeeded
+```
+
+The existing real Wonderland monitoring export containing 25 Security
+records and 25 Application Audit records was validated through the SDK
+runner in --dry-run mode only.
+
+Those 50 source records were deliberately not uploaded to Azure.
+
+After the controlled real-send validation, all Azure process environment
+variables were removed from the local PowerShell session.
+
 ### Monitoring Documentation
 
 Added:

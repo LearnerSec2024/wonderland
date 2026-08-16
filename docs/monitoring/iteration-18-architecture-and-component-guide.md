@@ -265,3 +265,143 @@ Project location:
 ```text
 docs/monitoring/iteration-18-architecture-and-component-guide.md
 ```
+
+## 14. Azure SDK Continuation
+
+A post-completion learning continuation added an application-level Azure
+SDK ingestion implementation while preserving the original Iteration 18
+safety boundary.
+
+### Added Local Components
+
+| Component | Role |
+| --- | --- |
+| backend/services/azureLogIngestionService.js | Loads Azure configuration, creates ClientSecretCredential and LogsIngestionClient, and routes Security and Audit records |
+| backend/scripts/ingest-monitoring-export.js | Loads and validates a monitoring export folder and coordinates dry-run or explicitly confirmed ingestion |
+| @azure/identity | Official Azure identity SDK dependency |
+| @azure/monitor-ingestion | Official Azure Monitor Logs Ingestion SDK dependency |
+
+### SDK Architecture
+
+```text
+Existing local monitoring export
+        |
+        v
+ingest-monitoring-export.js
+        |
+        | manifest and record validation
+        v
+azureLogIngestionService.js
+        |
+        +--> ClientSecretCredential
+        |
+        +--> LogsIngestionClient
+                  |
+                  v
+                 DCE
+                  |
+        +---------+---------+
+        |                   |
+        v                   v
+ Security DCR          Audit DCR
+        |                   |
+        v                   v
+Security custom table  Audit custom table
+```
+
+The SDK implementation does not remap exported records. The existing
+monitoring export is already in the common Azure-ready schema produced
+by monitoringEventMapper.js.
+
+### Explicit Send Guard
+
+The ingestion runner supports two mutually exclusive operating modes:
+
+```text
+--dry-run
+    validates loading, schema and routing without an Azure request
+
+--confirm-azure-send
+    explicitly authorises real Azure ingestion
+```
+
+A run that omits explicit real-send confirmation is rejected.
+
+### Configuration Contract
+
+The code expects these environment-variable names:
+
+```text
+AZURE_TENANT_ID
+AZURE_CLIENT_ID
+AZURE_CLIENT_SECRET
+AZURE_MONITOR_INGESTION_ENDPOINT
+AZURE_MONITOR_SECURITY_DCR_IMMUTABLE_ID
+AZURE_MONITOR_SECURITY_STREAM_NAME
+AZURE_MONITOR_AUDIT_DCR_IMMUTABLE_ID
+AZURE_MONITOR_AUDIT_STREAM_NAME
+```
+
+Environment-specific values are intentionally excluded from this guide.
+
+The client secret continues to be protected outside Git using Windows
+DPAPI.
+
+### End-to-End Runner Validation
+
+The completed runner path was tested using one controlled synthetic
+Security event and one controlled synthetic Application Audit event:
+
+```text
+TestRunId: API3C8B-20260816T005145977Z
+```
+
+KQL validation confirmed:
+
+```text
+WonderlandSecurityEvents_CL
+  SourceEventId = 991001
+  EventType = AzureSdkRunnerSecurityTest
+  ActionStatus = Observed
+
+WonderlandApplicationAuditEvents_CL
+  SourceEventId = 991002
+  EventType = AzureSdkRunnerAuditTest
+  ActionStatus = Succeeded
+```
+
+This proved:
+
+```text
+Export package
+    -> ingestion runner
+    -> Azure SDK service
+    -> Microsoft Entra authentication
+    -> LogsIngestionClient
+    -> DCE
+    -> appropriate DCR
+    -> appropriate Log Analytics custom table
+    -> KQL validation
+```
+
+The real local monitoring export containing 25 Security records and 25
+Application Audit records was exercised in dry-run mode only and was
+not transmitted to Azure.
+
+After the controlled real-send validation, all Azure process environment
+variables were removed from the local PowerShell session.
+
+## 15. SDK Continuation Safety State
+
+| Control | State |
+| --- | --- |
+| WonderlandDB access | Read-only monitoring export |
+| Real 25 + 25 export | Dry-run only |
+| Production monitoring data sent to Azure | No |
+| Controlled SDK runner send | 1 synthetic Security + 1 synthetic Audit record |
+| Real-send guard | --confirm-azure-send required |
+| Dry-run guard | Fake client, no Azure request |
+| Azure credentials in Git | None |
+| Client secret storage | Outside repository using Windows DPAPI |
+| Azure variables after controlled send | Removed from process environment |
+| Sentinel learning rule | Retained but disabled |

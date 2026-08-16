@@ -218,3 +218,151 @@ Controlled Phase B validated:
 - one controlled Sentinel/Defender incident;
 - resolution of the incident as expected security-testing activity; and
 - disabling of the learning analytics rule after validation.
+
+## Azure SDK Ingestion Continuation
+
+After the original controlled Azure Phase B exercise, the Wonderland
+learning workflow was extended to use the official Azure SDK from the
+Node.js backend.
+
+The implementation adds:
+
+| Component | Purpose |
+| --- | --- |
+| @azure/identity | Supplies ClientSecretCredential for Microsoft Entra authentication |
+| @azure/monitor-ingestion | Supplies LogsIngestionClient for Azure Monitor ingestion |
+| backend/services/azureLogIngestionService.js | Creates the Azure client and routes Security and Audit records to their DCR streams |
+| backend/scripts/ingest-monitoring-export.js | Validates an existing monitoring export and performs dry-run or explicitly confirmed Azure ingestion |
+
+### SDK Runtime Flow
+
+```text
+Monitoring export folder
+        |
+        | manifest.json
+        | security-events.json
+        | application-audit-events.json
+        v
+ingest-monitoring-export.js
+        |
+        | validates manifest and records
+        v
+azureLogIngestionService.js
+        |
+        v
+ClientSecretCredential
+        |
+        v
+LogsIngestionClient
+        |
+        v
+Data Collection Endpoint
+        |
+        +-----------------------------+
+        |                             |
+        v                             v
+Security DCR                    Application Audit DCR
+        |                             |
+        v                             v
+WonderlandSecurityEvents_CL     WonderlandApplicationAuditEvents_CL
+```
+
+### Required Configuration Names
+
+The SDK implementation expects the following environment-variable names:
+
+```text
+AZURE_TENANT_ID
+AZURE_CLIENT_ID
+AZURE_CLIENT_SECRET
+AZURE_MONITOR_INGESTION_ENDPOINT
+AZURE_MONITOR_SECURITY_DCR_IMMUTABLE_ID
+AZURE_MONITOR_SECURITY_STREAM_NAME
+AZURE_MONITOR_AUDIT_DCR_IMMUTABLE_ID
+AZURE_MONITOR_AUDIT_STREAM_NAME
+```
+
+Only the configuration names are documented. Credential values and
+environment-specific identity, endpoint and DCR identifiers are
+intentionally excluded.
+
+The client secret remains outside the repository and is protected
+locally with Windows DPAPI.
+
+### Runner Safety Modes
+
+Dry-run validation:
+
+```powershell
+node .\scripts\ingest-monitoring-export.js `
+  --export-folder <folder> `
+  --dry-run
+```
+
+Dry-run mode validates the export and routing but uses a fake upload
+client, so no monitoring records are transmitted to Azure.
+
+Real Azure ingestion requires the explicit confirmation flag:
+
+```text
+--confirm-azure-send
+```
+
+Running without explicit confirmation is rejected. Combining --dry-run
+and --confirm-azure-send is also rejected.
+
+### Controlled SDK Validation
+
+The service layer was first validated using fake clients with no Azure
+request.
+
+Direct controlled SDK tests then proved both DCR paths independently:
+
+```text
+Security SDK test -> WonderlandSecurityEvents_CL
+Audit SDK test    -> WonderlandApplicationAuditEvents_CL
+```
+
+The complete export runner was then validated with one synthetic Security
+record and one synthetic Application Audit record:
+
+```text
+TestRunId: API3C8B-20260816T005145977Z
+
+Security:
+SourceEventId: 991001
+EventType: AzureSdkRunnerSecurityTest
+ActionStatus: Observed
+
+Application Audit:
+SourceEventId: 991002
+EventType: AzureSdkRunnerAuditTest
+ActionStatus: Succeeded
+```
+
+Both records were confirmed with KQL in their respective Log Analytics
+custom tables.
+
+After the controlled real-send validation, all eight Azure process
+environment variables were removed from the PowerShell session.
+
+### Real Export Boundary
+
+The existing local Wonderland monitoring export containing:
+
+```text
+Security records: 25
+Application Audit records: 25
+```
+
+was successfully loaded and routed through the SDK runner using --dry-run.
+
+Those 50 Wonderland source records were deliberately not uploaded to Azure.
+
+The Azure SDK continuation therefore preserves the existing safety boundary:
+
+- Azure ingestion remains limited to controlled sanitised learning data;
+- WonderlandDB monitoring sources remain read-only;
+- no production monitoring data is sent;
+- no Azure client secret or access token is committed to Git; and
+- real ingestion requires explicit operator confirmation.
